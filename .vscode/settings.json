@@ -1,0 +1,10 @@
+{
+    "git.ignoreLimitWarning": true,
+    "clangd.arguments": [
+        "--enable-config",
+        "--clang-tidy",
+        "--background-index",
+        "--compile-commands-dir=${workspaceFolder}/build/hpm5321-flash-debug",
+        "--query-driver=**/riscv32-unknown-elf-gcc*,**/riscv32-unknown-elf-g++*"
+    ]
+}

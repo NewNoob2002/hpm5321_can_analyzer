@@ -1,0 +1,29 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 21,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "hpm5321-flash-debug",
+            "displayName": "HPM5321 Custom - Flash Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/hpm5321-flash-debug",
+            "cacheVariables": {
+                "BOARD": "hpm5321_custom",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "HPM_BUILD_TYPE": "flash_xip"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "hpm5321-flash-debug",
+            "displayName": "Build HPM5321 Flash Debug",
+            "configurePreset": "hpm5321-flash-debug",
+            "jobs": 8
+        }
+    ]
+}

@@ -1,0 +1,14 @@
+build/
+
+# Build outputs and generated reports
+.omx/
+.omx/*.*
+*.axf
+*.elf
+*.hex
+*.map
+*.lst
+*.o
+*.d
+*.log
+*.bak

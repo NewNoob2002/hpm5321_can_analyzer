@@ -1,0 +1,23 @@
+CompileFlags:
+  CompilationDatabase: build/hpm5321-flash-debug
+
+Diagnostics:
+  UnusedIncludes: None
+  MissingIncludes: None
+  ClangTidy:
+    FastCheckFilter: Strict
+
+Index:
+  Background: Build
+
+---
+If:
+  PathMatch: .*\.c
+CompileFlags:
+  Compiler: riscv32-unknown-elf-gcc
+
+---
+If:
+  PathMatch: .*\.(cc|cpp|cxx)
+CompileFlags:
+  Compiler: riscv32-unknown-elf-g++
