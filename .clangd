@@ -1,5 +1,12 @@
 CompileFlags:
   CompilationDatabase: build/hpm5321-flash-debug
+  Add:
+    - -isystem
+    - /home/gtc/HPMicro/toolchain/lib/gcc/riscv32-unknown-elf/13.2.0/include
+    - -isystem
+    - /home/gtc/HPMicro/toolchain/lib/gcc/riscv32-unknown-elf/13.2.0/include-fixed
+    - -isystem
+    - /home/gtc/HPMicro/toolchain/riscv32-unknown-elf/include
 
 Diagnostics:
   UnusedIncludes: None
@@ -14,10 +21,10 @@ Index:
 If:
   PathMatch: .*\.c
 CompileFlags:
-  Compiler: riscv32-unknown-elf-gcc
+  Compiler: /home/gtc/HPMicro/toolchain/bin/riscv32-unknown-elf-gcc
 
 ---
 If:
   PathMatch: .*\.(cc|cpp|cxx)
 CompileFlags:
-  Compiler: riscv32-unknown-elf-g++
+  Compiler: /home/gtc/HPMicro/toolchain/bin/riscv32-unknown-elf-g++

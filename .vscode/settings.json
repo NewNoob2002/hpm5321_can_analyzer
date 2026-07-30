@@ -1,10 +1,12 @@
 {
     "git.ignoreLimitWarning": true,
+    "C_Cpp.intelliSenseEngine": "disabled",
+    "clangd.path": "/usr/bin/clangd",
     "clangd.arguments": [
         "--enable-config",
         "--clang-tidy",
         "--background-index",
         "--compile-commands-dir=${workspaceFolder}/build/hpm5321-flash-debug",
-        "--query-driver=**/riscv32-unknown-elf-gcc*,**/riscv32-unknown-elf-g++*"
+        "--query-driver=/home/gtc/HPMicro/toolchain/bin/riscv32-unknown-elf-gcc,/home/gtc/HPMicro/toolchain/bin/riscv32-unknown-elf-g++"
     ]
 }

@@ -40,7 +40,12 @@
 #endif
 
 #define configUSE_PREEMPTION                 1
-#define configCPU_CLOCK_HZ                   ((uint32_t)48000000)
+/*
+ * The HPMicro RISC-V port uses configCPU_CLOCK_HZ to calculate the MTIME
+ * compare increment.  It must therefore match mchtmr0, not the CPU core clock.
+ * Board clocks: CPU0 = 480 MHz, MCHTMR0 = 24 MHz.
+ */
+#define configCPU_CLOCK_HZ                   ((uint32_t)24000000)
 #define configTICK_RATE_HZ                   ((TickType_t)1000)
 #define configMAX_PRIORITIES                 (32)
 #define configMINIMAL_STACK_SIZE             (256)
@@ -53,7 +58,7 @@
 /* Memory allocation definitions. */
 #define configSUPPORT_STATIC_ALLOCATION      0
 #define configSUPPORT_DYNAMIC_ALLOCATION     1
-#define configTOTAL_HEAP_SIZE                ((size_t)(8 * 1024))
+#define configTOTAL_HEAP_SIZE                ((size_t)(32 * 1024))
 
 /* Hook function definitions. */
 #define configUSE_IDLE_HOOK                  0
