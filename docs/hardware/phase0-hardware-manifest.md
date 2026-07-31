@@ -9,7 +9,7 @@ Status values: `PASS`, `BLOCKED`, `NOT_TESTED`, `NOT_APPLICABLE`.
 | MCU | HPM5321xCFx project target | PASS | Record exact package/marking from board |
 | Board | `hpm5321_custom` board package | PASS | Record PCB revision and serial number |
 | SDK | Local HPM SDK 1.12.1 baseline | PASS | Preserve SDK/board-overlay checksum |
-| Probe | Not inventoried | NOT_TESTED | Record J-Link/OpenOCD probe model and serial |
+| Probe | SEGGER J-Link, S/N 607000454; JTAG 4 MHz; VTref 3.32 V | PASS | Preserve probe/tool version in test evidence |
 
 ## USB HS contract
 
@@ -40,13 +40,21 @@ bootloader. It does not write application flash while the analyzer is active.
 
 ## CAN/clock contract
 
-| Item | Status | Required closure |
-|---|---:|---|
-| MCAN0 transceiver model/FD support | NOT_TESTED | Schematic/BOM inspection |
-| MCAN2 transceiver model/FD support | NOT_TESTED | Schematic/BOM inspection |
-| Termination and STB/EN control | NOT_TESTED | Schematic + DMM/GPIO validation |
-| PLL1 source and frequency | NOT_TESTED | Runtime clock report |
-| MCAN0/MCAN2 kernel clocks | NOT_TESTED | Runtime clock report + analyzer timing |
+| Item | Current evidence | Status | Required closure |
+|---|---|---:|---|
+| MCAN0 transceiver | TCAN1044AVDRQ1 specified, not populated | BLOCKED | Populate device; confirm VCC, VIO and STB nets before external transmission |
+| MCAN2 transceiver | TCAN1044AVDRQ1 specified, not populated | BLOCKED | Populate device; confirm VCC, VIO and STB nets before external transmission |
+| Termination and STB control | No populated physical layer available | BLOCKED | Schematic review followed by power-off resistance and powered GPIO/DMM checks |
+| PLL1/MCAN source | Custom board initializes MCAN0 and MCAN2 from PLL1 clock 0, divider 10 | PASS | — |
+| MCAN0 kernel clock | Runtime probe reports 80,000,000 Hz | PASS | Reconfirm against measured bus timing after transceiver population |
+| MCAN2 kernel clock | Runtime probe reports 80,000,000 Hz | PASS | Reconfirm against measured bus timing after transceiver population |
+| MCAN0 internal loopback | Classic + FD, standard + extended ID, 8/64-byte payload: 4/4 PASS | PASS | External listen-only and active bus tests remain required |
+| MCAN2 internal loopback | Classic + FD, standard + extended ID, 8/64-byte payload: 4/4 PASS | PASS | External listen-only and active bus tests remain required |
+
+The internal CAN-FD cases prove controller and message-RAM capability only.
+They do not establish the product's physical-layer CAN-FD capability; that
+claim remains capability-controlled until the populated transceivers and PCB
+signal path pass external-bus validation.
 
 ## Flash/update contract
 
