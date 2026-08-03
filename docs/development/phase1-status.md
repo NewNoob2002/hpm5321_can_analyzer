@@ -17,7 +17,7 @@ Status values: `PASS`, `PARTIAL`, `BLOCKED`, `NOT_TESTED`, `NOT_APPLICABLE`.
 | Rust Linux vendor-Bulk | PASS | 480M enumeration, 64 MiB exact echo, reset interruption exit code 2 and post-reset recovery passed |
 | Physical cable hotplug | NOT_TESTED | Automated reset/re-enumeration passed; cable cycling evidence remains |
 | Windows WinUSB and packaging | PARTIAL | Cross-built and native EXEs passed 64 MiB/reset/recovery HIL; PnP binding record, hashes and packaging remain pending |
-| Protocol v1 host codec | PARTIAL | Envelope, CRC32C, semantic validation, bounded stream resync and HELLO golden vector implemented; remaining message payload codecs and firmware C parity are pending |
+| Protocol v1 host codec | PARTIAL | Envelope plus HELLO/device-info/capabilities/PING/error payloads and seven golden vectors implemented; remaining MVP payloads and firmware C parity are pending |
 | Official SDK v1.12.1 clean build | BLOCKED | Current validated artifact uses fork commit `88b01b43...`; official commit remains Gate A |
 
 The Linux host spike and physical vendor-Bulk smoke test are complete. The next
