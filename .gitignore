@@ -8,6 +8,7 @@ build/
 *.axf
 *.elf
 *.hex
+!protocol/**/*.hex
 *.map
 *.lst
 *.o

@@ -23,6 +23,10 @@ name = "hpm-host-spike-rust"
 version = "0.1.0"
 
 [[package]]
+name = "hpm-usb-can-protocol"
+version = "0.1.0"
+
+[[package]]
 name = "hpm-usb-smoke"
 version = "0.1.0"
 dependencies = [
