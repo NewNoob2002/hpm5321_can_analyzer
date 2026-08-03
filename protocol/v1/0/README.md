@@ -10,3 +10,7 @@ will later be consumed by the firmware C codec tests.
 - `capabilities-response.hex`: HS, one Classic-CAN channel capability snapshot.
 - `ping-request.hex` / `ping-response.hex`: timestamp sample 7.
 - `error-response.hex`: CONFIG_CHANNEL `INVALID_ARGUMENT` with stable error prefix.
+- `config-channel-*` / `get-channel-config-request.hex`: channel configuration CAS examples.
+- `start-capture-*` / `stop-capture-*`: capture generation and state transitions.
+- `get-diagnostics-*` / `reset-diagnostics-request.hex`: global and channel counters.
+- `get-session-state-*`: capture, TX-arm and filter-generation snapshot.

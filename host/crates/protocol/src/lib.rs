@@ -3,6 +3,7 @@
 use std::fmt;
 
 pub mod payload;
+pub mod payload_control;
 
 pub const MAGIC: [u8; 4] = *b"UCAN";
 pub const HEADER_LEN: usize = 24;
