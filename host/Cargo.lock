@@ -23,6 +23,14 @@ name = "hpm-host-spike-rust"
 version = "0.1.0"
 
 [[package]]
+name = "hpm-usb-can-core"
+version = "0.1.0"
+dependencies = [
+ "hpm-usb-can-protocol",
+ "rusb",
+]
+
+[[package]]
 name = "hpm-usb-can-protocol"
 version = "0.1.0"
 
