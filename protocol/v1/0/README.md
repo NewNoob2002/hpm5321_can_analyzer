@@ -14,3 +14,18 @@ will later be consumed by the firmware C codec tests.
 - `start-capture-*` / `stop-capture-*`: capture generation and state transitions.
 - `get-diagnostics-*` / `reset-diagnostics-request.hex`: global and channel counters.
 - `get-session-state-*`: capture, TX-arm and filter-generation snapshot.
+- `set-filters-*` / `clear-filters-*`: filter rules with INVERT/EXT_ONLY and
+  CAS generation.
+- `tx-arm-*` / `tx-disarm-*`: TX admission rules, arm epoch and expiry.
+- `can-tx-request.hex` / `can-tx-response.hex`: immediate TX admission with a
+  PENDING ledger snapshot.
+- `can-tx-cancel-request.hex` / `can-tx-cancel-response.hex`: idempotent cancel.
+- `can-rx-batch.hex`: mixed-channel batch with one Classic and one FD record.
+- `can-tx-result.hex`: final SENT result event.
+- `channel-state.hex`: ACTIVE with CONFIG_APPLIED reason.
+- `flow-control.hex`: depth and pool high-water snapshot.
+- `data-loss.hex`: CAN_RING overflow in the CHANNEL sequence domain.
+
+Message-type numbers follow the normative registry in
+`docs/approved-plan/usb-can-protocol-v1.md` section 2.3; every file is a full
+frame including magic, header, payload and CRC-32C.

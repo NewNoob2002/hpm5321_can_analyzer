@@ -17,8 +17,8 @@ Status values: `PASS`, `PARTIAL`, `BLOCKED`, `NOT_TESTED`, `NOT_APPLICABLE`.
 | Rust Linux vendor-Bulk | PASS | 480M enumeration, 64 MiB exact echo, reset interruption exit code 2 and post-reset recovery passed |
 | Physical cable hotplug | NOT_TESTED | Automated reset/re-enumeration passed; cable cycling evidence remains |
 | Windows WinUSB and packaging | PARTIAL | Cross-built and native EXEs passed 64 MiB/reset/recovery HIL; PnP binding record, hashes and packaging remain pending |
-| Protocol v1 host codec | PARTIAL | Envelope, negotiation, config/capture/diagnostic/session payloads and 19 golden vectors implemented; filters, TX, CAN RX/events and firmware C parity remain pending |
-| Official SDK v1.12.1 clean build | BLOCKED | Current validated artifact uses fork commit `88b01b43...`; official commit remains Gate A |
+| Protocol v1 host codec | PARTIAL | Envelope, negotiation, config/capture/diagnostic/session, filters, TX arm/disarm, CAN_TX/cancel, CAN RX batch and events implemented with 36 golden vectors; firmware C codec parity remains pending |
+| Official SDK v1.12.1 clean build | PASS | Official commit `12bd9249...` clean rebuild evidence: `docs/evidence/phase1/T-DEV-001-003-official-sdk-clean-build-report.md` |
 
 The Linux host spike and physical vendor-Bulk smoke test are complete. The next
 Phase 1B closure item is a native Windows CI/HIL evidence run following
