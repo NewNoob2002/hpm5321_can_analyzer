@@ -14,7 +14,9 @@ Status values: `PASS`, `PARTIAL`, `BLOCKED`, `NOT_TESTED`, `NOT_APPLICABLE`.
 | Windows clean build | NOT_TESTED | Required for Linux/Windows CLI MVP |
 | macOS clean build | NOT_APPLICABLE | Deferred by Linux/Windows CLI-first scope addendum |
 | Host stack decision | PASS | Rust selected for shared core/CLI; Qt deferred to GUI and may not introduce a second protocol core |
-| Rust real USB/hotplug and Windows packaging | BLOCKED | libusb development input and Windows reference host required before formal codec work |
+| Rust Linux vendor-Bulk | PASS | 480M enumeration, 64 MiB exact echo, reset interruption exit code 2 and post-reset recovery passed |
+| Physical cable hotplug | NOT_TESTED | Automated reset/re-enumeration passed; cable cycling evidence remains |
+| Windows WinUSB and packaging | BLOCKED | Windows reference host required before formal codec work |
 | Official SDK v1.12.1 clean build | BLOCKED | Current validated artifact uses fork commit `88b01b43...`; official commit remains Gate A |
 
 Phase 1A closes only the Linux build/configuration lane. The next independent

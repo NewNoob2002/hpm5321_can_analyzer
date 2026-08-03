@@ -9,7 +9,7 @@ BUILD = ROOT / "build/host-spike"
 BUILD.mkdir(parents=True, exist_ok=True)
 
 subprocess.run(
-    ["cargo", "build", "--release", "--manifest-path", str(ROOT / "host/Cargo.toml"), "-p", "hpm-host-spike-rust"],
+    ["cargo", "build", "--locked", "--release", "--manifest-path", str(ROOT / "host/Cargo.toml"), "-p", "hpm-host-spike-rust"],
     check=True,
 )
 subprocess.run(

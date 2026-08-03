@@ -1,0 +1,2 @@
+FAIL bulk IN after 3512320 bytes: Input/Output Error
+interrupt_exit_code=2

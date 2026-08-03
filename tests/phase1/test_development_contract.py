@@ -38,7 +38,8 @@ class DevelopmentContractTests(unittest.TestCase):
     def test_linux_windows_cli_scope_locks_single_rust_core(self):
         workspace = (ROOT / "host/Cargo.toml").read_text()
         addendum = (ROOT / "docs/approved-plan/scope-addendum-linux-windows-cli.md").read_text()
-        self.assertIn('members = ["spike/rust"]', workspace)
+        self.assertIn('"crates/usb-smoke"', workspace)
+        self.assertIn('"spike/rust"', workspace)
         self.assertIn('unsafe_code = "forbid"', workspace)
         self.assertIn("shared host core and CLI use Rust", addendum)
         self.assertIn("macOS is deferred", addendum)
