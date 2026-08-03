@@ -7,6 +7,8 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import subprocess
+import sys
 
 LINE_RE = re.compile(
     r"(\S+ \S+) Recv\[([0-9A-Fa-f]+)\]: ((?:[0-9A-Fa-f]{2} ?){8})"
@@ -90,9 +92,6 @@ def main() -> None:
             raise SystemExit(
                 f"metadata {key}: expected {expected!r}, got {metadata.get(key)!r}"
             )
-    if metadata.get("approved_test_ids") != ["T-CAN-003"]:
-        raise SystemExit("historical capture may map only to T-CAN-003")
-
     capture_digest = sha256_file(args.capture)
     if metadata.get("capture_sha256") != capture_digest:
         raise SystemExit("metadata capture_sha256 does not match capture")
@@ -109,12 +108,35 @@ def main() -> None:
     provenance = metadata.get("provenance_status")
     manifest_digest = metadata.get("source_manifest_sha256")
     if provenance == "historical-unbound":
+        if metadata.get("approved_test_ids") != ["T-CAN-003"]:
+            raise SystemExit("historical capture may map only to T-CAN-003")
         if manifest_digest is not None:
             raise SystemExit("historical-unbound metadata must use null manifest digest")
         if metadata.get("source_manifest_path") is not None:
             raise SystemExit("historical-unbound metadata must not name a source manifest")
+    elif provenance == "artifact-attested":
+        if metadata.get("approved_test_ids") != ["T-CAN-003", "T-CAN-013-subcase"]:
+            raise SystemExit("current capture test-ID mapping is invalid")
+        attestation_path = ROOT / metadata.get("artifact_attestation_path", "")
+        if not attestation_path.is_file():
+            raise SystemExit("artifact attestation does not exist")
+        attestation = json.loads(attestation_path.read_text())
+        if metadata.get("elf_path") != attestation.get("artifact"):
+            raise SystemExit("capture ELF path does not match artifact attestation")
+        if metadata.get("elf_sha256") != attestation.get("elf_sha256"):
+            raise SystemExit("capture ELF digest does not match artifact attestation")
+        validator = ROOT / "scripts/phase0/validate_current_artifact.py"
+        result = subprocess.run(
+            [sys.executable, str(validator), str(attestation_path)],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+        )
+        if result.returncode != 0:
+            detail = result.stderr.strip() or result.stdout.strip()
+            raise SystemExit(f"artifact attestation validation failed: {detail}")
     else:
-        raise SystemExit("capture validator accepts historical-unbound evidence only")
+        raise SystemExit("unsupported provenance_status")
 
     rows = []
     for line_number, line in enumerate(args.capture.read_text().splitlines(), 1):

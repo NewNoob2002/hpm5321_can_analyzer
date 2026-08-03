@@ -112,7 +112,27 @@ class CanCaptureTests(unittest.TestCase):
             metadata_path.write_text(json.dumps(metadata))
             result = self.run_validator(self.capture, metadata_path)
             self.assertNotEqual(result.returncode, 0)
-            self.assertIn("historical-unbound evidence only", result.stderr)
+            self.assertIn("unsupported provenance_status", result.stderr)
+
+    def test_current_capture_is_artifact_attested(self):
+        if "HPM_SDK_BASE" not in os.environ:
+            self.skipTest("HPM_SDK_BASE is required for SDK revision validation")
+        capture = ROOT / "docs/evidence/phase0/T-CAN-013-ABI4-adapter-capture.txt"
+        metadata = ROOT / "docs/evidence/phase0/T-CAN-013-ABI4-adapter-metadata.json"
+        self.assertEqual(self.run_validator(capture, metadata).returncode, 0)
+
+    def test_current_capture_rejects_wrong_attestation_mapping(self):
+        if "HPM_SDK_BASE" not in os.environ:
+            self.skipTest("HPM_SDK_BASE is required for SDK revision validation")
+        capture = ROOT / "docs/evidence/phase0/T-CAN-013-ABI4-adapter-capture.txt"
+        source = ROOT / "docs/evidence/phase0/T-CAN-013-ABI4-adapter-metadata.json"
+        metadata = json.loads(source.read_text())
+        metadata["elf_sha256"] = "0" * 64
+        with tempfile.TemporaryDirectory() as directory:
+            metadata_path = Path(directory) / "metadata.json"
+            metadata_path.write_text(json.dumps(metadata))
+            result = self.run_validator(capture, metadata_path)
+            self.assertNotEqual(result.returncode, 0)
 
 
 class CurrentArtifactTests(unittest.TestCase):

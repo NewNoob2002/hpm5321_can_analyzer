@@ -37,7 +37,15 @@ result. Raw evidence: `T-CAN-013-ABI4-armed-cleanup-gdb.txt`, SHA-256
 - PB00/PB01 `FUNC_CTL=0` (GPIO, MCAN disconnected)
 - GPIOB OE PB00/PB01 clear; GPIOM ownership GPIO0
 
+External adapter capture `T-CAN-013-ABI4-adapter-capture.txt` confirms all 100
+frames under the operator-declared CANDBG-01/CAN0, 500 kbit/s standard Classic
+CAN data-frame configuration: ID `0x123`,
+DLC 8, payload prefix `HPM0`, sequence 0..99, duration 1017 ms, and intervals
+9..11 ms (mean 10.273 ms). Its metadata binds the capture hash to the current
+artifact attestation and therefore to the exact ELF, SDK revision, build
+definitions, ABI and canonical source manifest.
+
 Verdict: the probe-level one-shot ARM, bounded TX and synchronous cleanup
-subcase **PASS** on target. External adapter reconciliation is pending. Formal
+subcase **PASS** on target and external adapter. Formal
 product T-CAN-013 remains NOT_TESTED because this probe has no arm expiry, USB
 session reset/disconnect, immediate TX queue or scheduled TX queue.
