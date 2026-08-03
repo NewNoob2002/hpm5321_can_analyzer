@@ -480,6 +480,90 @@ impl ErrorPayload {
     }
 }
 
+/// Shared CAN frame constants and payload-consistency validation used by the
+/// TX control payloads and the CAN RX batch (spec sections 5.1, 6, 7).
+pub const CAN_ID_STD_MAX: u32 = 0x0000_07ff;
+pub const CAN_ID_EXT_MAX: u32 = 0x1fff_ffff;
+/// CAN flags permitted on CAN_TX: EXT, RTR, FD, BRS (ESI/ERROR_FRAME forbidden).
+pub const CAN_TX_FLAGS_MASK: u16 = 0x000f;
+/// CAN flags permitted on RX records: EXT, RTR, FD, BRS, ESI, ERROR.
+pub const CAN_RX_FLAGS_MASK: u16 = 0x003f;
+pub const CAN_FLAG_EXT: u16 = 0x0001;
+pub const CAN_FLAG_RTR: u16 = 0x0002;
+pub const CAN_FLAG_FD: u16 = 0x0004;
+pub const CAN_FLAG_BRS: u16 = 0x0008;
+pub const CAN_FLAG_ESI: u16 = 0x0010;
+pub const CAN_FLAG_ERROR: u16 = 0x0020;
+
+/// DLC → payload byte count: 0..8 → 0..8, 9→12, 10→16, 11→20, 12→24,
+/// 13→32, 14→48, 15→64 (spec section 6).
+pub fn can_dlc_to_payload_len(dlc: u8) -> Option<u8> {
+    match dlc {
+        0..=8 => Some(dlc),
+        9 => Some(12),
+        10 => Some(16),
+        11 => Some(20),
+        12 => Some(24),
+        13 => Some(32),
+        14 => Some(48),
+        15 => Some(64),
+        _ => None,
+    }
+}
+
+/// Validate a CAN identifier against the frame's EXT flag.
+pub fn validate_can_id(id: u32, ext: bool) -> Result<(), PayloadError> {
+    let max = if ext { CAN_ID_EXT_MAX } else { CAN_ID_STD_MAX };
+    if id > max {
+        return Err(PayloadError::InvalidValue("CAN id range"));
+    }
+    Ok(())
+}
+
+/// Validate TX payload consistency (spec section 7):
+/// RTR must be Classic with no data; FD payload must match the DLC mapping;
+/// Classic data frames must have DLC ≤ 8 and payload_len == DLC.
+pub fn validate_can_tx_payload(
+    dlc: u8,
+    flags: u16,
+    payload_len: usize,
+) -> Result<(), PayloadError> {
+    if flags & CAN_FLAG_BRS != 0 && flags & CAN_FLAG_FD == 0 {
+        return Err(PayloadError::InvalidValue("BRS requires FD"));
+    }
+    if flags & CAN_FLAG_RTR != 0 {
+        if flags & CAN_FLAG_FD != 0 || dlc > 8 || payload_len != 0 {
+            return Err(PayloadError::InvalidValue("RTR CAN_TX payload"));
+        }
+        return Ok(());
+    }
+    if flags & CAN_FLAG_FD != 0 {
+        let expected =
+            can_dlc_to_payload_len(dlc).ok_or(PayloadError::InvalidValue("CAN-FD DLC"))?;
+        if payload_len != expected as usize {
+            return Err(PayloadError::InvalidValue("CAN-FD payload length"));
+        }
+        return Ok(());
+    }
+    if dlc > 8 || payload_len != dlc as usize {
+        return Err(PayloadError::InvalidValue("Classic CAN payload"));
+    }
+    Ok(())
+}
+
+/// Validate an RX record payload. Error frames are unconstrained; the
+/// remaining rules mirror `validate_can_tx_payload` (spec section 6).
+pub fn validate_can_rx_payload(
+    dlc: u8,
+    flags: u16,
+    payload_len: usize,
+) -> Result<(), PayloadError> {
+    if flags & CAN_FLAG_ERROR != 0 {
+        return Ok(());
+    }
+    validate_can_tx_payload(dlc, flags, payload_len)
+}
+
 fn exact_len(bytes: &[u8], expected: usize) -> Result<(), PayloadError> {
     if bytes.len() != expected {
         return Err(PayloadError::InvalidLength {

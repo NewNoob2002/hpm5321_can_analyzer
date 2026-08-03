@@ -4,11 +4,38 @@ use std::fmt;
 
 pub mod payload;
 pub mod payload_control;
+pub mod payload_events;
 
 pub const MAGIC: [u8; 4] = *b"UCAN";
 pub const HEADER_LEN: usize = 24;
 pub const PROTOCOL_MAJOR: u8 = 1;
 pub const PROTOCOL_MINOR: u8 = 0;
+
+/// Normative message-type registry (protocol v1.0, spec section 2.3).
+pub mod msg {
+    pub const HELLO: u16 = 0x0001;
+    pub const GET_DEVICE_INFO: u16 = 0x0002;
+    pub const GET_CAPABILITIES: u16 = 0x0003;
+    pub const GET_DIAGNOSTICS: u16 = 0x0004;
+    pub const RESET_DIAGNOSTICS: u16 = 0x0005;
+    pub const GET_SESSION_STATE: u16 = 0x0006;
+    pub const CONFIG_CHANNEL: u16 = 0x0010;
+    pub const GET_CHANNEL_CONFIG: u16 = 0x0011;
+    pub const START_CAPTURE: u16 = 0x0012;
+    pub const STOP_CAPTURE: u16 = 0x0013;
+    pub const SET_FILTERS: u16 = 0x0014;
+    pub const CLEAR_FILTERS: u16 = 0x0015;
+    pub const TX_ARM: u16 = 0x0020;
+    pub const TX_DISARM: u16 = 0x0021;
+    pub const CAN_TX: u16 = 0x0022;
+    pub const CAN_TX_CANCEL: u16 = 0x0023;
+    pub const PING: u16 = 0x0030;
+    pub const CAN_RX_BATCH: u16 = 0x8001;
+    pub const CAN_TX_RESULT: u16 = 0x8002;
+    pub const CHANNEL_STATE: u16 = 0x8003;
+    pub const FLOW_CONTROL: u16 = 0x8004;
+    pub const DATA_LOSS: u16 = 0x8005;
+}
 
 pub mod flags {
     pub const REQUEST: u8 = 0x01;
