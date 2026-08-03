@@ -8,6 +8,14 @@ const INTERFACE: u8 = 0;
 const EP_OUT: u8 = 0x01;
 const EP_IN: u8 = 0x81;
 const DEVICE_WINDOW: usize = 2048;
+const EXIT_RUNTIME_FAILURE: u8 = 2;
+const EXIT_USAGE: u8 = 64;
+
+#[derive(Debug, PartialEq, Eq)]
+enum CliError {
+    Usage(String),
+    Runtime(String),
+}
 
 fn fill_payload(payload: &mut [u8], state: &mut u32) {
     for byte in payload {
@@ -16,20 +24,37 @@ fn fill_payload(payload: &mut [u8], state: &mut u32) {
     }
 }
 
-fn parse_bytes() -> Result<usize, String> {
-    let mut args = env::args().skip(1);
-    match (args.next().as_deref(), args.next(), args.next()) {
+fn parse_bytes_from<I, S>(args: I) -> Result<usize, CliError>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<str>,
+{
+    let mut args = args.into_iter();
+    let first = args.next();
+    let second = args.next();
+    let third = args.next();
+    match (
+        first.as_ref().map(AsRef::as_ref),
+        second.as_ref().map(AsRef::as_ref),
+        third,
+    ) {
         (None, None, None) => Ok(64 * 1024 * 1024),
         (Some("--bytes"), Some(value), None) => value
             .parse::<usize>()
-            .map_err(|_| "--bytes must be a positive integer".to_owned())
+            .map_err(|_| CliError::Usage("--bytes must be a positive integer".to_owned()))
             .and_then(|bytes| {
                 (bytes > 0)
                     .then_some(bytes)
-                    .ok_or("--bytes must be positive".to_owned())
+                    .ok_or_else(|| CliError::Usage("--bytes must be positive".to_owned()))
             }),
-        _ => Err("usage: hpm-usb-smoke [--bytes N]".to_owned()),
+        _ => Err(CliError::Usage(
+            "usage: hpm-usb-smoke [--bytes N]".to_owned(),
+        )),
     }
+}
+
+fn parse_bytes() -> Result<usize, CliError> {
+    parse_bytes_from(env::args().skip(1))
 }
 
 fn run(total: usize) -> Result<(), String> {
@@ -82,18 +107,29 @@ fn run(total: usize) -> Result<(), String> {
 }
 
 fn main() -> ExitCode {
-    match parse_bytes().and_then(run) {
-        Ok(()) => ExitCode::SUCCESS,
-        Err(error) => {
+    match parse_bytes() {
+        Err(CliError::Usage(error)) => {
             eprintln!("FAIL {error}");
-            ExitCode::from(2)
+            ExitCode::from(EXIT_USAGE)
         }
+        Err(CliError::Runtime(error)) => {
+            eprintln!("FAIL {error}");
+            ExitCode::from(EXIT_RUNTIME_FAILURE)
+        }
+        Ok(total) => match run(total).map_err(CliError::Runtime) {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(CliError::Runtime(error)) => {
+                eprintln!("FAIL {error}");
+                ExitCode::from(EXIT_RUNTIME_FAILURE)
+            }
+            Err(CliError::Usage(_)) => unreachable!("run cannot return a usage error"),
+        },
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::fill_payload;
+    use super::{CliError, fill_payload, parse_bytes_from};
 
     #[test]
     fn payload_generator_is_chunk_boundary_independent() {
@@ -107,5 +143,23 @@ mod tests {
         fill_payload(&mut split[13..], &mut split_state);
         assert_eq!(whole, split);
         assert_eq!(whole_state, split_state);
+    }
+
+    #[test]
+    fn parser_accepts_default_and_explicit_size() {
+        assert_eq!(parse_bytes_from([] as [&str; 0]), Ok(64 * 1024 * 1024));
+        assert_eq!(parse_bytes_from(["--bytes", "4096"]), Ok(4096));
+    }
+
+    #[test]
+    fn parser_rejects_invalid_usage() {
+        assert!(matches!(
+            parse_bytes_from(["--bytes", "0"]),
+            Err(CliError::Usage(_))
+        ));
+        assert!(matches!(
+            parse_bytes_from(["--unknown"]),
+            Err(CliError::Usage(_))
+        ));
     }
 }
