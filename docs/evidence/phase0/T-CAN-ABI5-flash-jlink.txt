@@ -1,0 +1,81 @@
+SEGGER J-Link Commander V9.62 (Compiled Jul 22 2026 13:26:47)
+DLL version V9.62, compiled Jul 22 2026 13:25:45
+
+
+J-Link Command File read successfully.
+Processing script file...
+J-Link>device HPM5321xCFx
+J-Link connection not established yet but required for command.
+Connecting to J-Link ...O.K.
+Firmware: J-Link Pro V4 V11 PLUS Dec compiled 9 2041 12:59:59
+Hardware version: V11.00
+J-Link uptime (since boot): 0d 05h 26m 05s
+S/N: 607000454
+License(s): RDI,FlashBP,FlashDL,JFlash,GDB
+USB speed mode: High speed (480 MBit/s)
+IP-Addr: 255.255.255.255 (DHCP)
+VTref=3.305V
+J-Link>si JTAG
+Selecting JTAG as current target interface.
+J-Link>speed 4000
+Selecting 4000 kHz as target interface speed
+J-Link>jtagconf -1,-1
+J-Link>connect
+Device "HPM5321XCFX" selected.
+
+
+Connecting to target via JTAG
+TotalIRLen = 5, IRPrint = 0x01
+JTAG chain detection found 1 devices:
+ #0 Id: 0x1000563D, IRLen: 05, RV32
+Assuming RISC-V TAP with JTAG-DTM setup
+DTM architecture:
+  RISC-V JTAG-DTM version: 0.13
+  AddrBits: 7
+  DataBits: 32
+  IdleClks: 7
+RISC-V Debug Spec. Version: 0.13
+Memory access:
+  Via system bus: Yes (8/16/32-bit accesses are supported)
+  Via ProgBuf: Yes (8 ProgBuf entries)
+  Via abstract command (AAM): May be tried as last resort
+DataBuf: 4 entries
+  autoexec[0] implemented: Yes
+Detected: RV32 core
+RISC-V: The connected J-Link (S/N 607000454) uses an old firmware module V4 with known problems / limitations.
+HW instruction/data BPs: 8
+Support set/clr BPs while running: No
+HW data BPs trigger before execution of inst
+CSR access via abs. commands: Yes
+Compressed instruction support: Yes
+BG memory access support: Via SBA
+Memory zones:
+  Zone: "Default" Description: Default access mode
+RISC-V identified.
+J-Link>r
+Reset delay: 0 ms
+Reset type: Normal (https://kb.segger.com/J-Link_Reset_Strategies)
+RISC-V: Performing reset via <ndmreset>
+J-Link>loadfile build/review-mcan-tx/output/demo.elf
+'loadfile': Performing implicit reset & halt of MCU.
+Reset type: Normal (https://kb.segger.com/J-Link_Reset_Strategies)
+RISC-V: Performing reset via <ndmreset>
+Downloading file [build/review-mcan-tx/output/demo.elf]...
+Comparing flash   [000%]000%]005%]005%]010%]010%]055%]055%]080%]080%]100%] Done.
+Erasing flash     [000%]000%]010%]010%]100%] Done.
+Programming flash [000%]000%]005%]005%]010%]010%]015%]015%]025%]025%]030%]030%]035%]035%]040%]040%]050%]050%]055%]055%]060%]060%]065%]065%]075%]075%]080%]080%]085%]085%]090%]090%]100%] Done.
+Verifying flash   [000%]000%]010%]010%]100%] Done.
+J-Link: Flash download: Bank 0 @ 0x80000000: 2 ranges affected (65536 bytes)
+J-Link: Flash download: Total: 1.169s (Prepare: 0.316s, Compare: 0.051s, Erase: 0.060s, Program: 0.634s, Verify: 0.037s, Restore: 0.069s)
+J-Link: Flash download: Program & Verify speed: 95 KB/s
+O.K.
+J-Link>r
+Reset delay: 0 ms
+Reset type: Normal (https://kb.segger.com/J-Link_Reset_Strategies)
+RISC-V: Performing reset via <ndmreset>
+J-Link>g
+Memory map 'after startup completion point' is active
+J-Link>exit
+
+Script processing completed.
+

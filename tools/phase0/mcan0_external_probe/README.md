@@ -31,3 +31,8 @@ If the bench has only the sender and this board, also set `MCAN0_ACK_RX=1`.
 That selects normal controller mode so the hardware acknowledges a valid
 incoming frame; application transmission remains disabled and the build rejects
 `MCAN0_ACK_RX=1` unless receive proof is required and active TX is disabled.
+For active TX, the debugger must write a fresh nonzero 16-bit
+`g_mcan0_tx_run_nonce` before writing `g_mcan0_tx_arm_token=0x41524D21`.
+Every transmitted payload is `48 50 <nonce-be16> <sequence-be32>`. Preserve
+both writes, their readback, the terminal result and the adapter capture in a
+single evidence log. Reusing a nonce invalidates same-run provenance.

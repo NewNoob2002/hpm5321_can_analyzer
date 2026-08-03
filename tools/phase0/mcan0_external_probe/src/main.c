@@ -33,7 +33,7 @@
 #define TX_PERIOD_MS         (10U)
 #define RX_PROOF_STD_ID      (0x321U)
 #define TX_ARM_TOKEN         (0x41524D21U) /* ARM! */
-#define PROBE_RESULT_ABI_VERSION (4U)
+#define PROBE_RESULT_ABI_VERSION (5U)
 #define CLEANUP_INIT_TIMEOUT_MS (10U)
 #define ARM_FAULT_IR_MASK \
     (MCAN_IR_ARA_MASK | MCAN_IR_WDI_MASK | MCAN_IR_BO_MASK | \
@@ -45,6 +45,7 @@ typedef struct {
     uint32_t magic;
     uint32_t version;
     uint32_t active_tx_build;
+    uint32_t run_nonce;
     uint32_t source_clock_hz;
     uint32_t bitrate;
     int32_t msg_ram_status;
@@ -80,6 +81,9 @@ volatile mcan0_external_probe_result_t g_mcan0_external_result;
 /* A debugger must write TX_ARM_TOKEN after every reset. Startup/BSS clearing
  * guarantees that a reset cannot replay the bounded transmit sequence. */
 volatile uint32_t g_mcan0_tx_arm_token;
+/* The debugger must set a nonzero 16-bit nonce before ARM. It is copied into
+ * every CAN payload and the terminal result, binding target and adapter logs. */
+volatile uint32_t g_mcan0_tx_run_nonce;
 
 #if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
 ATTR_PLACE_AT(".ahb_sram") uint32_t g_mcan0_external_msg_buf[MCAN_MSG_BUF_SIZE_IN_WORDS];
@@ -214,7 +218,8 @@ static bool run_listen_only(void)
 
 static bool wait_for_tx_arm(void)
 {
-    while (g_mcan0_tx_arm_token != TX_ARM_TOKEN) {
+    while (g_mcan0_tx_arm_token != TX_ARM_TOKEN ||
+           g_mcan0_tx_run_nonce == 0U || g_mcan0_tx_run_nonce > UINT16_MAX) {
         capture_status();
         if (!status_is_safe_listen_only()) {
             return false;
@@ -228,6 +233,7 @@ static bool wait_for_tx_arm(void)
     /* Consume before enabling normal mode. A reset from this point clears the
      * token and therefore returns to the disarmed wait state. */
     g_mcan0_tx_arm_token = 0U;
+    g_mcan0_external_result.run_nonce = g_mcan0_tx_run_nonce;
     return true;
 }
 
@@ -303,8 +309,8 @@ static bool run_bounded_tx(void)
     for (uint32_t sequence = 0; sequence < TX_FRAME_COUNT; ++sequence) {
         tx.data_8[0] = 0x48U; /* H */
         tx.data_8[1] = 0x50U; /* P */
-        tx.data_8[2] = 0x4DU; /* M */
-        tx.data_8[3] = 0x30U; /* 0 */
+        tx.data_8[2] = (uint8_t)(g_mcan0_external_result.run_nonce >> 8U);
+        tx.data_8[3] = (uint8_t)g_mcan0_external_result.run_nonce;
         tx.data_8[4] = (uint8_t)(sequence >> 24U);
         tx.data_8[5] = (uint8_t)(sequence >> 16U);
         tx.data_8[6] = (uint8_t)(sequence >> 8U);

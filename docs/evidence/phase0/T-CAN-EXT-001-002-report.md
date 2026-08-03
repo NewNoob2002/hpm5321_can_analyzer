@@ -90,5 +90,6 @@ source-bound to the current manifest. The current reset-disarmed TX artifact is
 `bbbef9d7cba5ec9bcf09bf56486db7e75f466ea533d4c1f5fa9823437a0348ef`.
 The artifact attestation inputs are recorded in
 `T-CAN-TX-current-artifact.json`.
-It requires T-CAN-012/013 reset/disarm verification and a fresh external
-capture before controlled TX is formally closed.
+This historical report is superseded for reset/disarm work by the ABI-v4 and
+ABI-v5 reports. ABI-v4 target and external results passed independently but
+lacked a same-run nonce; ABI-v5 is the current nonce-bound evidence path.

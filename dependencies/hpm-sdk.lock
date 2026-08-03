@@ -8,7 +8,7 @@ release_commit=12bd92495abeed7f0a908c589e60974267c0506b
 tested_local_remote=https://github.com/NewNoob2002/hpm_sdk.git
 tested_local_commit=b9c7eb0e614b1688cbd1514528e17a6d7bb23e93
 
-# Exact SDK checkout used to build the current ABI-v3/v4 review probe artifacts.
+# Exact SDK checkout used to build the current ABI-v5 review probe artifact.
 # This is a clean descendant in the configured local remote, not the official
 # release_commit above; formal Gate A still requires an official-commit build.
 current_build_remote=https://github.com/NewNoob2002/hpm_sdk.git

@@ -20,6 +20,17 @@ def main() -> None:
     parser.add_argument("attestation", type=Path)
     args = parser.parse_args()
     data = json.loads(args.attestation.read_text())
+    allowed_capture_status = {
+        "target_pass_external_capture_pending",
+        "target_and_external_pass",
+        "independent_results_only",
+    }
+    if data.get("external_capture_status") not in allowed_capture_status:
+        fail("invalid external_capture_status")
+    if data.get("result_abi_version", 0) >= 5:
+        nonce = data.get("run_nonce")
+        if not isinstance(nonce, int) or not 0 < nonce <= 0xFFFF:
+            fail("ABI-v5 artifact attestation requires a 16-bit run_nonce")
 
     artifact = ROOT / data["artifact"]
     manifest = ROOT / data["source_manifest"]

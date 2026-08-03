@@ -41,11 +41,13 @@ External adapter capture `T-CAN-013-ABI4-adapter-capture.txt` confirms all 100
 frames under the operator-declared CANDBG-01/CAN0, 500 kbit/s standard Classic
 CAN data-frame configuration: ID `0x123`,
 DLC 8, payload prefix `HPM0`, sequence 0..99, duration 1017 ms, and intervals
-9..11 ms (mean 10.273 ms). Its metadata binds the capture hash to the current
-artifact attestation and therefore to the exact ELF, SDK revision, build
-definitions, ABI and canonical source manifest.
+9..11 ms (mean 10.273 ms). This ABI-v4 run did not carry a shared run nonce,
+and the GDB transcript did not preserve the ARM write. Target and adapter
+results therefore pass independently; their same-run association is not
+machine-verifiable and this capture is explicitly marked unbound.
 
 Verdict: the probe-level one-shot ARM, bounded TX and synchronous cleanup
-subcase **PASS** on target and external adapter. Formal
+subcase is independently **PASS** on target and external adapter, without a
+formal same-run binding. ABI-v5 introduces that binding. Formal
 product T-CAN-013 remains NOT_TESTED because this probe has no arm expiry, USB
 session reset/disconnect, immediate TX queue or scheduled TX queue.

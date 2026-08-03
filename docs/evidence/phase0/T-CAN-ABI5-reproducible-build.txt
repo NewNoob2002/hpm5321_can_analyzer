@@ -1,0 +1,7 @@
+Test: clean-directory reproducible ABI-v5 build
+SDK: 88b01b43900d8c30844a1e5cdd3f3b7aff6db40e
+Command: HPM_SDK_BASE=/home/gtc/HPMicro/sdk/hpm_sdk scripts/phase0/rebuild_current_artifact.sh
+Primary workspace ELF SHA-256: 3dd776cc8ef54db777fe9cfeab7d161c355d3cddd290652a6b126c4e43906268
+Independent /tmp/hpm5321-repro-check ELF SHA-256: 3dd776cc8ef54db777fe9cfeab7d161c355d3cddd290652a6b126c4e43906268
+Result: PASS, byte-for-byte identical after clean configure and full 54-step rebuild in a different absolute checkout path.
+Scope: current locked fork SDK/toolchain environment; official-release Gate A remains open.

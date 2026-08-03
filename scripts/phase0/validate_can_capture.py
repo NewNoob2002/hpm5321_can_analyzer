@@ -27,6 +27,8 @@ EXPECTED_MANIFEST_MEMBERS = (
     "tools/phase0/mcan0_external_probe/CMakeLists.txt",
     "tools/phase0/mcan0_external_probe/README.md",
     "tools/phase0/mcan0_external_probe/src/main.c",
+    "scripts/phase0/generate_mcan0_source_manifest.sh",
+    "scripts/phase0/rebuild_current_artifact.sh",
     "dependencies/hpm-sdk.lock",
     "CMakePresets.json",
 )
@@ -96,16 +98,16 @@ def main() -> None:
     if metadata.get("capture_sha256") != capture_digest:
         raise SystemExit("metadata capture_sha256 does not match capture")
 
-    elf_path = Path(metadata.get("elf_path", ""))
-    if not elf_path.is_absolute():
-        elf_path = ROOT / elf_path
-    if not elf_path.is_file():
-        raise SystemExit(f"metadata ELF does not exist: {elf_path}")
-    elf_digest = sha256_file(elf_path)
-    if metadata.get("elf_sha256") != elf_digest:
-        raise SystemExit("metadata elf_sha256 does not match ELF")
-
     provenance = metadata.get("provenance_status")
+    if provenance != "independent-results-unbound":
+        elf_path = Path(metadata.get("elf_path", ""))
+        if not elf_path.is_absolute():
+            elf_path = ROOT / elf_path
+        if not elf_path.is_file():
+            raise SystemExit(f"metadata ELF does not exist: {elf_path}")
+        elf_digest = sha256_file(elf_path)
+        if metadata.get("elf_sha256") != elf_digest:
+            raise SystemExit("metadata elf_sha256 does not match ELF")
     manifest_digest = metadata.get("source_manifest_sha256")
     if provenance == "historical-unbound":
         if metadata.get("approved_test_ids") != ["T-CAN-003"]:
@@ -114,6 +116,13 @@ def main() -> None:
             raise SystemExit("historical-unbound metadata must use null manifest digest")
         if metadata.get("source_manifest_path") is not None:
             raise SystemExit("historical-unbound metadata must not name a source manifest")
+        run_nonce = None
+    elif provenance == "independent-results-unbound":
+        if metadata.get("approved_test_ids") != ["T-CAN-003"]:
+            raise SystemExit("unbound capture may map only to T-CAN-003")
+        if metadata.get("artifact_attestation_path") is not None:
+            raise SystemExit("unbound capture must not name an artifact attestation")
+        run_nonce = None
     elif provenance == "artifact-attested":
         if metadata.get("approved_test_ids") != ["T-CAN-003", "T-CAN-013-subcase"]:
             raise SystemExit("current capture test-ID mapping is invalid")
@@ -121,6 +130,15 @@ def main() -> None:
         if not attestation_path.is_file():
             raise SystemExit("artifact attestation does not exist")
         attestation = json.loads(attestation_path.read_text())
+        run_nonce = metadata.get("run_nonce")
+        if not isinstance(run_nonce, int) or not 0 < run_nonce <= 0xFFFF:
+            raise SystemExit("artifact-attested capture requires a 16-bit run_nonce")
+        if attestation.get("result_abi_version") < 5:
+            raise SystemExit("same-run binding requires result ABI version 5 or later")
+        if attestation.get("run_nonce") != run_nonce:
+            raise SystemExit("capture run_nonce does not match artifact attestation")
+        if attestation.get("external_capture_status") != "target_and_external_pass":
+            raise SystemExit("artifact attestation does not declare external PASS")
         if metadata.get("elf_path") != attestation.get("artifact"):
             raise SystemExit("capture ELF path does not match artifact attestation")
         if metadata.get("elf_sha256") != attestation.get("elf_sha256"):
@@ -151,7 +169,10 @@ def main() -> None:
     if len(rows) != 100:
         raise SystemExit(f"expected 100 frames, got {len(rows)}")
     for sequence, (_, can_id, payload) in enumerate(rows):
-        expected = b"HPM0" + sequence.to_bytes(4, "big")
+        if run_nonce is None:
+            expected = b"HPM0" + sequence.to_bytes(4, "big")
+        else:
+            expected = b"HP" + run_nonce.to_bytes(2, "big") + sequence.to_bytes(4, "big")
         if can_id != 0x123 or payload != expected:
             raise SystemExit(f"sequence {sequence}: ID or payload mismatch")
 

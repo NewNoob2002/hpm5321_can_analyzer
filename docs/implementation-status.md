@@ -19,9 +19,11 @@ Probe results reduce hardware risk but are not product-feature completion.
 
 ## Reproducibility boundary
 
-The custom `hpm5321_custom` board overlay is present but untracked under `boards/`; all
-shared CMake examples use repository-relative `BOARD_SEARCH_PATH`. HPM SDK is
+The custom `hpm5321_custom` board overlay, dependency lock, probes, validators
+and approved plans are tracked in Git; all shared CMake examples use
+repository-relative `BOARD_SEARCH_PATH`. HPM SDK is
 an external dependency. `dependencies/hpm-sdk.lock` pins the desired official
 v1.12.1 commit, but the existing builds were made with a local fork commit.
-Clean official-SDK builds and a repository commit containing the overlay, lock,
-plans, tests, probes, and evidence remain required before Gate A is closed.
+Clean official-SDK builds remain required before Gate A is closed. The current
+fork-based ABI-v5 artifact has a destructive clean-rebuild validator, but is
+not evidence for the official-SDK Gate.

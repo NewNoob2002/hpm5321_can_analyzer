@@ -8,7 +8,7 @@ Status values: `PASS`, `PARTIAL`, `BLOCKED`, `NOT_TESTED`, `NOT_APPLICABLE`.
 |---|---|---:|---|
 | MCU | Build/debug target is HPM5321xCFx; physical marking not archived | NOT_TESTED | Record package marking/photo |
 | Board | `hpm5321_custom`; PCB revision `Gerber_PCB1_2026-07-23`; serial `20260723` | PASS | Add marking/photo to the release evidence archive |
-| SDK | Desired official release is `hpmicro/hpm_sdk` v1.12.1 commit `12bd92495abeed7f0a908c589e60974267c0506b`; existing binaries used local fork commit `b9c7eb0e614b1688cbd1514528e17a6d7bb23e93` | BLOCKED | Complete clean builds with the official locked commit |
+| SDK | Desired official v1.12.1 commit is `12bd9249...`; historical probes used fork `b9c7eb0e...`; current ABI-v5 probe uses clean fork commit `88b01b43...` and records its generated BUILD_VERSION | BLOCKED | Complete clean builds with the official locked commit |
 | Board overlay integrity | All 9 members pass `sha256sum -c`; `SHA256SUMS` digest `84e8b800aaef899fb26c7be919ea57b1d35725742df7a9051f822821d2c66006` | PASS | Recompute whenever reviewed overlay sources change |
 | Probe | SEGGER J-Link, S/N 607000454; JTAG 4 MHz; VTref 3.32 V | PASS | Preserve probe/tool version in test evidence |
 
@@ -58,7 +58,7 @@ bootloader. It does not write application flash while the analyzer is active.
 | MCAN0 listen-only initialization | 500 kbit/s, 3 s; initialization PASS, TEC/REC/CEL=0, no warning/passive/bus-off; RX count was zero | PASS | Proves passive safe state only, not external receive |
 | MCAN0 external receive | Normal-mode, software-zero-TX proof received and matched one standard Classic frame: ID `0x321`, DLC 8, data `48 50 4D 52 00 00 00 01`; TEC/REC=0, no warning/passive/bus-off | PASS | Hardware ACK was required because the board was the only receiving node; standalone listen-only produced sender ACKError and could not complete a frame |
 | MCAN0 controlled transmit, historical image | Target 100/100 success and external `CANDBG-01/CAN0` capture 100/100; ID `0x123`, DLC 8, sequence 0..99; TEC/REC/CEL=0 | PASS | Valid hardware engineering evidence, but source revision predates safe-order patch and was not versioned |
-| MCAN0 controlled transmit, reset-disarmed image | ABI-v4 ELF `bbbef9d7...`: reset-disarmed PASS; explicit one-shot ARM target TX, external reception 100/100, timing contract and cleanup readback PASS | PARTIAL | T-CAN-012 remains partial due reset-to-first-instruction/external zero-traffic gaps, and formal product T-CAN-013 remains NOT_TESTED |
+| MCAN0 controlled transmit, reset-disarmed image | ABI-v4 target and external tests independently PASS but lack same-run binding; ABI-v5 nonce-bound target run is pending | PARTIAL | T-CAN-012 remains partial due reset-to-first-instruction/external zero-traffic gaps; nonce-bound external capture and formal product T-CAN-013 remain NOT_TESTED |
 
 Current physical-bus bring-up scope is MCAN0 only. MCAN2 controller-side
 evidence is retained, but MCAN2 transceiver and external-bus closure are

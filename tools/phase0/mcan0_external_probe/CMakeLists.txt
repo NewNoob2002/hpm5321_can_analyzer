@@ -30,5 +30,12 @@ sdk_compile_definitions(
     -DMCAN0_REQUIRE_RX=${MCAN0_REQUIRE_RX}
     -DMCAN0_ACK_RX=${MCAN0_ACK_RX}
 )
+# Normalize absolute workspace, build and SDK paths embedded in DWARF so a
+# clean checkout can reproduce the attested ELF byte-for-byte.
+get_filename_component(REPOSITORY_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../.." ABSOLUTE)
+foreach(prefix "${REPOSITORY_ROOT}" "${CMAKE_BINARY_DIR}" "$ENV{HPM_SDK_BASE}")
+    sdk_compile_options(-ffile-prefix-map=${prefix}=.)
+    sdk_compile_options(-fmacro-prefix-map=${prefix}=.)
+endforeach()
 sdk_app_src(src/main.c)
 generate_ide_projects()

@@ -1,8 +1,8 @@
 {
   "artifact": "build/review-mcan-tx/output/demo.elf",
-  "elf_sha256": "bbbef9d7cba5ec9bcf09bf56486db7e75f466ea533d4c1f5fa9823437a0348ef",
+  "elf_sha256": "3dd776cc8ef54db777fe9cfeab7d161c355d3cddd290652a6b126c4e43906268",
   "source_manifest": "docs/evidence/phase0/T-CAN-EXT-source-manifest.sha256",
-  "source_manifest_sha256": "332d2a056e5bd1b67bd07d410df7319074d915a519e6d604acfc720eb0d18be2",
+  "source_manifest_sha256": "0ddcf43485a1b591315489c6d9d7e73c9439d373bc0a21dca6f3e118a5a7011d",
   "sdk_commit": "88b01b43900d8c30844a1e5cdd3f3b7aff6db40e",
   "sdk_build_version": "88b01b43900d",
   "build_definitions": {
@@ -10,6 +10,7 @@
     "MCAN0_REQUIRE_RX": 0,
     "MCAN0_ACK_RX": 0
   },
-  "result_abi_version": 4,
-  "external_capture_status": "target_and_external_pass"
+  "result_abi_version": 5,
+  "external_capture_status": "target_pass_external_capture_pending",
+  "run_nonce": 42244
 }
