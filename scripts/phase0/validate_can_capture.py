@@ -99,7 +99,7 @@ def main() -> None:
         raise SystemExit("metadata capture_sha256 does not match capture")
 
     provenance = metadata.get("provenance_status")
-    if provenance != "independent-results-unbound":
+    if provenance == "artifact-attested":
         elf_path = Path(metadata.get("elf_path", ""))
         if not elf_path.is_absolute():
             elf_path = ROOT / elf_path

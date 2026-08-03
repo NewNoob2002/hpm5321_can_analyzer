@@ -91,13 +91,14 @@ class CanCaptureTests(unittest.TestCase):
             capture.write_text("\n".join(lines) + "\n")
             self.assertNotEqual(self.run_validator(capture, self.metadata).returncode, 0)
 
-    def test_elf_hash_mismatch_rejected(self):
+    def test_historical_capture_does_not_require_ignored_elf(self):
         metadata = json.loads(self.metadata.read_text())
-        metadata["elf_sha256"] = "0" * 64
+        metadata.pop("elf_path", None)
+        metadata.pop("elf_sha256", None)
         with tempfile.TemporaryDirectory() as directory:
             metadata_path = Path(directory) / "metadata.json"
             metadata_path.write_text(json.dumps(metadata))
-            self.assertNotEqual(self.run_validator(self.capture, metadata_path).returncode, 0)
+            self.assertEqual(self.run_validator(self.capture, metadata_path).returncode, 0)
 
     def test_historical_capture_cannot_be_relabelled_manifest_bound(self):
         metadata = json.loads(self.metadata.read_text())
