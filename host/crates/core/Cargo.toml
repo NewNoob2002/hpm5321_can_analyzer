@@ -1,0 +1,13 @@
+[package]
+name = "hpm-usb-can-core"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "HPM USB-CAN analyzer host core: transport abstraction, libusb backend and in-memory fake device backend"
+
+[lints]
+workspace = true
+
+[dependencies]
+hpm-usb-can-protocol = { path = "../protocol" }
+rusb = { workspace = true }
