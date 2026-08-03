@@ -11,5 +11,5 @@
     "MCAN0_ACK_RX": 0
   },
   "result_abi_version": 4,
-  "external_capture_status": "not_tested"
+  "external_capture_status": "target_pass_external_capture_pending"
 }

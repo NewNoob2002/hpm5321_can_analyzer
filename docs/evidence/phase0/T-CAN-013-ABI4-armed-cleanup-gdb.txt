@@ -1,0 +1,17 @@
+wait_for_tx_arm () at /home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/tools/phase0/mcan0_external_probe/src/main.c:218
+218	        capture_status();
+Breakpoint 1 at 0x80005e14: file /home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/tools/phase0/mcan0_external_probe/src/main.c, line 358.
+
+Breakpoint 1, main () at /home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/tools/phase0/mcan0_external_probe/src/main.c:358
+358	        __asm volatile("nop");
+$1 = {magic = 0x444f4e45, version = 0x4, active_tx_build = 0x1, source_clock_hz = 0x4c4b400, bitrate = 0x7a120, msg_ram_status = 0x0, init_status = 0x0, rx_frames = 0x0, rx_expected_frames = 0x0, tx_attempted = 0x64, tx_succeeded = 0x64, last_tx_status = 0x0, last_rx_id = 0x0, last_rx_dlc = 0x0, last_rx_data = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, raw_psr = 0x700, raw_ecr = 0x0, raw_cccr = 0x1, raw_ir = 0x0, tx_error_count = 0x0, rx_error_count = 0x0, error_logging_count = 0x0, bus_off = 0x0, warning = 0x0, error_passive = 0x0, cleanup_completed = 0x1, post_cleanup_cccr = 0x1, post_cleanup_gpiob_oe = 0x400, post_cleanup_pb00_gpiom = 0x400, post_cleanup_pb01_gpiom = 0x400, post_cleanup_pb00_func_ctl = 0x0, post_cleanup_pb01_func_ctl = 0x0}
+$2 = 0x0
+0xf0280018:	0x00000001
+0xf02800cc:	0x00000000
+0xf02800d0:	0x00000000
+0xf4040100:	0x00000000
+0xf4040108:	0x00000000
+0xf00d0210:	0x00000400
+0xf00d8080:	0x00000400
+0xf00d8084:	0x00000400
+[Inferior 1 (Remote target) detached]
