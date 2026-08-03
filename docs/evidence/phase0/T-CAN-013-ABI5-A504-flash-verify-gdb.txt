@@ -1,0 +1,17 @@
++file build/review-mcan-tx/output/demo.elf
++target remote :2331
+main () at ./tools/phase0/mcan0_external_probe/src/main.c:364
+364	        __asm volatile("nop");
++compare-sections
+Section .nor_cfg_option, range 0x80000400 -- 0x80000410: matched.
+Section .boot_header, range 0x80001000 -- 0x80001090: matched.
+Section .start, range 0x80003000 -- 0x80003050: matched.
+Section .vectors, range 0x80003050 -- 0x800033b8: matched.
+Section .text, range 0x800033b8 -- 0x80010000: matched.
+Section .eh_frame, range 0x80010000 -- 0x80010028: matched.
+Section .data, range 0x80010028 -- 0x80010200: matched.
++printf "ABI5_FLASH_ELF_SHA256 3dd776cc8ef54db777fe9cfeab7d161c355d3cddd290652a6b126c4e43906268\n"
+ABI5_FLASH_ELF_SHA256 3dd776cc8ef54db777fe9cfeab7d161c355d3cddd290652a6b126c4e43906268
++detach
+[Inferior 1 (Remote target) detached]
++quit

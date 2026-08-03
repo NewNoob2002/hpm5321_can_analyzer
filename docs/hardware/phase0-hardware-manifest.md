@@ -58,7 +58,7 @@ bootloader. It does not write application flash while the analyzer is active.
 | MCAN0 listen-only initialization | 500 kbit/s, 3 s; initialization PASS, TEC/REC/CEL=0, no warning/passive/bus-off; RX count was zero | PASS | Proves passive safe state only, not external receive |
 | MCAN0 external receive | Normal-mode, software-zero-TX proof received and matched one standard Classic frame: ID `0x321`, DLC 8, data `48 50 4D 52 00 00 00 01`; TEC/REC=0, no warning/passive/bus-off | PASS | Hardware ACK was required because the board was the only receiving node; standalone listen-only produced sender ACKError and could not complete a frame |
 | MCAN0 controlled transmit, historical image | Target 100/100 success and external `CANDBG-01/CAN0` capture 100/100; ID `0x123`, DLC 8, sequence 0..99; TEC/REC/CEL=0 | PASS | Valid hardware engineering evidence, but source revision predates safe-order patch and was not versioned |
-| MCAN0 controlled transmit, reset-disarmed image | ABI-v4 target and external tests independently PASS but lack same-run binding; ABI-v5 nonce-bound target run is pending | PARTIAL | T-CAN-012 remains partial due reset-to-first-instruction/external zero-traffic gaps; nonce-bound external capture and formal product T-CAN-013 remain NOT_TESTED |
+| MCAN0 controlled transmit, reset-disarmed image | ABI-v4 results are independent/unbound; ABI-v5 nonce `0xA504` target TX 100/100, external reception/timing, flash ELF match and cleanup PASS | PARTIAL | T-CAN-012 remains partial due reset-to-first-instruction/external zero-traffic gaps; formal product T-CAN-013 remains NOT_TESTED |
 
 Current physical-bus bring-up scope is MCAN0 only. MCAN2 controller-side
 evidence is retained, but MCAN2 transceiver and external-bus closure are

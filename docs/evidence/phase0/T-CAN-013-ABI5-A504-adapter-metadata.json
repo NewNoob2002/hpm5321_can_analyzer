@@ -1,0 +1,25 @@
+{
+  "adapter": "CANDBG-01",
+  "channel": "CAN0",
+  "bitrate": 500000,
+  "frame_format": "standard",
+  "protocol": "classic-can",
+  "frame_type": "data",
+  "source": "operator configuration and exported capture",
+  "board_revision": "Gerber_PCB1_2026-07-23",
+  "board_serial": "20260723",
+  "approved_test_ids": [
+    "T-CAN-003",
+    "T-CAN-013-subcase"
+  ],
+  "run_nonce": 42244,
+  "capture_sha256": "47faf6fd323164c3549fa52137e5b278bf8ef014a88ad2d37e6de2448d176282",
+  "elf_path": "build/review-mcan-tx/output/demo.elf",
+  "elf_sha256": "3dd776cc8ef54db777fe9cfeab7d161c355d3cddd290652a6b126c4e43906268",
+  "provenance_status": "artifact-attested",
+  "artifact_attestation_path": "docs/evidence/phase0/T-CAN-TX-current-artifact.json",
+  "target_gdb_evidence": "docs/evidence/phase0/T-CAN-013-ABI5-A504-arm-cleanup-gdb.txt",
+  "target_gdb_sha256": "649478d9f9c6a60d3f72ac00ceec511e116c2ab126d7249c18a7520ba94fbf90",
+  "target_flash_verify_evidence": "docs/evidence/phase0/T-CAN-013-ABI5-A504-flash-verify-gdb.txt",
+  "target_flash_verify_sha256": "690d25f7f290f2e1bfc07297cf9452ed086e4b2d37097859fa41f94a8769c1e0"
+}

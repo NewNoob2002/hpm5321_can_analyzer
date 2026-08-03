@@ -38,6 +38,20 @@ def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def verified_evidence_text(metadata: dict, path_key: str, hash_key: str) -> str:
+    path = ROOT / metadata.get(path_key, "")
+    try:
+        resolved = path.resolve(strict=True)
+        resolved.relative_to(ROOT.resolve())
+    except (FileNotFoundError, ValueError) as error:
+        raise SystemExit(f"invalid evidence path: {path_key}") from error
+    if path.is_symlink() or not resolved.is_file():
+        raise SystemExit(f"evidence must be a regular repository file: {path_key}")
+    if metadata.get(hash_key) != sha256_file(resolved):
+        raise SystemExit(f"evidence hash mismatch: {hash_key}")
+    return resolved.read_text()
+
+
 def verify_source_manifest(path: Path) -> str:
     if not path.is_file():
         raise SystemExit(f"source manifest does not exist: {path}")
@@ -139,6 +153,31 @@ def main() -> None:
             raise SystemExit("capture run_nonce does not match artifact attestation")
         if attestation.get("external_capture_status") != "target_and_external_pass":
             raise SystemExit("artifact attestation does not declare external PASS")
+        target_log = verified_evidence_text(
+            metadata, "target_gdb_evidence", "target_gdb_sha256"
+        )
+        nonce_hex = f"0x{run_nonce:04X}"
+        required_target_markers = (
+            f"set variable g_mcan0_tx_run_nonce = {nonce_hex}",
+            "set variable g_mcan0_tx_arm_token = 0x41524D21",
+            f"ABI5_TERMINAL run_nonce=0x{run_nonce:04x} token=0x00000000",
+            "magic = 0x444f4e45",
+            "version = 0x5",
+            f"run_nonce = 0x{run_nonce:04x}",
+            "tx_attempted = 0x64",
+            "tx_succeeded = 0x64",
+            "cleanup_completed = 0x1",
+        )
+        if any(marker not in target_log for marker in required_target_markers):
+            raise SystemExit("target GDB evidence lacks nonce/ARM/DONE/cleanup binding")
+        flash_log = verified_evidence_text(
+            metadata, "target_flash_verify_evidence", "target_flash_verify_sha256"
+        )
+        expected_flash_marker = f"ABI5_FLASH_ELF_SHA256 {metadata['elf_sha256']}"
+        if expected_flash_marker not in flash_log or "Section .text" not in flash_log:
+            raise SystemExit("target flash evidence does not bind the ELF")
+        if any("mismatch" in line.lower() for line in flash_log.splitlines()):
+            raise SystemExit("target flash compare-sections reported a mismatch")
         if metadata.get("elf_path") != attestation.get("artifact"):
             raise SystemExit("capture ELF path does not match artifact attestation")
         if metadata.get("elf_sha256") != attestation.get("elf_sha256"):

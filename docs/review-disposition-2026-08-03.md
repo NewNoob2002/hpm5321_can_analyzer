@@ -44,5 +44,5 @@
 | Current artifact JSON has no validator | Yes | Added `validate_current_artifact.py` plus positive/stale-hash tests; it verifies ELF, canonical manifest, SDK commit/BUILD_VERSION, compile definitions and ABI |
 | `cleanup_completed` remains 1 during normal TX | Yes | Cleanup snapshot is invalidated immediately before normal-mode initialization |
 | ARM final check omits listen-only mode and critical IR | Yes | ARM checks require INIT=0, MON=1, zero BO/EW/EP/CEL and no ARA/WDI/ELO/BEU/BEC/MRAF/RXFIFO-loss fault bits |
-| Target and adapter results lack same-run binding | Yes | ABI-v4 is relabeled independent/unbound. ABI-v5 requires a fresh 16-bit nonce in debugger write/readback, terminal result, every CAN payload, metadata and attestation; replay regression coverage is included |
+| Target and adapter results lack same-run binding | Yes | ABI-v4 is relabeled independent/unbound. ABI-v5 nonce `0xA504` is verified across debugger write/readback, terminal result, every CAN payload, metadata and attestation; target flash sections are matched to the ELF and replay regression coverage is included |
 | Default unittest discovery runs zero tests | Yes | `tests` and `tests.phase0` are packages; `scripts/phase0/run_tests.sh` requires `HPM_SDK_BASE` and cannot silently skip artifact validation |

@@ -124,23 +124,10 @@ class CanCaptureTests(unittest.TestCase):
         if "HPM_SDK_BASE" not in os.environ:
             self.skipTest("HPM_SDK_BASE is required for SDK revision validation")
         capture = self.capture
-        attestation = json.loads(
-            (ROOT / "docs/evidence/phase0/T-CAN-TX-current-artifact.json").read_text()
-        )
-        attestation["external_capture_status"] = "target_and_external_pass"
-        metadata = json.loads(self.metadata.read_text())
-        metadata.update({
-            "approved_test_ids": ["T-CAN-003", "T-CAN-013-subcase"],
-            "capture_sha256": hashlib.sha256(capture.read_bytes()).hexdigest(),
-            "elf_path": attestation["artifact"],
-            "elf_sha256": attestation["elf_sha256"],
-            "provenance_status": "artifact-attested",
-            "run_nonce": attestation["run_nonce"],
-        })
+        current = ROOT / "docs/evidence/phase0/T-CAN-013-ABI5-A504-adapter-metadata.json"
+        metadata = json.loads(current.read_text())
+        metadata["capture_sha256"] = hashlib.sha256(capture.read_bytes()).hexdigest()
         with tempfile.TemporaryDirectory() as directory:
-            attestation_path = Path(directory) / "attestation.json"
-            attestation_path.write_text(json.dumps(attestation))
-            metadata["artifact_attestation_path"] = str(attestation_path)
             metadata_path = Path(directory) / "metadata.json"
             metadata_path.write_text(json.dumps(metadata))
             result = self.run_validator(capture, metadata_path)

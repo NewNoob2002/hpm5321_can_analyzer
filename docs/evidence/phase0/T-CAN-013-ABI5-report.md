@@ -23,8 +23,21 @@ MCAN INIT, cleared TX request/pending state and disconnected PB00/PB01.
 Verdict: fail-closed behavior **PASS**; bounded TX evidence **FAIL/NOT_TESTED**.
 Nonce `0xA503` is retired and must not be reused.
 
-## Next run
+## Nonce `0xA504` — target and external PASS
 
-Reserved nonce: `0xA504`. Status: target and external capture pending. Formal
+The GDB transcript preserves the zeroed pre-ARM state, explicit nonce and ARM
+writes/readback, terminal nonce `0xA504`, consumed token, `DONE`, TX 100/100,
+TEC/REC/CEL 0 and complete cleanup readback. A post-run `compare-sections`
+matches every loadable ELF section in target flash.
+
+The adapter capture contains exactly 100 ID `0x123` frames with payload
+`48 50 A5 04 <sequence-be32>`, sequence 0..99. Duration is 1016 ms;
+individual intervals are 9..11 ms and mean interval is 10.263 ms. The capture
+validator verifies the common nonce across payload, target GDB evidence and
+artifact attestation, hashes both target logs, checks the flash/ELF binding,
+and then validates the exact ELF, SDK, build definitions and source manifest.
+
+Verdict: nonce-bound probe-level target TX, external reception and cleanup
+**PASS**. Formal
 T-CAN-013 remains NOT_TESTED because the probe has no expiry, USB session
 lifecycle, immediate queue or scheduled queue.

@@ -9,7 +9,7 @@
 | Reset-disarmed TX probe | T-CAN-012 (partial, ABI v2) | Historical ELF `06c86cfe...`; proves reset-after-CRT token zero and zero application TX only, not ABI-v4 behavior, `ARM! -> reset -> 0`, reset-to-first-instruction containment, or externally observed zero traffic |
 | ABI-v4 reset-disarmed TX probe | T-CAN-012 (partial) | Reset-after-CRT token zero, zero application TX and listen-only state passed; no `ARM! -> reset -> 0`, pre-first-instruction or external zero-traffic proof |
 | ABI-v4 one-shot arm and post-TX disconnect | T-CAN-013 subcase (independent target + external PASS) | Target and external results lack a shared run nonce and are not machine-bound to the same run |
-| ABI-v5 nonce-bound one-shot arm and post-TX disconnect | T-CAN-013 subcase (pending external capture) | Payload/result/GDB/metadata run nonce closes replay ambiguity; the probe still has no arm expiry, USB session reset/disconnect, immediate TX queue, or scheduled-TX queue, so formal T-CAN-013 remains NOT_TESTED |
+| ABI-v5 nonce-bound one-shot arm and post-TX disconnect | T-CAN-013 subcase (target + external PASS) | Nonce `0xA504` binds payload, target result/GDB, flash ELF and metadata; the probe still has no arm expiry, USB session reset/disconnect, immediate TX queue, or scheduled-TX queue, so formal T-CAN-013 remains NOT_TESTED |
 
 The Phase 0 identifiers are evidence-run identifiers. They do not replace the
 approved `T-CAN-001..015` requirements or imply full coverage of a mapped test.
