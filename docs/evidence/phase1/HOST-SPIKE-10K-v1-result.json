@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "profile": "HOST-SPIKE-10K-v1",
+  "results": {
+    "rust": {
+      "candidate": "rust",
+      "frames": 1000000,
+      "checksum": "2324f5364365f925",
+      "reconnects": 99,
+      "recovered": 99,
+      "elapsed_ms": 6.495,
+      "frames_per_second": 76980007,
+      "binary_bytes": 492208,
+      "crash_recovery": "pass"
+    },
+    "cpp-core": {
+      "candidate": "cpp-core",
+      "frames": 1000000,
+      "checksum": "2324f5364365f925",
+      "reconnects": 99,
+      "recovered": 99,
+      "elapsed_ms": 6.242,
+      "frames_per_second": 80101184,
+      "binary_bytes": 17896,
+      "crash_recovery": "pass"
+    }
+  }
+}

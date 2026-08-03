@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.21)
+project(hpm_host_spike_cpp LANGUAGES CXX)
+add_executable(hpm-host-spike-cpp main.cpp)
+target_compile_features(hpm-host-spike-cpp PRIVATE cxx_std_17)
+target_compile_options(hpm-host-spike-cpp PRIVATE -Wall -Wextra -Werror)

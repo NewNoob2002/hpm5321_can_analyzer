@@ -13,7 +13,7 @@ Status values: `PASS`, `PARTIAL`, `BLOCKED`, `NOT_TESTED`.
 | OpenOCD debug adapter | BLOCKED | Current board has no SDK OpenOCD board config; adapter decision remains open |
 | Windows clean build | NOT_TESTED | Requires Windows reference host |
 | macOS clean build | NOT_TESTED | Requires macOS reference host |
-| Rust versus C++/Qt host stack spike | NOT_TESTED | Must close before implementing the formal host codec/CLI |
+| Rust versus C++/Qt host stack spike | PARTIAL | Rust and C++ core pass the common 10k/crash profile; Qt 6, real USB and Windows/macOS packaging remain blocked/not tested |
 | Official SDK v1.12.1 clean build | BLOCKED | Current validated artifact uses fork commit `88b01b43...`; official commit remains Gate A |
 
 Phase 1A closes only the Linux build/configuration lane. The next independent
