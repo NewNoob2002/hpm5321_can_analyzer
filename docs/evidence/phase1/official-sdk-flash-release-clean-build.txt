@@ -1,0 +1,149 @@
+PASS sdk=12bd92495abeed7f0a908c589e60974267c0506b class=official-release cmake=4.2.3 ninja=1.13.2
+-- Application: /home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer
+-- Board (custom board): hpm5321_custom from /home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/boards
+-- Found toolchain: gnu (/home/gtc/HPMicro/toolchain)
+-- hpm_sdk: 1.12.1 (/tmp/hpm_sdk_official)
+-- The C compiler identification is GNU 13.2.0
+-- The CXX compiler identification is GNU 13.2.0
+-- The ASM compiler identification is GNU
+-- Found assembler: /home/gtc/HPMicro/toolchain/bin/riscv32-unknown-elf-gcc
+-- GNU ld linker script: /tmp/hpm_sdk_official/soc/HPM5300/HPM5361/toolchains/gcc/flash_xip.ld
+--   - easylogger 库已配置
+-- IAR linker script: /tmp/hpm_sdk_official/soc/HPM5300/HPM5361/toolchains/iar/flash_xip.icf
+-- IAR device name: HPM5321xCFx
+-- IAR Embedded Workbench Project: /home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/build/hpm5321-flash-release/iar_embedded_workbench/hpm5321_can_analyzer.ewp
+-- Segger linker script: /tmp/hpm_sdk_official/soc/HPM5300/HPM5361/toolchains/segger/flash_xip.icf
+-- Segger device name: HPM5321xCFx
+-- Segger openocd board config is not found
+-- Segger Embedded Studio Project: /home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/build/hpm5321-flash-release/segger_embedded_studio/hpm5321_can_analyzer.emProject
+-- Configuring done (0.7s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/build/hpm5321-flash-release
+[1/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/soc/HPM5300/HPM5361/system.c.obj
+[2/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/boards/hpm5321_custom/pinmux.c.obj
+[3/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/soc/HPM5300/HPM5361/hpm_otp_drv.c.obj
+[4/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/arch/riscv/l1c/hpm_l1c_drv.c.obj
+[5/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/boards/hpm5321_custom/clock.c.obj
+[6/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/soc/HPM5300/HPM5361/hpm_qeiv2_soc_drv.c.obj
+[7/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/soc/HPM5300/HPM5361/boot/hpm_bootheader.c.obj
+[8/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/boards/hpm5321_custom/board.c.obj
+[9/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/soc/HPM5300/HPM5361/hpm_sysctl_drv.c.obj
+[10/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_rng_drv.c.obj
+[11/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/soc/HPM5300/HPM5361/hpm_clock_drv.c.obj
+[12/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_gpio_drv.c.obj
+[13/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_pmp_drv.c.obj
+[14/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_uart_drv.c.obj
+[15/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_gptmr_drv.c.obj
+[16/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_acmp_drv.c.obj
+[17/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_pllctlv2_drv.c.obj
+[18/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_pwm_drv.c.obj
+[19/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_usb_drv.c.obj
+[20/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_i2c_drv.c.obj
+[21/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_spi_drv.c.obj
+[22/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_mchtmr_drv.c.obj
+[23/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_tsns_drv.c.obj
+[24/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_ptpc_drv.c.obj
+[25/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_sdp_drv.c.obj
+[26/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_pcfg_drv.c.obj
+[27/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_adc16_drv.c.obj
+[28/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_crc_drv.c.obj
+[29/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_enc_pos_drv.c.obj
+[30/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_dac_drv.c.obj
+[31/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_qeo_drv.c.obj
+[32/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_rdc_drv.c.obj
+[33/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_qeiv2_drv.c.obj
+[34/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_mmc_drv.c.obj
+[35/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_sei_drv.c.obj
+[36/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_dmav2_drv.c.obj
+[37/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/utils/hpm_sbrk.c.obj
+[38/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/utils/hpm_swap.c.obj
+[39/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/utils/hpm_ffssi.c.obj
+[40/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/utils/hpm_crc32.c.obj
+[41/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_opamp_drv.c.obj
+[42/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/components/debug_console/hpm_debug_console.c.obj
+[43/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_plb_drv.c.obj
+[44/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/FreeRTOS/Source/croutine.c.obj
+[45/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_ewdg_drv.c.obj
+[46/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/FreeRTOS/Source/list.c.obj
+[47/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/FreeRTOS/Source/portable/MemMang/heap_4.c.obj
+[48/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/FreeRTOS/Source/event_groups.c.obj
+[49/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/FreeRTOS/Source/timers.c.obj
+[50/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/FreeRTOS/Source/stream_buffer.c.obj
+[51/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/FreeRTOS/Source/queue.c.obj
+[52/72] Building C object build_tmp/CMakeFiles/hpm_sdk_gcc_lib.dir/soc/HPM5300/HPM5361/toolchains/trap.c.obj
+[53/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/segger_rtt/RTT/SEGGER_RTT_printf.c.obj
+[54/72] Building C object build_tmp/CMakeFiles/hpm_sdk_gcc_lib.dir/middleware/FreeRTOS/Source/portable/GCC/RISC-V/port.c.obj
+[55/72] Building C object build_tmp/CMakeFiles/hpm_sdk_gcc_lib.dir/middleware/FreeRTOS/Source/portable/GCC/RISC-V/chip_specific_extensions/HPMicro/hpm_port.c.obj
+[56/72] Building ASM object build_tmp/CMakeFiles/hpm_sdk_gcc_lib.dir/middleware/FreeRTOS/Source/portable/GCC/RISC-V/portASM.S.obj
+[57/72] Building ASM object build_tmp/CMakeFiles/hpm_sdk_gcc_startup_lib.dir/soc/HPM5300/HPM5361/toolchains/gcc/start.S.obj
+[58/72] Building C object build_tmp/CMakeFiles/hpm_sdk_gcc_lib.dir/middleware/segger_rtt/Syscalls/SEGGER_RTT_Syscalls_GCC.c.obj
+[59/72] Building C object build_tmp/CMakeFiles/hpm_sdk_gcc_startup_lib.dir/soc/HPM5300/HPM5361/toolchains/gcc/initfini.c.obj
+[60/72] Building C object build_tmp/CMakeFiles/hpm_sdk_gcc_lib.dir/soc/HPM5300/HPM5361/toolchains/reset.c.obj
+[61/72] Linking C static library lib/libhpm_sdk_gcc_lib.a
+[62/72] Linking C static library lib/libhpm_sdk_gcc_startup_lib.a
+[63/72] Building C object third_party/easylogger/CMakeFiles/easylogger.dir/port/elog_port.c.obj
+[64/72] Building C object third_party/easylogger/CMakeFiles/easylogger.dir/src/elog_utils.c.obj
+[65/72] Building C object CMakeFiles/app.dir/USER/src/main.c.obj
+[66/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/segger_rtt/RTT/SEGGER_RTT.c.obj
+[67/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_mcan_drv.c.obj
+[68/72] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/FreeRTOS/Source/tasks.c.obj
+In file included from /tmp/hpm_sdk_official/middleware/FreeRTOS/Source/include/task.h:37,
+                 from /tmp/hpm_sdk_official/middleware/FreeRTOS/Source/tasks.c:40:
+In function 'prvSearchForNameWithinSingleList',
+    inlined from 'xTaskGetHandle' at /tmp/hpm_sdk_official/middleware/FreeRTOS/Source/tasks.c:2464:29:
+/tmp/hpm_sdk_official/middleware/FreeRTOS/Source/include/list.h:293:64: warning: array subscript 'ListItem_t {aka struct xLIST_ITEM}[0]' is partly outside array bounds of 'List_t[1]' {aka 'struct xLIST[1]'} [-Warray-bounds=]
+  293 |             ( pxConstList )->pxIndex = ( pxConstList )->pxIndex->pxNext;                       \
+      |                                        ~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~
+/tmp/hpm_sdk_official/middleware/FreeRTOS/Source/tasks.c:2368:13: note: in expansion of macro 'listGET_OWNER_OF_NEXT_ENTRY'
+ 2368 |             listGET_OWNER_OF_NEXT_ENTRY( pxFirstTCB, pxList ); /*lint !e9079 void * is used as this macro is used with timers and co-routines too.  Alignment is known to be fine as the type of the pointer stored and retrieved is the same. */
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/tmp/hpm_sdk_official/middleware/FreeRTOS/Source/tasks.c: In function 'xTaskGetHandle':
+/tmp/hpm_sdk_official/middleware/FreeRTOS/Source/tasks.c:351:35: note: at offset 8 into object 'xSuspendedTaskList' of size 20
+  351 |     PRIVILEGED_DATA static List_t xSuspendedTaskList; /*< Tasks that are currently suspended. */
+      |                                   ^~~~~~~~~~~~~~~~~~
+In function 'prvSearchForNameWithinSingleList',
+    inlined from 'xTaskGetHandle' at /tmp/hpm_sdk_official/middleware/FreeRTOS/Source/tasks.c:2464:29:
+/tmp/hpm_sdk_official/middleware/FreeRTOS/Source/include/list.h:293:64: warning: array subscript 'ListItem_t {aka struct xLIST_ITEM}[0]' is partly outside array bounds of 'List_t[1]' {aka 'struct xLIST[1]'} [-Warray-bounds=]
+  293 |             ( pxConstList )->pxIndex = ( pxConstList )->pxIndex->pxNext;                       \
+      |                                        ~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~
+/tmp/hpm_sdk_official/middleware/FreeRTOS/Source/tasks.c:2372:17: note: in expansion of macro 'listGET_OWNER_OF_NEXT_ENTRY'
+ 2372 |                 listGET_OWNER_OF_NEXT_ENTRY( pxNextTCB, pxList ); /*lint !e9079 void * is used as this macro is used with timers and co-routines too.  Alignment is known to be fine as the type of the pointer stored and retrieved is the same. */
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/tmp/hpm_sdk_official/middleware/FreeRTOS/Source/tasks.c: In function 'xTaskGetHandle':
+/tmp/hpm_sdk_official/middleware/FreeRTOS/Source/tasks.c:351:35: note: at offset 8 into object 'xSuspendedTaskList' of size 20
+  351 |     PRIVILEGED_DATA static List_t xSuspendedTaskList; /*< Tasks that are currently suspended. */
+      |                                   ^~~~~~~~~~~~~~~~~~
+In function 'prvSearchForNameWithinSingleList',
+    inlined from 'xTaskGetHandle' at /tmp/hpm_sdk_official/middleware/FreeRTOS/Source/tasks.c:2474:29:
+/tmp/hpm_sdk_official/middleware/FreeRTOS/Source/include/list.h:293:64: warning: array subscript 'ListItem_t {aka struct xLIST_ITEM}[0]' is partly outside array bounds of 'List_t[1]' {aka 'struct xLIST[1]'} [-Warray-bounds=]
+  293 |             ( pxConstList )->pxIndex = ( pxConstList )->pxIndex->pxNext;                       \
+      |                                        ~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~
+/tmp/hpm_sdk_official/middleware/FreeRTOS/Source/tasks.c:2368:13: note: in expansion of macro 'listGET_OWNER_OF_NEXT_ENTRY'
+ 2368 |             listGET_OWNER_OF_NEXT_ENTRY( pxFirstTCB, pxList ); /*lint !e9079 void * is used as this macro is used with timers and co-routines too.  Alignment is known to be fine as the type of the pointer stored and retrieved is the same. */
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/tmp/hpm_sdk_official/middleware/FreeRTOS/Source/tasks.c: In function 'xTaskGetHandle':
+/tmp/hpm_sdk_official/middleware/FreeRTOS/Source/tasks.c:344:35: note: at offset 8 into object 'xTasksWaitingTermination' of size 20
+  344 |     PRIVILEGED_DATA static List_t xTasksWaitingTermination; /*< Tasks that have been deleted - but their memory not yet freed. */
+      |                                   ^~~~~~~~~~~~~~~~~~~~~~~~
+In function 'prvSearchForNameWithinSingleList',
+    inlined from 'xTaskGetHandle' at /tmp/hpm_sdk_official/middleware/FreeRTOS/Source/tasks.c:2474:29:
+/tmp/hpm_sdk_official/middleware/FreeRTOS/Source/include/list.h:293:64: warning: array subscript 'ListItem_t {aka struct xLIST_ITEM}[0]' is partly outside array bounds of 'List_t[1]' {aka 'struct xLIST[1]'} [-Warray-bounds=]
+  293 |             ( pxConstList )->pxIndex = ( pxConstList )->pxIndex->pxNext;                       \
+      |                                        ~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~
+/tmp/hpm_sdk_official/middleware/FreeRTOS/Source/tasks.c:2372:17: note: in expansion of macro 'listGET_OWNER_OF_NEXT_ENTRY'
+ 2372 |                 listGET_OWNER_OF_NEXT_ENTRY( pxNextTCB, pxList ); /*lint !e9079 void * is used as this macro is used with timers and co-routines too.  Alignment is known to be fine as the type of the pointer stored and retrieved is the same. */
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/tmp/hpm_sdk_official/middleware/FreeRTOS/Source/tasks.c: In function 'xTaskGetHandle':
+/tmp/hpm_sdk_official/middleware/FreeRTOS/Source/tasks.c:344:35: note: at offset 8 into object 'xTasksWaitingTermination' of size 20
+  344 |     PRIVILEGED_DATA static List_t xTasksWaitingTermination; /*< Tasks that have been deleted - but their memory not yet freed. */
+      |                                   ^~~~~~~~~~~~~~~~~~~~~~~~
+[69/72] Linking C static library lib/libhpm_sdk_lib.a
+[70/72] Building C object third_party/easylogger/CMakeFiles/easylogger.dir/src/elog.c.obj
+[71/72] Linking C static library lib/libeasylogger.a
+[72/72] Linking C executable output/demo.elf
+Memory region         Used Size  Region Size  %age Used
+           FLASH:       74560 B         1 MB      7.11%
+             ILM:       11816 B       128 KB      9.01%
+             DLM:       69392 B     130304 B     53.25%
+        AHB_SRAM:          0 GB        32 KB      0.00%
+PASS manifest=/home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/build/hpm5321-flash-release/build-manifest.json
