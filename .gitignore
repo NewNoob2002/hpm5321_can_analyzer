@@ -1,4 +1,5 @@
 build/
+/host/target/
 /host/spike/rust/target/
 
 # Build outputs and generated reports

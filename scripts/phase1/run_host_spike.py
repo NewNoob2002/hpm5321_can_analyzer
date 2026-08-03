@@ -9,7 +9,7 @@ BUILD = ROOT / "build/host-spike"
 BUILD.mkdir(parents=True, exist_ok=True)
 
 subprocess.run(
-    ["cargo", "build", "--release", "--manifest-path", str(ROOT / "host/spike/rust/Cargo.toml")],
+    ["cargo", "build", "--release", "--manifest-path", str(ROOT / "host/Cargo.toml"), "-p", "hpm-host-spike-rust"],
     check=True,
 )
 subprocess.run(
@@ -19,7 +19,7 @@ subprocess.run(
 subprocess.run(["cmake", "--build", str(BUILD / "cpp")], check=True)
 
 binaries = {
-    "rust": ROOT / "host/spike/rust/target/release/hpm-host-spike-rust",
+    "rust": ROOT / "host/target/release/hpm-host-spike-rust",
     "cpp-core": BUILD / "cpp/hpm-host-spike-cpp",
 }
 results = {}

@@ -1,6 +1,6 @@
 # Phase 1 Development Environment Status
 
-Status values: `PASS`, `PARTIAL`, `BLOCKED`, `NOT_TESTED`.
+Status values: `PASS`, `PARTIAL`, `BLOCKED`, `NOT_TESTED`, `NOT_APPLICABLE`.
 
 | Gate | Status | Evidence / remaining work |
 |---|---:|---|
@@ -11,9 +11,10 @@ Status values: `PASS`, `PARTIAL`, `BLOCKED`, `NOT_TESTED`.
 | VSCode build/clangd contract | PASS | Tasks call only `scripts/build.sh`; clangd uses the actual Flash Debug database |
 | J-Link VSCode debug profile | PARTIAL | Checked-in GDB attach profile; Phase 0 proves command-line stop/reset/read/write, but VSCode UI step evidence is pending |
 | OpenOCD debug adapter | BLOCKED | Current board has no SDK OpenOCD board config; adapter decision remains open |
-| Windows clean build | NOT_TESTED | Requires Windows reference host |
-| macOS clean build | NOT_TESTED | Requires macOS reference host |
-| Rust versus C++/Qt host stack spike | PARTIAL | Rust and C++ core pass the common 10k/crash profile; Qt 6, real USB and Windows/macOS packaging remain blocked/not tested |
+| Windows clean build | NOT_TESTED | Required for Linux/Windows CLI MVP |
+| macOS clean build | NOT_APPLICABLE | Deferred by Linux/Windows CLI-first scope addendum |
+| Host stack decision | PASS | Rust selected for shared core/CLI; Qt deferred to GUI and may not introduce a second protocol core |
+| Rust real USB/hotplug and Windows packaging | BLOCKED | libusb development input and Windows reference host required before formal codec work |
 | Official SDK v1.12.1 clean build | BLOCKED | Current validated artifact uses fork commit `88b01b43...`; official commit remains Gate A |
 
 Phase 1A closes only the Linux build/configuration lane. The next independent

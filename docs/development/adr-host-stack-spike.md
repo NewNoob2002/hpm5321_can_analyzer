@@ -1,12 +1,13 @@
 # ADR Addendum — Host Stack Spike
 
-Status: **PARTIAL / decision not yet locked**  
+Status: **ACCEPTED for Linux/Windows CLI; USB integration pending**
 Date: 2026-08-03
 
 ## Decision under evaluation
 
-Select one v1 host core: Rust, or C++ with Qt 6. Maintaining both is forbidden.
-The approved default remains Rust until the complete evidence gate changes it.
+The Linux/Windows CLI host core is Rust. Qt is removed from the CLI technology
+gate and deferred to the GUI phase. Maintaining a second protocol/USB core is
+forbidden.
 
 ## Common Linux synthetic evidence
 
@@ -39,12 +40,11 @@ not predict USB latency or GUI performance.
 
 Rust synthetic and crash-recovery lane: **PASS**.  
 C++ protocol-core synthetic lane: **PASS**.  
-Qt 6 compile/deployment lane: **BLOCKED** because Qt 6 is not installed on the
-current Linux reference host. Native libusb development metadata is also
-absent, so neither candidate has completed real USB hotplug testing.
-Windows and macOS packaging remain NOT_TESTED.
+Qt 6 is not required for the CLI. Native libusb development metadata is absent,
+so Rust has not completed real USB hotplug testing. Windows packaging remains
+NOT_TESTED; macOS is explicitly deferred from the MVP.
 
-No final stack lock is issued yet. The next gate installs/provisions Qt 6 and
-libusb development inputs in a controlled environment, adds equivalent fake
-USB interfaces to both candidates, then executes real device hotplug and
-Windows/macOS packaging checks. Formal host codec work remains prohibited.
+The stack decision is locked to Rust for the Linux/Windows CLI. The next gate
+provisions libusb/WinUSB inputs and executes real device hotplug plus Windows
+packaging checks. Formal host codec work remains prohibited until that USB gate
+closes. Qt licensing is revisited only if the 1.0 GUI selects Qt.
