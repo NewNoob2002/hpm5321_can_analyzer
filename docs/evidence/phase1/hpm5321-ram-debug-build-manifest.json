@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "preset": "hpm5321-ram-debug",
+  "source_revision": "665ec8876c063cf020145e59ace57c082f5d6648",
+  "source_dirty": false,
+  "sdk_commit": "88b01b43900d8c30844a1e5cdd3f3b7aff6db40e",
+  "compiler": "riscv32-unknown-elf-gcc (gc891d8dc23e) 13.2.0",
+  "compile_commands_sha256": "71a7a9b0dd26183a1f1b5e78cc827e9f0ad93dcb3f8d21bb856b38584ff74ac3",
+  "artifacts": {
+    "demo.elf": {
+      "size": 399096,
+      "sha256": "88511fc6725607b6a2109a41287bf88aced46c33ff88d4cd299579979679a296"
+    },
+    "demo.bin": {
+      "size": 64928,
+      "sha256": "52564f0e3d79d4fd08c6c0d04e2897396c6db172099d5760b6a44afff8cb3ce7"
+    },
+    "demo.map": {
+      "size": 478423,
+      "sha256": "c03337384afc7f9021f2a9f14ad85b1328a1ce12bb572814d6aba98a0089cb5f"
+    }
+  }
+}
