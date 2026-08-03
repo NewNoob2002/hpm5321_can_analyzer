@@ -29,3 +29,12 @@ will later be consumed by the firmware C codec tests.
 Message-type numbers follow the normative registry in
 `docs/approved-plan/usb-can-protocol-v1.md` section 2.3; every file is a full
 frame including magic, header, payload and CRC-32C.
+
+Consumers:
+
+- Rust: `host/crates/protocol` reads every vector with `include_str!` and
+  asserts byte-exact decode and re-encode.
+- C: `protocol/v1/c` implements the same codec; the host parity harness
+  `tests/protocol/ucan_vector_test.c` decodes and re-encodes every vector with
+  the C codec and requires byte parity, and is run by
+  `tests/protocol/test_c_codec_parity.py`.
