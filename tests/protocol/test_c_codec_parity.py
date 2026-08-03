@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[2]
 CODECDIR = ROOT / "protocol" / "v1" / "c"
 VECTORDIR = ROOT / "protocol" / "v1" / "0"
 HARNESS = ROOT / "tests" / "protocol" / "ucan_vector_test.c"
+SESSION_HARNESS = ROOT / "tests" / "protocol" / "ucan_session_test.c"
 
 
 class CCodecParityTests(unittest.TestCase):
@@ -59,6 +60,37 @@ class CCodecParityTests(unittest.TestCase):
         self._run_harness(
             ("-fsanitize=address,undefined", "-fno-omit-frame-pointer")
         )
+
+    def test_session_scenarios(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            binary = Path(tmp) / "ucan_session_test"
+            cmd = [
+                self.gcc,
+                "-std=c99",
+                "-Wall",
+                "-Wextra",
+                "-Werror",
+                "-O2",
+                f"-I{CODECDIR}",
+                str(SESSION_HARNESS),
+                str(CODECDIR / "ucan_session.c"),
+                str(CODECDIR / "ucan_codec.c"),
+                "-o",
+                str(binary),
+            ]
+            compiled = subprocess.run(cmd, capture_output=True, text=True)
+            self.assertEqual(
+                compiled.returncode, 0, f"session compile failed:\n{compiled.stderr}"
+            )
+            ran = subprocess.run(
+                [str(binary)], capture_output=True, text=True
+            )
+            self.assertEqual(
+                ran.returncode,
+                0,
+                f"session harness failed:\nstdout={ran.stdout}\nstderr={ran.stderr}",
+            )
+            self.assertIn("0 failures", ran.stdout)
 
 
 if __name__ == "__main__":

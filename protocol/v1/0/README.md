@@ -38,3 +38,11 @@ Consumers:
   `tests/protocol/ucan_vector_test.c` decodes and re-encodes every vector with
   the C codec and requires byte parity, and is run by
   `tests/protocol/test_c_codec_parity.py`.
+
+Device-side engine: `protocol/v1/c/ucan_session.{h,c}` implements the v1.0
+session state machine (spec sections 5.2/7/8) — CAS generations, arm epoch,
+conservative TX admission, exactly-once TX result ledger, request replay
+cache, bounded-loss accounting and the priority egress scheduler. It is pure
+C99 (host-tested by `tests/protocol/ucan_session_test.c`, RISC-V compilable)
+and is the state core the firmware protocol task wires to the USB and MCAN
+drivers.
