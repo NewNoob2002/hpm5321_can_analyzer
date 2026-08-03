@@ -5,11 +5,11 @@ CherryUSB WinUSB 2.0 sample. It deliberately excludes FreeRTOS, CAN, CDC and DFU
 so Phase 0 can isolate the USB clock/PHY/HS path.
 
 ```sh
-export HPM_SDK_BASE=/home/gtc/HPMicro/sdk/hpm_sdk
+export HPM_SDK_BASE=/path/to/hpm_sdk
 export CCACHE_DISABLE=1
 cmake -S tools/phase0/usb_hs_probe \
   -B build/phase0-usb-hs-probe -G Ninja \
-  -DBOARD=hpm5321_custom -DHPM_BUILD_TYPE=flash_xip
+  -DBOARD=hpm5321_custom -DBOARD_SEARCH_PATH="$PWD/boards" -DHPM_BUILD_TYPE=flash_xip
 cmake --build build/phase0-usb-hs-probe
 python3 scripts/phase0/validate_usb_composite.py
 ```

@@ -1,0 +1,18 @@
+{
+  "adapter": "CANDBG-01",
+  "channel": "CAN0",
+  "bitrate": 500000,
+  "frame_format": "standard",
+  "protocol": "classic-can",
+  "frame_type": "data",
+  "source": "operator configuration and exported capture",
+  "board_revision": "Gerber_PCB1_2026-07-23",
+  "board_serial": "20260723",
+  "approved_test_ids": ["T-CAN-003"],
+  "capture_sha256": "13cbc45cd22ec0891c792af4e94ebcf70a4fd65435cf989f979c333f5ac18ac5",
+  "elf_path": "build/phase0-mcan0-tx/output/demo.elf",
+  "elf_sha256": "6512813f56137e084de0a5ce067c498c1547cf87219cb55cead230d6505cc627",
+  "provenance_status": "historical-unbound",
+  "source_manifest_sha256": null,
+  "source_manifest_path": null
+}

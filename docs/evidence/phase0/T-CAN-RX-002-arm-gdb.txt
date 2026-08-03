@@ -1,0 +1,35 @@
+0x80006a78 in hpm_csr_get_core_cycle () at /home/gtc/HPMicro/sdk/hpm_sdk/drivers/inc/hpm_csr_drv.h:69
+69	 }
+Resetting target
+Loading section .nor_cfg_option, size 0x10 lma 0x80000400
+Loading section .boot_header, size 0x90 lma 0x80001000
+Loading section .start, size 0x50 lma 0x80003000
+Loading section .vectors, size 0x368 lma 0x80003050
+Loading section .text, size 0xc650 lma 0x800033b8
+Loading section .eh_frame, size 0x28 lma 0x8000fa08
+Loading section .data, size 0x1d8 lma 0x8000fa30
+Start address 0x80003000, load size 52392
+Transfer rate: 51164 KB/sec, 7484 bytes/write.
+Resetting target
+Cannot execute this command while the target is running.
+Use the "interrupt" command to stop the target
+and then try again.
+0x804d8 <g_mcan0_external_result>:	Cannot execute this command while the target is running.
+Use the "interrupt" command to stop the target
+and then try again.
+Cannot execute this command while the target is running.
+Use the "interrupt" command to stop the target
+and then try again.
+Cannot execute this command while the target is running.
+Use the "interrupt" command to stop the target
+and then try again.
+hpm_csr_get_core_cycle () at /home/gtc/HPMicro/sdk/hpm_sdk/drivers/inc/hpm_csr_drv.h:69
+69	 }
+$1 = {magic = 0x52554e21, version = 0x1, active_tx_build = 0x0, source_clock_hz = 0x4c4b400, bitrate = 0x7a120, msg_ram_status = 0x0, init_status = 0x0, rx_frames = 0x0, rx_expected_frames = 0x0, tx_attempted = 0x0, tx_succeeded = 0x0, last_tx_status = 0x0, last_rx_id = 0x0, last_rx_dlc = 0x0, last_rx_data = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, raw_psr = 0x0, raw_ecr = 0x0, raw_cccr = 0x0, raw_ir = 0x0, tx_error_count = 0x0, rx_error_count = 0x0, error_logging_count = 0x0, bus_off = 0x0, warning = 0x0, error_passive = 0x0}
+0x804d8 <g_mcan0_external_result>:	0x52554e21	0x00000001	0x00000000	0x04c4b400
+0x804e8 <g_mcan0_external_result+16>:	0x0007a120	0x00000000	0x00000000	0x00000000
+0x804f8 <g_mcan0_external_result+32>:	0x00000000	0x00000000	0x00000000	0x00000000
+0x80508 <g_mcan0_external_result+48>:	0x00000000	0x00000000	0x00000000	0x00000000
+0x80518 <g_mcan0_external_result+64>:	0x00000000	0x00000000	0x00000000	0x00000000
+0x80528 <g_mcan0_external_result+80>:	0x00000000	0x00000000	0x00000000	0x00000000
+[Inferior 1 (Remote target) detached]

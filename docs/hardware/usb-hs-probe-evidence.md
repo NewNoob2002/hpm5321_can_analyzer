@@ -9,14 +9,15 @@ Build type: `flash_xip`, Debug
 ## Exact build
 
 ```sh
-HPM_SDK_BASE=/home/gtc/HPMicro/sdk/hpm_sdk \
+HPM_SDK_BASE=/path/to/hpm_sdk \
 CCACHE_DISABLE=1 \
 cmake -S tools/phase0/usb_hs_probe \
   -B build/phase0-usb-hs-probe -G Ninja \
-  -DBOARD=hpm5321_custom -DHPM_BUILD_TYPE=flash_xip \
+  -DBOARD=hpm5321_custom -DBOARD_SEARCH_PATH="$PWD/boards" \
+  -DHPM_BUILD_TYPE=flash_xip \
   -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-HPM_SDK_BASE=/home/gtc/HPMicro/sdk/hpm_sdk \
+HPM_SDK_BASE=/path/to/hpm_sdk \
 CCACHE_DISABLE=1 \
 cmake --build build/phase0-usb-hs-probe -j8
 ```
@@ -40,9 +41,11 @@ e8cfcd7b1e171518154118f0b3aa26a4d09ccc14f6a50beca02c81bb05f4c404  demo.bin
 c7de8030726fc7b0074a61d9b81b41c978cd5a36f28583017bc0d5597d79713f  demo.map
 ```
 
-## Static descriptor/resource verdict
+## Static descriptor/resource model
 
-`scripts/phase0/validate_usb_composite.py` passed all planned variants:
+`scripts/phase0/validate_usb_composite.py` checks the resource model for all
+planned variants. It does not parse compiled descriptors and is not evidence
+that CDC or DFU Runtime has been implemented:
 
 | Variant | Interfaces | Data endpoint addresses |
 |---|---:|---|

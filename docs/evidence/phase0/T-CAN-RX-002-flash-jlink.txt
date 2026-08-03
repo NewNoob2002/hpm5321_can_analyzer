@@ -1,0 +1,21 @@
+SEGGER J-Link Commander V9.62 (Compiled Jul 22 2026 13:26:47)
+DLL version V9.62, compiled Jul 22 2026 13:25:45
+
+
+J-Link Command File read successfully.
+Processing script file...
+J-Link>connect
+J-Link connection not established yet but required for command.
+Connecting to J-Link ...O.K.
+Firmware: J-Link Pro V4 V11 PLUS Dec compiled 9 2041 12:59:59
+Hardware version: V11.00
+J-Link uptime (since boot): 0d 00h 39m 04s
+S/N: 607000454
+License(s): RDI,FlashBP,FlashDL,JFlash,GDB
+USB speed mode: High speed (480 MBit/s)
+IP-Addr: 255.255.255.255 (DHCP)
+VTref=3.303V
+Device position in JTAG chain (IRPre,DRPre) <Default>: -1,-1 => Auto-detect
+
+Script processing completed.
+

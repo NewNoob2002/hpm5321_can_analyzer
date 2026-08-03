@@ -1,0 +1,38 @@
+0x80005a24 in run_mode (base=0x80005bf2 <main+108>, source_clock_hz=3827302404, canfd=128, result=0x406eb87) at /home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/tools/phase0/mcan_internal_probe/src/main.c:113
+113	    bool ext_ok = run_frame(base, canfd, true);
+Resetting target
+Loading section .nor_cfg_option, size 0x10 lma 0x80000400
+Loading section .boot_header, size 0x90 lma 0x80001000
+Loading section .start, size 0x50 lma 0x80003000
+Loading section .vectors, size 0x368 lma 0x80003050
+Loading section .text, size 0xc900 lma 0x800033b8
+Loading section .eh_frame, size 0x28 lma 0x8000fcb8
+Loading section .data, size 0x1d8 lma 0x8000fce0
+Start address 0x80003000, load size 53080
+Transfer rate: 51835 KB/sec, 7582 bytes/write.
+Resetting target
+Breakpoint 1 at 0x80005c4a: file /home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/tools/phase0/mcan_internal_probe/src/main.c, line 168.
+
+Breakpoint 1, main () at /home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/tools/phase0/mcan_internal_probe/src/main.c:168
+168	        __asm volatile("nop");
+$1 = {magic = 0x50415353, version = 0x1, channels_tested = 0x2, channels_passed = 0x2, channel = {{base = 0xf0280000, source_clock_hz = 0x4c4b400, msg_ram_status = 0x0, classic_init_status = 0x0, fd_init_status = 0x0, passed_flags = 0xf, failed_flags = 0x0, frames_passed = 0x4, frames_failed = 0x0}, {base = 0xf0288000, source_clock_hz = 0x4c4b400, msg_ram_status = 0x0, classic_init_status = 0x0, fd_init_status = 0x0, passed_flags = 0xf, failed_flags = 0x0, frames_passed = 0x4, frames_failed = 0x0}}}
+0x804d8 <g_mcan_probe_result>:	0x50415353	0x00000001	0x00000002	0x00000002
+0x804e8 <g_mcan_probe_result+16>:	0xf0280000	0x04c4b400	0x00000000	0x00000000
+0x804f8 <g_mcan_probe_result+32>:	0x00000000	0x0000000f	0x00000000	0x00000004
+0x80508 <g_mcan_probe_result+48>:	0x00000000	0xf0288000	0x04c4b400	0x00000000
+0x80518 <g_mcan_probe_result+64>:	0x00000000	0x00000000	0x0000000f	0x00000000
+0x80528 <g_mcan_probe_result+80>:	0x00000004	0x00000000	0xf0400000	0x00000a00
+0x80538 <mcan_soc_msg_buf_attr+8>:	0x00000000	0x00000000	0xf0400a00	0x00000a00
+0x80548 <mcan_soc_msg_buf_attr+24>:	0x00000000	0x00000000	0x00000000	0x1c9c3800
+0xf4040100:	0x00000000
+0xf4040108:	0x00000000
+0xf4040140:	0x00000000
+0xf4040148:	0x00000000
+Section .nor_cfg_option, range 0x80000400 -- 0x80000410: matched.
+Section .boot_header, range 0x80001000 -- 0x80001090: matched.
+Section .start, range 0x80003000 -- 0x80003050: matched.
+Section .vectors, range 0x80003050 -- 0x800033b8: matched.
+Section .text, range 0x800033b8 -- 0x8000fcb8: matched.
+Section .eh_frame, range 0x8000fcb8 -- 0x8000fce0: matched.
+Section .data, range 0x8000fce0 -- 0x8000feb8: matched.
+[Inferior 1 (Remote target) detached]

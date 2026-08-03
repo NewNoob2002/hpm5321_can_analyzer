@@ -125,7 +125,6 @@ static bool run_channel(MCAN_Type *base, uint32_t *msg_buf,
                         mcan_channel_probe_result_t *result)
 {
     result->base = (uint32_t)base;
-    board_init_can(base);
     result->source_clock_hz = board_init_can_clock(base);
 
 #if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)

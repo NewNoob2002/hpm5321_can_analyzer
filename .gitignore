@@ -2,7 +2,7 @@ build/
 
 # Build outputs and generated reports
 .omx/
-.omx/*.*
+.codegraph/
 *.axf
 *.elf
 *.hex
@@ -12,3 +12,5 @@ build/
 *.d
 *.log
 *.bak
+__pycache__/
+*.py[cod]

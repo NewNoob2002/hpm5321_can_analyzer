@@ -7,14 +7,32 @@
     },
     "configurePresets": [
         {
-            "name": "hpm5321-flash-debug",
-            "displayName": "HPM5321 Custom - Flash Debug",
+            "name": "hpm5321-base",
+            "hidden": true,
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/hpm5321-flash-debug",
             "cacheVariables": {
                 "BOARD": "hpm5321_custom",
-                "CMAKE_BUILD_TYPE": "Debug",
-                "HPM_BUILD_TYPE": "flash_xip"
+                "HPM_BUILD_TYPE": "flash_xip",
+                "BOARD_SEARCH_PATH": "${sourceDir}/boards",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+        {
+            "name": "hpm5321-flash-debug",
+            "inherits": "hpm5321-base",
+            "displayName": "HPM5321 Custom - Flash Debug",
+            "binaryDir": "${sourceDir}/build/hpm5321-flash-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "hpm5321-flash-release",
+            "inherits": "hpm5321-base",
+            "displayName": "HPM5321 Custom - Flash Release",
+            "binaryDir": "${sourceDir}/build/hpm5321-flash-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
             }
         }
     ],
@@ -23,6 +41,12 @@
             "name": "hpm5321-flash-debug",
             "displayName": "Build HPM5321 Flash Debug",
             "configurePreset": "hpm5321-flash-debug",
+            "jobs": 8
+        },
+        {
+            "name": "hpm5321-flash-release",
+            "displayName": "Build HPM5321 Flash Release",
+            "configurePreset": "hpm5321-flash-release",
             "jobs": 8
         }
     ]

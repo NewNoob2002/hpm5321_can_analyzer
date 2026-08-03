@@ -1,0 +1,8 @@
+# Copyright (c) 2021 HPMicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+
+sdk_inc(.)
+sdk_src(pinmux.c)
+sdk_src(board.c)
+sdk_src(clock.c)

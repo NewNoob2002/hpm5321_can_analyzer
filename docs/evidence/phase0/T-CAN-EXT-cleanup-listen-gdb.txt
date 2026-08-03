@@ -1,0 +1,26 @@
+0x80005b48 in __plic_complete_irq (irq=16777216, target=3827302400, base=0) at /home/gtc/HPMicro/sdk/hpm_sdk/soc/HPM5300/HPM5361/hpm_plic_drv.h:228
+228	                                                           (target << HPM_PLIC_CLAIM_SHIFT_PER_TARGET));
+Resetting target
+Loading section .nor_cfg_option, size 0x10 lma 0x80000400
+Loading section .boot_header, size 0x90 lma 0x80001000
+Loading section .start, size 0x50 lma 0x80003000
+Loading section .vectors, size 0x368 lma 0x80003050
+Loading section .text, size 0xc548 lma 0x800033b8
+Loading section .eh_frame, size 0x28 lma 0x8000f900
+Loading section .data, size 0x1d8 lma 0x8000f928
+Start address 0x80003000, load size 52128
+Transfer rate: 50906 KB/sec, 7446 bytes/write.
+Section .nor_cfg_option, range 0x80000400 -- 0x80000410: matched.
+Section .boot_header, range 0x80001000 -- 0x80001090: matched.
+Section .start, range 0x80003000 -- 0x80003050: matched.
+Section .vectors, range 0x80003050 -- 0x800033b8: matched.
+Section .text, range 0x800033b8 -- 0x8000f900: matched.
+Section .eh_frame, range 0x8000f900 -- 0x8000f928: matched.
+Section .data, range 0x8000f928 -- 0x8000fb00: matched.
+Breakpoint 1 at 0x80005a80: file /home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/tools/phase0/mcan0_external_probe/src/main.c, line 185.
+
+Breakpoint 1, main () at /home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/tools/phase0/mcan0_external_probe/src/main.c:185
+185	        __asm volatile("nop");
+$1 = 0x444f4e45
+$2 = 0x0
+[Inferior 1 (Remote target) detached]

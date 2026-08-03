@@ -6,8 +6,9 @@ Probe: SEGGER J-Link S/N 607000454, JTAG 4 MHz, VTref 3.32 V
 
 ## Scope
 
-The TCAN1044AVDRQ1 devices are not populated. This test therefore covers only
-the HPM5321 controller-side resources:
+MCAN0's TCAN1044AVDRQ1 is populated and hardware-enabled; MCAN2's transceiver
+is not populated. This test nevertheless covers only controller-side resources
+because the probe never connects either controller to its physical pads:
 
 - MCAN0 and MCAN2 clock initialization
 - external AHB message-RAM assignment
@@ -22,11 +23,17 @@ arbitration, error confinement, wake-up, EMC, or physical CAN-FD timing.
 
 Firmware: `tools/phase0/mcan_internal_probe`
 
-- Build: PASS with HPM SDK 1.12.1, GNU 13.2.0, `flash_xip`
+- Build: PASS with HPM SDK 1.12.1 local-fork commit
+  `88b01b43900d8c30844a1e5cdd3f3b7aff6db40e`, GNU 13.2.0, `flash_xip`
 - Flash image ELF SHA-256:
-  `8cb50fc7c45d6bb173943083df79943f2dd3b6fdaaad99e6ec90abc41c3cf754`
+  `cd5585e76cc8f722af63afbffbc5fc790ed96658f593ef94550e74fd880011c7`
 - AHB SRAM used: 5 KiB of 32 KiB
-- Flash used: 64,752 bytes
+- Flash used: 64,736 bytes
+
+Source manifest: `T-CAN-INTERNAL-source-manifest.sha256`, SHA-256
+`747fb85e13191bacd7a53fc92b6b6f1628ef414b0c0e140af0b9810e51fc738b`.
+Raw GDB/compare-sections evidence:
+`docs/evidence/phase0/T-CAN-001-002-internal-safe-gdb.txt`.
 
 ## Target result
 
@@ -51,16 +58,28 @@ Aggregate result:
 - channels tested: 2
 - channels passed: 2
 - total cases: 8/8 PASS
+- PB00/PB01/PB08/PB09 `FUNC_CTL=0`: GPIO-safe mux remained selected; internal
+  loopback did not connect either MCAN controller to the physical transceivers
 
-## Deferred physical-layer closure
+## Hardware facts recorded after the probe
 
-After both transceivers are populated:
+- TXD/RXD digital isolation or level conversion was confirmed before active
+  physical-bus testing.
+- VCC and VIO measure 5.2 V from isolated `ISO_5V`, derived from `SYS_5V`.
+- STB has a 10 kOhm pull-down to `ISO_GND` and measures 0.1 V, requesting
+  normal mode.
+- The switch-controlled termination measures 119 ohm.
+- CANH and CANL continuity has been verified.
+- With no external node, CANH and CANL both measure 2.52 V.
+- Current external-bus bring-up is intentionally limited to MCAN0; MCAN2 is
+  deferred until the Beta dual-channel phase.
 
-1. Confirm the part orientation and continuity with power removed.
-2. Confirm VCC is within the transceiver's required supply range and VIO
-   matches the MCU I/O domain.
-3. Confirm STB default and MCU control polarity before enabling transmission.
-4. Measure termination resistance with power removed.
-5. Power up in standby/listen-only first and verify recessive bus levels.
-6. Validate Classic CAN externally on each channel before any CAN-FD claim.
-7. Validate CAN-FD nominal/data timing and signal integrity on both channels.
+## Deferred MCAN0 physical-layer closure
+
+Before active MCAN0 transmission:
+
+1. Recheck the attached debugger's termination and 500 kbit/s configuration.
+2. Start MCAN0 in listen-only mode and inspect receive/error state.
+3. Transmit only the approved Classic CAN diagnostic frame after listen-only.
+4. Reconcile target counters with the debugger capture.
+5. Defer MCAN0 CAN-FD physical timing and all MCAN2 external tests.

@@ -1,0 +1,32 @@
+0x80005c50 in section_copy (dst_start=0x1010000 '\252' <repeats 200 times>..., dst_end=0x0 <__vector_table>, src_start=0x8 <__vector_table+8> "(\001") at /home/gtc/HPMicro/sdk/hpm_sdk/soc/HPM5300/HPM5361/toolchains/reset.c:75
+75	    if ((((uintptr_t)dst_byte & 0x3) == 0) && (((uintptr_t)src_byte & 0x3) == 0)) {
+Resetting target
+Loading section .nor_cfg_option, size 0x10 lma 0x80000400
+Loading section .boot_header, size 0x90 lma 0x80001000
+Loading section .start, size 0x50 lma 0x80003000
+Loading section .vectors, size 0x368 lma 0x80003050
+Loading section .text, size 0xc548 lma 0x800033b8
+Loading section .eh_frame, size 0x28 lma 0x8000f900
+Loading section .data, size 0x1d8 lma 0x8000f928
+Start address 0x80003000, load size 52128
+Transfer rate: 10181 KB/sec, 7446 bytes/write.
+Section .nor_cfg_option, range 0x80000400 -- 0x80000410: matched.
+Section .boot_header, range 0x80001000 -- 0x80001090: matched.
+Section .start, range 0x80003000 -- 0x80003050: matched.
+Section .vectors, range 0x80003050 -- 0x800033b8: matched.
+Section .text, range 0x800033b8 -- 0x8000f900: matched.
+Section .eh_frame, range 0x8000f900 -- 0x8000f928: matched.
+Section .data, range 0x8000f928 -- 0x8000fb00: matched.
+Breakpoint 1 at 0x80005a80: file /home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/tools/phase0/mcan0_external_probe/src/main.c, line 185.
+
+Breakpoint 1, main () at /home/gtc/Desktop/workspace/HPM32/hpm5321_can_analyzer/tools/phase0/mcan0_external_probe/src/main.c:185
+185	        __asm volatile("nop");
+$1 = {magic = 0x444f4e45, version = 0x1, active_tx_build = 0x0, source_clock_hz = 0x4c4b400, bitrate = 0x7a120, msg_ram_status = 0x0, init_status = 0x0, rx_frames = 0x0, tx_attempted = 0x0, tx_succeeded = 0x0, last_tx_status = 0x0, last_rx_id = 0x0, last_rx_dlc = 0x0, last_rx_data = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, raw_psr = 0x70f, raw_ecr = 0x0, raw_cccr = 0x60, raw_ir = 0x0, tx_error_count = 0x0, rx_error_count = 0x0, error_logging_count = 0x0, bus_off = 0x0, warning = 0x0, error_passive = 0x0}
+0x804d8 <g_mcan0_external_result>:	0x444f4e45	0x00000001	0x00000000	0x04c4b400
+0x804e8 <g_mcan0_external_result+16>:	0x0007a120	0x00000000	0x00000000	0x00000000
+0x804f8 <g_mcan0_external_result+32>:	0x00000000	0x00000000	0x00000000	0x00000000
+0x80508 <g_mcan0_external_result+48>:	0x00000000	0x00000000	0x00000000	0x0000070f
+0x80518 <g_mcan0_external_result+64>:	0x00000000	0x00000060	0x00000000	0x00000000
+0x80528 <g_mcan0_external_result+80>:	0x00000000	0x00000000	0x00000000	0x00000000
+0x80538 <g_mcan0_external_result+96>:	0x00000000	0xf0400000
+[Inferior 1 (Remote target) detached]

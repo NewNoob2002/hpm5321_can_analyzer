@@ -1,0 +1,22 @@
+hpm_csr_get_core_cycle () at /home/gtc/HPMicro/sdk/hpm_sdk/drivers/inc/hpm_csr_drv.h:69
+69	 }
+0xf0280018:	0x00000040
+0xf028001c:	0x4e007627
+0xf0280040:	0x00000000
+0xf0280044:	0x00000708
+0xf0280050:	0x00000003
+0xf0280080:	0x00000000
+0xf0280084:	0x00200000
+0xf02800a0:	0x01200180
+0xf02800a4:	0x00010001
+0xf02800c0:	0x10100680
+0xf02800cc:	0x00000000
+0xf02800d0:	0x00000000
+[Inferior 1 (Remote target) detached]
+hpm_csr_get_core_cycle () at /home/gtc/HPMicro/sdk/hpm_sdk/drivers/inc/hpm_csr_drv.h:69
+69	 }
+0xf0400600 <g_mcan0_external_msg_buf+1536>:	0x00000000	0x00000000	0x00000000	0x00000000
+0xf0400610 <g_mcan0_external_msg_buf+1552>:	0x00000000	0x00000000	0x00000000	0x00000000
+0xf0400180 <g_mcan0_external_msg_buf+384>:	0x0c840642	0x00080000	0x524d5048	0x01000000
+0xf0400190 <g_mcan0_external_msg_buf+400>:	0x00000000	0x00000000	0x00000000	0x00000000
+[Inferior 1 (Remote target) detached]

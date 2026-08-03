@@ -1,0 +1,11 @@
+# Copyright (c) 2023,2024 HPMicro
+# SPDX-License-Identifier: BSD-3-Clause
+
+board:
+    soc: HPM5361            # HPM5321 reuses the HPM5361 SoC support in this SDK
+    device: HPM5321xCFx     # device name used for jlink connection
+    openocd-soc: hpm5300    # used for openocd soc config file name: hpm5300.cfg
+    openocd-probe: jlink    # used for openocd probe config file name: jlink.cfg
+    on-board-flash:
+      type: qspi-nor-flash
+      size: 1M             # the size of on-board flash which will be used in linker script

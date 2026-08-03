@@ -3,7 +3,6 @@
 
 cmake_minimum_required(VERSION 3.13)
 
-set(HPM_BUILD_TYPE "flash_xip")
 set(CONFIG_FREERTOS 1)
 set(CONFIG_SEGGER_RTT 1)
 

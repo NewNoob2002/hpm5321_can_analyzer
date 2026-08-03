@@ -1,0 +1,15 @@
+source_url=https://github.com/hpmicro/hpm_sdk.git
+release=v1.12.1
+release_commit=12bd92495abeed7f0a908c589e60974267c0506b
+
+# The SDK used for the existing Phase 0 binaries was a local fork checkout.
+# Those binaries remain evidence for the tested hardware, but Gate A requires a
+# clean rebuild with the official release_commit above.
+tested_local_remote=https://github.com/NewNoob2002/hpm_sdk.git
+tested_local_commit=b9c7eb0e614b1688cbd1514528e17a6d7bb23e93
+
+# Exact SDK checkout used to build the current ABI-v3/v4 review probe artifacts.
+# This is a clean descendant in the configured local remote, not the official
+# release_commit above; formal Gate A still requires an official-commit build.
+current_build_remote=https://github.com/NewNoob2002/hpm_sdk.git
+current_build_commit=88b01b43900d8c30844a1e5cdd3f3b7aff6db40e
