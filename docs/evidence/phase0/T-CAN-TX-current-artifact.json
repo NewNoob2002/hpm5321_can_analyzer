@@ -2,7 +2,7 @@
   "artifact": "build/review-mcan-tx/output/demo.elf",
   "elf_sha256": "3dd776cc8ef54db777fe9cfeab7d161c355d3cddd290652a6b126c4e43906268",
   "source_manifest": "docs/evidence/phase0/T-CAN-EXT-source-manifest.sha256",
-  "source_manifest_sha256": "0ddcf43485a1b591315489c6d9d7e73c9439d373bc0a21dca6f3e118a5a7011d",
+  "source_manifest_sha256": "10d057b61b7e6625109d443ae21a04ab596d50b7fdc7a81c36c41277e0041b73",
   "sdk_commit": "88b01b43900d8c30844a1e5cdd3f3b7aff6db40e",
   "sdk_build_version": "88b01b43900d",
   "build_definitions": {

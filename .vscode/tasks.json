@@ -1,0 +1,29 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build: Flash Debug",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/build.sh",
+            "args": ["hpm5321-flash-debug"],
+            "group": {"kind": "build", "isDefault": true},
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Build: Flash Release",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/build.sh",
+            "args": ["hpm5321-flash-release"],
+            "group": "build",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Build: RAM Debug",
+            "type": "shell",
+            "command": "${workspaceFolder}/scripts/build.sh",
+            "args": ["hpm5321-ram-debug"],
+            "group": "build",
+            "problemMatcher": ["$gcc"]
+        }
+    ]
+}

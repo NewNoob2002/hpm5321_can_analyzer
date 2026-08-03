@@ -34,6 +34,16 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
+        },
+        {
+            "name": "hpm5321-ram-debug",
+            "inherits": "hpm5321-base",
+            "displayName": "HPM5321 Custom - RAM Debug",
+            "binaryDir": "${sourceDir}/build/hpm5321-ram-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "HPM_BUILD_TYPE": "ram"
+            }
         }
     ],
     "buildPresets": [
@@ -47,6 +57,12 @@
             "name": "hpm5321-flash-release",
             "displayName": "Build HPM5321 Flash Release",
             "configurePreset": "hpm5321-flash-release",
+            "jobs": 8
+        },
+        {
+            "name": "hpm5321-ram-debug",
+            "displayName": "Build HPM5321 RAM Debug",
+            "configurePreset": "hpm5321-ram-debug",
             "jobs": 8
         }
     ]
