@@ -18,6 +18,7 @@ Status values: `PASS`, `PARTIAL`, `BLOCKED`, `NOT_TESTED`, `NOT_APPLICABLE`.
 | Physical cable hotplug | NOT_TESTED | Automated reset/re-enumeration passed; cable cycling evidence remains |
 | Windows WinUSB and packaging | PARTIAL | Cross-built and native EXEs passed 64 MiB/reset/recovery HIL; PnP binding record, hashes and packaging remain pending |
 | Protocol v1 host codec | PARTIAL | Envelope, negotiation, config/capture/diagnostic/session, filters, TX arm/disarm, CAN_TX/cancel, CAN RX batch and events implemented with 36 golden vectors; firmware C codec parity remains pending |
+| Protocol v1 C codec parity | PASS | Pure-C99 codec under `protocol/v1/c` decodes and re-encodes all 36 golden vectors byte-exact (host harness + ASan/UBSan + RISC-V cross compile); wiring into the firmware USB stack lands with P3A/P4E |
 | Official SDK v1.12.1 clean build | PASS | Official commit `12bd9249...` clean rebuild evidence: `docs/evidence/phase1/T-DEV-001-003-official-sdk-clean-build-report.md` |
 
 The Linux host spike and physical vendor-Bulk smoke test are complete. The next
