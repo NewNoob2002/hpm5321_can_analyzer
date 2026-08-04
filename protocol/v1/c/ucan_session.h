@@ -68,6 +68,8 @@ typedef struct {
     uint32_t can_error;
     uint64_t completed_tick;
     uint32_t rule_index;
+    uint32_t result_evt_seq; /* device_event_sequence of the CAN_TX_RESULT event */
+    uint64_t deadline_tick;  /* client-declared deadline; 0 = immediate */
 } ucan_tx_slot_t;
 
 /* Request replay cache entry (spec 5.2). */
@@ -93,6 +95,7 @@ typedef struct {
     uint32_t first_sequence;
     uint32_t last_sequence;
     uint64_t dropped_count;
+    uint32_t evt_seq; /* device_event_sequence, allocated only on successful admission */
 } ucan_loss_acc_t;
 
 typedef struct {
@@ -165,6 +168,9 @@ typedef struct {
     uint32_t data_depth;
     uint32_t pool_high_water;
     uint32_t device_event_sequence; /* allocated before queue admission */
+    uint8_t negotiated; /* set once HELLO succeeds; gates all other requests */
+    uint8_t min_minor;  /* negotiated minimum minor (lowest common) */
+    uint8_t max_minor;  /* negotiated maximum minor */
     ucan_session_channel_t channels[UCAN_SESSION_MAX_CHANNELS];
     ucan_tx_slot_t tx_ledger[UCAN_SESSION_MAX_TX_SLOTS];
     ucan_replay_entry_t replay[UCAN_SESSION_REPLAY_ENTRIES];

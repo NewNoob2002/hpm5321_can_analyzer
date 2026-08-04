@@ -34,6 +34,13 @@ uint64_t ucan_frame_time_us(uint32_t nominal_bps, uint32_t data_bps, uint8_t dlc
     int fd = (can_flags & 0x0004u) != 0;
     int ext = (can_flags & 0x0001u) != 0;
     uint64_t micro = 1000000u;
+    /* A channel configured with nominal_bps=0 (never CONFIG'd) must not divide
+     * by zero during bus-load admission. Treat it as unmeasurable and return
+     * the worst case (full 64-byte FD frame at the slowest legal 10 kbps)
+     * so admission stays conservative rather than crashing. */
+    if (nominal_bps == 0) {
+        nominal_bps = 10000;
+    }
     if (fd) {
         uint64_t nom = stuffed_bits(35 + (ext ? 20 : 0));
         uint64_t dat = stuffed_bits(28 + 8u * payload_len + (payload_len <= 16 ? 17 : 21));
@@ -156,20 +163,22 @@ static int build_error_frame(const ucan_frame_t *req, uint8_t *out, uint32_t cap
                              uint32_t *out_len, uint16_t status,
                              uint16_t error_flags, uint32_t expected, uint32_t actual);
 
+static uint32_t alloc_event_sequence(ucan_session_t *s) {
+    s->device_event_sequence = wrap_inc(s->device_event_sequence);
+    return s->device_event_sequence;
+}
+
 static int enqueue_critical(ucan_session_t *s, const uint8_t *bytes, uint32_t len,
-                            int allocate_seq) {
+                            uint32_t seq) {
     ucan_q_critical_t *q = &s->q_critical;
     if (q->count >= UCAN_QUEUE_CRITICAL_CAP) {
         return -1;
-    }
-    if (allocate_seq) {
-        s->device_event_sequence = wrap_inc(s->device_event_sequence);
     }
     uint16_t tail = (uint16_t)((q->head + q->count) % UCAN_QUEUE_CRITICAL_CAP);
     ucan_queue_item_t *item = &q->items[tail];
     memcpy(item->data, bytes, len);
     item->len = len;
-    item->evt_seq = s->device_event_sequence;
+    item->evt_seq = seq;
     item->kind = 2;
     q->count++;
     s->event_depth = q->count;
@@ -198,17 +207,17 @@ static int enqueue_response(ucan_session_t *s, const uint8_t *bytes, uint32_t le
     return 0;
 }
 
-static int enqueue_data(ucan_session_t *s, const uint8_t *bytes, uint32_t len) {
+static int enqueue_data(ucan_session_t *s, const uint8_t *bytes, uint32_t len,
+                        uint32_t seq) {
     ucan_q_data_t *q = &s->q_data;
     if (q->count >= UCAN_QUEUE_DATA_CAP) {
         return -1;
     }
-    s->device_event_sequence = wrap_inc(s->device_event_sequence);
     uint16_t tail = (uint16_t)((q->head + q->count) % UCAN_QUEUE_DATA_CAP);
     ucan_queue_item_t *item = &q->items[tail];
     memcpy(item->data, bytes, len);
     item->len = len;
-    item->evt_seq = s->device_event_sequence;
+    item->evt_seq = seq;
     item->kind = 3;
     q->count++;
     s->data_depth = q->count;
@@ -236,12 +245,17 @@ static void emit_can_tx_result(ucan_session_t *s, ucan_tx_slot_t *slot) {
         f.minor = UCAN_PROTOCOL_MINOR;
         f.flags = UCAN_FLAG_EVENT;
         f.message_type = UCAN_MSG_CAN_TX_RESULT;
-        f.sequence = 0;
+        /* One semantic final result -> one stable event sequence, reused
+         * across delivery_pending retries (spec 8.1). */
+        if (slot->result_evt_seq == 0) {
+            slot->result_evt_seq = alloc_event_sequence(s);
+        }
+        f.sequence = slot->result_evt_seq;
         f.payload = buf;
         f.payload_len = len;
         uint32_t flen = 0;
         if (ucan_frame_encode(&f, frame, sizeof(frame), &flen) == 0) {
-            if (enqueue_critical(s, frame, flen, 1) != 0) {
+            if (enqueue_critical(s, frame, flen, slot->result_evt_seq) != 0) {
                 slot->delivery_pending = 1;
             }
         }
@@ -268,12 +282,13 @@ static void emit_channel_state(ucan_session_t *s, uint8_t channel, uint8_t state
         f.minor = UCAN_PROTOCOL_MINOR;
         f.flags = UCAN_FLAG_EVENT;
         f.message_type = UCAN_MSG_CHANNEL_STATE;
-        f.sequence = 0;
+        uint32_t seq = alloc_event_sequence(s);
+        f.sequence = seq;
         f.payload = buf;
         f.payload_len = len;
         uint32_t flen = 0;
         if (ucan_frame_encode(&f, frame, sizeof(frame), &flen) == 0) {
-            enqueue_critical(s, frame, flen, 1);
+            enqueue_critical(s, frame, flen, seq);
         }
     }
 }
@@ -299,18 +314,20 @@ static void flush_loss_notice(ucan_session_t *s, ucan_loss_acc_t *acc) {
         f.minor = UCAN_PROTOCOL_MINOR;
         f.flags = UCAN_FLAG_EVENT;
         f.message_type = UCAN_MSG_DATA_LOSS;
-        f.sequence = 0;
+        /* DATA_LOSS allocates its event sequence only on successful
+         * critical-slot reservation (spec 8.1); a failed reservation keeps
+         * the accumulator for the next retry without burning a sequence. */
+        if (acc->evt_seq == 0) {
+            acc->evt_seq = alloc_event_sequence(s);
+        }
+        f.sequence = acc->evt_seq;
         f.payload = buf;
         f.payload_len = len;
         uint32_t flen = 0;
         if (ucan_frame_encode(&f, frame, sizeof(frame), &flen) == 0) {
-            /* DATA_LOSS allocates its event sequence only on successful
-             * critical-slot reservation (spec 8.1). */
-            if (enqueue_critical(s, frame, flen, 0) == 0) {
-                s->device_event_sequence = wrap_inc(s->device_event_sequence);
+            if (enqueue_critical(s, frame, flen, acc->evt_seq) == 0) {
                 acc->occupied = 0;
-            } else {
-                /* Accumulator survives; next notice retries. */
+                acc->evt_seq = 0;
             }
         }
     }
@@ -406,6 +423,7 @@ void ucan_session_tick(ucan_session_t *s, uint64_t ticks) {
                 slot->state = 2;
                 slot->final_result = 3; /* TIMEOUT */
                 slot->final_tick = s->tick;
+                slot->completed_tick = s->tick;
                 slot->can_error = 0;
                 s->queue_generation = wrap_inc(s->queue_generation);
                 emit_can_tx_result(s, slot);
@@ -414,6 +432,18 @@ void ucan_session_tick(ucan_session_t *s, uint64_t ticks) {
         s->tx_armed = 0;
         s->arm_expiry_tick = 0;
         s->arm_epoch = wrap_inc(s->arm_epoch);
+    }
+    /* Reclaim FINAL TX ledger slots once the tag-reuse guard has elapsed
+     * (spec 5.2): the result must stay queryable for tag_reuse_guard_ms so
+     * byte-identical CAN_TX replays can read the FINAL snapshot, then the
+     * slot returns to the free pool instead of leaking permanently. */
+    for (int i = 0; i < UCAN_SESSION_MAX_TX_SLOTS; ++i) {
+        ucan_tx_slot_t *slot = &s->tx_ledger[i];
+        if (slot->occupied && slot->state == 2 && !slot->delivery_pending &&
+            s->tick - slot->completed_tick >= (uint64_t)s->cfg->tag_reuse_guard_ms *
+                                                  s->cfg->tick_hz / 1000) {
+            memset(slot, 0, sizeof(*slot));
+        }
     }
 }
 
@@ -451,6 +481,9 @@ int ucan_session_emit_rx_batch(ucan_session_t *s, uint8_t channel,
     if (ucan_encode_can_rx_batch(&batch, buf, sizeof(buf), &len) != 0) {
         return 1;
     }
+    /* Allocate the event sequence before data-queue admission (spec 8.1):
+     * even a dropped batch consumes a sequence so the host can account it. */
+    uint32_t seq = alloc_event_sequence(s);
     uint8_t frame[512];
     ucan_frame_t f;
     memset(&f, 0, sizeof(f));
@@ -458,17 +491,17 @@ int ucan_session_emit_rx_batch(ucan_session_t *s, uint8_t channel,
     f.minor = UCAN_PROTOCOL_MINOR;
     f.flags = UCAN_FLAG_EVENT;
     f.message_type = UCAN_MSG_CAN_RX_BATCH;
-    f.sequence = 0;
+    f.sequence = seq;
     f.payload = buf;
     f.payload_len = len;
     uint32_t flen = 0;
     if (ucan_frame_encode(&f, frame, sizeof(frame), &flen) != 0) {
         return 1;
     }
-    if (enqueue_data(s, frame, flen) != 0) {
+    if (enqueue_data(s, frame, flen, seq) != 0) {
         /* USB data queue full: EVENT-domain loss, channel 0xFF. */
         accumulate_loss(s, 0xff, 2 /* USB_DATA_QUEUE */, 1 /* EVENT */,
-                        1 /* OVERFLOW */, s->device_event_sequence);
+                        1 /* OVERFLOW */, seq);
         return 1;
     }
     if (s->channels[channel].rx_depth > 0) {
@@ -488,7 +521,11 @@ void ucan_session_can_tx_complete(ucan_session_t *s, uint32_t client_tag,
         return; /* exactly one final */
     }
     slot->state = 2;
-    slot->final_result = result;
+    /* A frame that completes after its client-declared deadline is a late
+     * delivery -> TIMEOUT (3), not the passed-in result (spec 5.2). */
+    slot->final_result = (slot->deadline_tick != 0 && s->tick > slot->deadline_tick)
+                             ? 3 /* TIMEOUT */
+                             : result;
     slot->final_tick = s->tick;
     slot->can_error = can_error;
     slot->completed_tick = s->tick;
@@ -534,6 +571,14 @@ static int replay_hit(ucan_session_t *s, const ucan_frame_t *req, uint8_t *out,
                              (e->payload_len == 0 ||
                               memcmp(e->payload, req->payload, e->payload_len) == 0);
             if (same_bytes && s->tick - e->stored_tick <= retention_ticks) {
+                /* Never copy a cached response that does not fit the caller's
+                 * buffer: surface BUSY|RETRYABLE instead of overflowing the
+                 * destination (spec 5.2 / 8.1). */
+                if (e->response_len > cap) {
+                    build_error_frame(req, out, cap, out_len, UCAN_STATUS_BUSY, 0x0001,
+                                      0, 0);
+                    return 1;
+                }
                 memcpy(out, e->response, e->response_len);
                 *out_len = e->response_len;
                 return 1;
@@ -565,6 +610,21 @@ static int replay_hit(ucan_session_t *s, const ucan_frame_t *req, uint8_t *out,
         }
     }
     return 0;
+}
+
+/* True when every replay slot holds an entry still inside its retention
+ * window, so a new side-effect request cannot be stored without evicting a
+ * valid cache entry (spec 5.2). */
+static int replay_cache_full_of_retention(const ucan_session_t *s) {
+    uint64_t retention_ticks =
+        (uint64_t)s->cfg->replay_retention_ms * s->cfg->tick_hz / 1000;
+    for (int i = 0; i < UCAN_SESSION_REPLAY_ENTRIES; ++i) {
+        const ucan_replay_entry_t *e = &s->replay[i];
+        if (!e->occupied || s->tick - e->stored_tick > retention_ticks) {
+            return 0; /* free slot, or an expired entry that may be evicted */
+        }
+    }
+    return 1;
 }
 
 static void replay_store(ucan_session_t *s, const ucan_frame_t *req,
@@ -671,6 +731,30 @@ static int response_error(ucan_session_t *s, const ucan_frame_t *req, uint8_t *o
     return rc;
 }
 
+/* Cancel pending TX and drop the armed state without emitting a response.
+ * Used when a configuration change invalidates the current arm (spec 5.2/11:
+ * config changes must not let stale authorizations transmit). */
+static void disarm_tx(ucan_session_t *s) {
+    if (!s->tx_armed) {
+        return;
+    }
+    for (int i = 0; i < UCAN_SESSION_MAX_TX_SLOTS; ++i) {
+        ucan_tx_slot_t *slot = &s->tx_ledger[i];
+        if (slot->occupied && slot->state == 1) {
+            slot->state = 2;
+            slot->final_result = 5; /* DISARMED */
+            slot->final_tick = s->tick;
+            slot->completed_tick = s->tick;
+            slot->can_error = 0;
+            s->queue_generation = wrap_inc(s->queue_generation);
+            emit_can_tx_result(s, slot);
+        }
+    }
+    s->tx_armed = 0;
+    s->arm_expiry_tick = 0;
+    s->arm_epoch = wrap_inc(s->arm_epoch);
+}
+
 static int cas_check(ucan_session_t *s, const ucan_frame_t *req, uint32_t expected,
                      uint8_t *out, uint32_t cap, uint32_t *out_len) {
     if (expected != s->config_generation) {
@@ -690,9 +774,38 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
     if (req->flags & UCAN_FLAG_EVENT) {
         return -1; /* device never receives events */
     }
+    if ((req->flags & UCAN_FLAG_REQUEST) == 0) {
+        /* Spec 2.1: exactly one of REQUEST/RESPONSE/EVENT; a frame the device
+         * must not act on (a response or bare status) is rejected, not echoed
+         * as a response. */
+        return -1;
+    }
+
+    if (!s->negotiated && req->message_type != UCAN_MSG_HELLO &&
+        req->message_type != UCAN_MSG_GET_DEVICE_INFO) {
+        /* Spec 2.2: host must HELLO first. Before negotiation only HELLO (and,
+         * after a version mismatch, GET_DEVICE_INFO) is permitted. */
+        return response_error(s, req, out, cap, out_len, UCAN_STATUS_BAD_STATE, 0x0002,
+                              0, 0);
+    }
 
     if (replay_hit(s, req, out, cap, out_len)) {
         return 0;
+    }
+
+    /* Spec 5.2: when every replay slot is still within retention, a NEW
+     * side-effect request must be refused (BUSY|RETRYABLE) before executing,
+     * not silently evict a still-valid cache entry. */
+    if (is_side_effect(req->message_type) && replay_cache_full_of_retention(s)) {
+        return response_error(s, req, out, cap, out_len, UCAN_STATUS_BUSY, 0x0001, 0, 0);
+    }
+
+    /* Spec 8.1: a side-effect request must be refused before executing when the
+     * response reserve is exhausted, so the config/filter/arm mutation is never
+     * applied yet answered BUSY. The BUSY frame is returned synchronously. */
+    if (is_side_effect(req->message_type) &&
+        s->q_response.count >= UCAN_QUEUE_RESPONSE_CAP) {
+        return build_error_frame(req, out, cap, out_len, UCAN_STATUS_BUSY, 0x0001, 0, 0);
     }
 
     switch (req->message_type) {
@@ -702,8 +815,18 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
             return response_error(s, req, out, cap, out_len, UCAN_STATUS_INVALID_ARGUMENT,
                                   0, 0, 0);
         }
+        /* Spec 2.2: pick the highest major shared by both, then the highest
+         * shared minor. v1 only defines major 1, so a host whose range does
+         * not include 1 is incompatible. */
         if (hello.max_major < UCAN_PROTOCOL_MAJOR ||
             hello.min_major > UCAN_PROTOCOL_MAJOR) {
+            return response_error(s, req, out, cap, out_len,
+                                  UCAN_STATUS_INCOMPATIBLE_VERSION, 0, 0, 0);
+        }
+        /* Device minor is UCAN_PROTOCOL_MINOR (0). The intersection with the
+         * host's [min_minor, max_minor] covers minor 0 iff min_minor <= 0.
+         * (min_minor is u8 so this is only ever 0.) */
+        if (hello.min_minor > UCAN_PROTOCOL_MINOR) {
             return response_error(s, req, out, cap, out_len,
                                   UCAN_STATUS_INCOMPATIBLE_VERSION, 0, 0, 0);
         }
@@ -716,6 +839,9 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
         if (ucan_encode_hello_resp(&resp, scratch, sizeof(scratch), &slen) != 0) {
             return -1;
         }
+        s->negotiated = 1;
+        s->min_minor = 0;
+        s->max_minor = 0;
         return response_ok(s, req, out, cap, out_len, UCAN_MSG_HELLO, scratch, slen);
     }
     case UCAN_MSG_GET_DEVICE_INFO: {
@@ -906,6 +1032,9 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
         if (cas_check(s, req, cfg_req.generation, out, cap, out_len)) {
             return 0;
         }
+        /* A bitrate/mode change invalidates the armed TX admission contract:
+         * disarm so no frame transmits under the stale arm (spec 5.2/11). */
+        disarm_tx(s);
         ucan_session_channel_t *c = &s->channels[cfg_req.channel];
         c->mode = cfg_req.mode;
         c->flags = cfg_req.flags;
@@ -985,6 +1114,7 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
         if (cas_check(s, req, filter_req.expected_generation, out, cap, out_len)) {
             return 0;
         }
+        disarm_tx(s);
         ucan_session_channel_t *c = &s->channels[filter_req.channel];
         s->config_generation = wrap_inc(s->config_generation);
         c->filter_count = filter_req.rule_count;
@@ -1029,6 +1159,7 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
         if (cas_check(s, req, clear_req.expected_generation, out, cap, out_len)) {
             return 0;
         }
+        disarm_tx(s);
         ucan_session_channel_t *c = &s->channels[clear_req.channel];
         s->config_generation = wrap_inc(s->config_generation);
         c->filter_count = 0;
@@ -1113,6 +1244,7 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
                 slot->state = 2;
                 slot->final_result = 5; /* DISARMED */
                 slot->final_tick = s->tick;
+                slot->completed_tick = s->tick;
                 slot->can_error = 0;
                 s->queue_generation = wrap_inc(s->queue_generation);
                 emit_can_tx_result(s, slot);
@@ -1228,6 +1360,7 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
         slot->arm_epoch = tx_req.arm_epoch;
         slot->state = 1;
         slot->rule_index = rule;
+        slot->deadline_tick = tx_req.deadline_tick;
         s->queue_generation = wrap_inc(s->queue_generation);
         ucan_can_tx_resp_t tx_resp;
         tx_resp.client_tag = tx_req.client_tag;
@@ -1261,6 +1394,7 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
                 slot->state = 2;
                 slot->final_result = 2; /* CANCELLED */
                 slot->final_tick = s->tick;
+                slot->completed_tick = s->tick;
                 slot->can_error = 0;
                 s->queue_generation = wrap_inc(s->queue_generation);
                 emit_can_tx_result(s, slot);
@@ -1305,52 +1439,64 @@ int ucan_session_dequeue(ucan_session_t *s, uint8_t *out, uint32_t cap,
     if (qr->count == 0 && qc->count == 0 && qd->count == 0) {
         return 1;
     }
+    /* Select the next queue + head WITHOUT popping, so a frame that does not
+     * fit cap is left queued (caller retries with a larger buffer) instead of
+     * being silently truncated to a CRC-invalid prefix (spec 8.1: no silent
+     * drop). */
     ucan_queue_item_t *item = NULL;
+    uint16_t head = 0;
+    int kind = 0; /* 1 response, 2 critical, 3 data */
     if (qd->count != 0 &&
         ((qr->count == 0 && qc->count == 0) || s->served_since_data >= 16)) {
-        uint16_t head = qd->head;
+        head = qd->head;
         item = &qd->items[head];
+        kind = 3;
+    } else if (qc->count != 0 && s->response_streak >= 8) {
+        head = qc->head;
+        item = &qc->items[head];
+        kind = 2;
+    } else if (qr->count != 0) {
+        head = qr->head;
+        item = &qr->items[head];
+        kind = 1;
+    } else if (qc->count != 0) {
+        head = qc->head;
+        item = &qc->items[head];
+        kind = 2;
+    } else {
+        head = qd->head;
+        item = &qd->items[head];
+        kind = 3;
+    }
+    if (item->len > cap) {
+        return -1; /* frame preserved; caller must provide more space */
+    }
+    /* Pop now that the frame is known to fit. */
+    switch (kind) {
+    case 3:
         qd->head = (uint16_t)((head + 1) % UCAN_QUEUE_DATA_CAP);
         qd->count--;
         s->data_depth = qd->count;
         s->served_since_data = 0;
         s->response_streak = 0;
-    } else if (qc->count != 0 && s->response_streak >= 8) {
-        uint16_t head = qc->head;
-        item = &qc->items[head];
+        break;
+    case 2:
         qc->head = (uint16_t)((head + 1) % UCAN_QUEUE_CRITICAL_CAP);
         qc->count--;
         s->event_depth = qc->count;
         s->response_streak = 0;
         s->served_since_data++;
-    } else if (qr->count != 0) {
-        uint16_t head = qr->head;
-        item = &qr->items[head];
+        break;
+    default:
         qr->head = (uint16_t)((head + 1) % UCAN_QUEUE_RESPONSE_CAP);
         qr->count--;
         s->response_depth = qr->count;
         s->response_streak++;
         s->served_since_data++;
-    } else if (qc->count != 0) {
-        uint16_t head = qc->head;
-        item = &qc->items[head];
-        qc->head = (uint16_t)((head + 1) % UCAN_QUEUE_CRITICAL_CAP);
-        qc->count--;
-        s->event_depth = qc->count;
-        s->response_streak = 0;
-        s->served_since_data++;
-    } else {
-        uint16_t head = qd->head;
-        item = &qd->items[head];
-        qd->head = (uint16_t)((head + 1) % UCAN_QUEUE_DATA_CAP);
-        qd->count--;
-        s->data_depth = qd->count;
-        s->served_since_data = 0;
-        s->response_streak = 0;
+        break;
     }
-    uint32_t copy_len = item->len < cap ? item->len : cap;
-    memcpy(out, item->data, copy_len);
-    *out_len = copy_len;
+    memcpy(out, item->data, item->len);
+    *out_len = item->len;
     *evt_seq = item->evt_seq;
     return 0;
 }
