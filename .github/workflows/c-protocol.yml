@@ -1,0 +1,59 @@
+name: C Protocol
+
+on:
+  push:
+    paths:
+      - "protocol/**"
+      - "tests/protocol/**"
+      - ".github/workflows/c-protocol.yml"
+  pull_request:
+    paths:
+      - "protocol/**"
+      - "tests/protocol/**"
+      - ".github/workflows/c-protocol.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  codec-session:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile codec (strict flags)
+        run: >-
+          gcc -std=c99 -Wall -Wextra -Werror -O2 -I protocol/v1/c
+          -fsyntax-only tests/protocol/ucan_vector_test.c protocol/v1/c/ucan_codec.c
+
+      - name: Compile session (strict flags)
+        run: >-
+          gcc -std=c99 -Wall -Wextra -Werror -O2 -I protocol/v1/c
+          -fsyntax-only tests/protocol/ucan_session_test.c protocol/v1/c/ucan_session.c protocol/v1/c/ucan_codec.c
+
+      - name: Build and run codec vectors
+        run: >-
+          gcc -std=c99 -Wall -Wextra -Werror -O2 -I protocol/v1/c
+          -o /tmp/ucan_vector_test tests/protocol/ucan_vector_test.c protocol/v1/c/ucan_codec.c
+          && /tmp/ucan_vector_test protocol/v1/0
+
+      - name: Build and run session scenarios
+        run: >-
+          gcc -std=c99 -Wall -Wextra -Werror -O2 -I protocol/v1/c
+          -o /tmp/ucan_session_test tests/protocol/ucan_session_test.c protocol/v1/c/ucan_session.c protocol/v1/c/ucan_codec.c
+          && /tmp/ucan_session_test
+
+      - name: Build and run codec under ASan/UBSan
+        run: >-
+          gcc -std=c99 -Wall -Wextra -Werror -O1 -g -fsanitize=address,undefined
+          -fno-omit-frame-pointer -I protocol/v1/c
+          -o /tmp/ucan_vector_asan tests/protocol/ucan_vector_test.c protocol/v1/c/ucan_codec.c
+          && ASAN_OPTIONS=detect_leaks=0 /tmp/ucan_vector_asan protocol/v1/0
+
+      - name: Build and run session under ASan/UBSan
+        run: >-
+          gcc -std=c99 -Wall -Wextra -Werror -O1 -g -fsanitize=address,undefined
+          -fno-omit-frame-pointer -I protocol/v1/c
+          -o /tmp/ucan_session_asan tests/protocol/ucan_session_test.c protocol/v1/c/ucan_session.c protocol/v1/c/ucan_codec.c
+          && ASAN_OPTIONS=detect_leaks=0 /tmp/ucan_session_asan
