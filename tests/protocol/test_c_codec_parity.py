@@ -61,7 +61,7 @@ class CCodecParityTests(unittest.TestCase):
             ("-fsanitize=address,undefined", "-fno-omit-frame-pointer")
         )
 
-    def test_session_scenarios(self):
+    def _run_session_harness(self, extra_flags=()):
         with tempfile.TemporaryDirectory() as tmp:
             binary = Path(tmp) / "ucan_session_test"
             cmd = [
@@ -72,6 +72,7 @@ class CCodecParityTests(unittest.TestCase):
                 "-Werror",
                 "-O2",
                 f"-I{CODECDIR}",
+                *extra_flags,
                 str(SESSION_HARNESS),
                 str(CODECDIR / "ucan_session.c"),
                 str(CODECDIR / "ucan_codec.c"),
@@ -83,7 +84,10 @@ class CCodecParityTests(unittest.TestCase):
                 compiled.returncode, 0, f"session compile failed:\n{compiled.stderr}"
             )
             ran = subprocess.run(
-                [str(binary)], capture_output=True, text=True
+                [str(binary)],
+                capture_output=True,
+                text=True,
+                env={"ASAN_OPTIONS": "detect_leaks=0", "PATH": "/usr/bin:/bin"},
             )
             self.assertEqual(
                 ran.returncode,
@@ -91,6 +95,14 @@ class CCodecParityTests(unittest.TestCase):
                 f"session harness failed:\nstdout={ran.stdout}\nstderr={ran.stderr}",
             )
             self.assertIn("0 failures", ran.stdout)
+
+    def test_session_scenarios(self):
+        self._run_session_harness()
+
+    def test_session_sanitizer_build_stays_clean(self):
+        self._run_session_harness(
+            ("-fsanitize=address,undefined", "-fno-omit-frame-pointer")
+        )
 
 
 if __name__ == "__main__":

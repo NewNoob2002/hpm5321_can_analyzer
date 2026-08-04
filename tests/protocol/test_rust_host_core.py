@@ -21,7 +21,11 @@ class RustHostCoreTests(unittest.TestCase):
             result.returncode, 0, f"cargo test failed:\n{result.stderr}"
         )
         self.assertIn("0 failed", result.stdout)
-        self.assertIn("15 passed", result.stdout)
+        # Do not hardcode a test count: the suite grows as coverage does. The
+        # "0 failed" plus nonzero-exit gate is sufficient; a regression that
+        # breaks a test fails the run.
+        self.assertNotIn("test result: FAILED", result.stdout)
+        self.assertRegex(result.stdout, r"\d+ passed")
 
     def test_core_clippy_is_clean(self):
         result = subprocess.run(
