@@ -562,14 +562,17 @@ fn data_loss_notice_arrives() {
 
 #[test]
 fn ping_echoes_ticks() {
+    let mut counter = 0u32;
     let mut transport = FakeTransport::new(FakeDevice::new());
+    transport.write_frame(&hello_request(&mut counter)).unwrap();
+    let _ = read_ok(&mut transport);
     let payload = hpm_usb_can_protocol::payload::PingRequest {
         host_send_ns: 123_456_789,
         sample_id: 7,
     }
     .encode();
     transport
-        .write_frame(&request(msg::PING, 1, payload))
+        .write_frame(&request(msg::PING, seq(&mut counter), payload))
         .unwrap();
     let response = read_ok(&mut transport);
     let ping = PingResponse::decode(&response.payload).unwrap();

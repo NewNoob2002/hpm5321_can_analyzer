@@ -5,6 +5,7 @@
 //! module wires the analyzer protocol framing onto the same endpoints so the
 //! host client can run against the real device.
 
+use std::collections::VecDeque;
 use std::time::Duration;
 
 use hpm_usb_can_protocol::{Frame, StreamDecoder};
@@ -23,7 +24,10 @@ const DEFAULT_TIMEOUT: Duration = Duration::from_secs(3);
 pub struct UsbTransport {
     handle: rusb::DeviceHandle<rusb::GlobalContext>,
     decoder: StreamDecoder,
-    pending: Vec<Frame>,
+    /// Frames decoded from the last bulk read, in wire order (FIFO). A single
+    /// read can carry multiple frames; draining in arrival order keeps the
+    /// response/event ordering identical to the fake backend.
+    pending: VecDeque<Frame>,
     id: String,
 }
 
@@ -40,7 +44,7 @@ impl UsbTransport {
         Ok(Self {
             handle,
             decoder: StreamDecoder::new(MAX_MESSAGE),
-            pending: Vec::new(),
+            pending: VecDeque::new(),
             id,
         })
     }
@@ -72,7 +76,7 @@ impl Transport for UsbTransport {
 
     fn read_frame(&mut self, timeout: Duration) -> Result<Frame, TransportError> {
         loop {
-            if let Some(frame) = self.pending.pop() {
+            if let Some(frame) = self.pending.pop_front() {
                 return Ok(frame);
             }
             let mut buffer = vec![0u8; 4096];
@@ -83,7 +87,9 @@ impl Transport for UsbTransport {
             if read == 0 {
                 continue;
             }
-            self.pending.extend(self.decoder.push(&buffer[..read]));
+            for frame in self.decoder.push(&buffer[..read]) {
+                self.pending.push_back(frame);
+            }
         }
     }
 

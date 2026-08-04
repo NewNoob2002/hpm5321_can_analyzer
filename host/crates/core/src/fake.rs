@@ -60,6 +60,7 @@ struct TxSlot {
     final_tick: u64,
     can_error: u32,
     completion_tick: u64,
+    deadline_tick: u64,
 }
 
 #[derive(Clone, Debug)]
@@ -87,6 +88,7 @@ struct ChannelState {
 #[derive(Clone, Debug)]
 pub struct FakeDevice {
     session_id: u32,
+    negotiated: bool,
     config_generation: u32,
     capture_generation: u32,
     capture_state: u8,
@@ -104,6 +106,9 @@ pub struct FakeDevice {
     slots: Vec<TxSlot>,
     replay: Vec<ReplayEntry>,
     next_channel_sequence: u32,
+    /// Monotonic device event sequence (spec: event frames are sequenced so the
+    /// host can detect loss/reorder/gap). Starts at 1, wraps past 0.
+    device_event_sequence: u32,
     outbox: VecDeque<Vec<u8>>,
     rule_tokens: Vec<u64>,
     rule_capacity: Vec<u64>,
@@ -121,6 +126,7 @@ impl FakeDevice {
     pub fn new() -> Self {
         Self {
             session_id: 0x1234_5678,
+            negotiated: false,
             config_generation: 1,
             capture_generation: 0,
             capture_state: 0,
@@ -147,6 +153,7 @@ impl FakeDevice {
             slots: Vec::new(),
             replay: Vec::new(),
             next_channel_sequence: 1,
+            device_event_sequence: 1,
             outbox: VecDeque::new(),
             rule_tokens: Vec::new(),
             rule_capacity: Vec::new(),
@@ -192,6 +199,7 @@ impl FakeDevice {
     pub fn reset(&mut self) {
         let next = self.session_id.wrapping_add(1);
         self.session_id = if next == 0 { 1 } else { next };
+        self.negotiated = false;
         self.config_generation = 1;
         self.capture_generation = 0;
         self.capture_state = 0;
@@ -217,6 +225,7 @@ impl FakeDevice {
         self.slots.clear();
         self.replay.clear();
         self.next_channel_sequence = 1;
+        self.device_event_sequence = 1;
         self.outbox.clear();
         self.rule_tokens.clear();
         self.rule_capacity.clear();
@@ -240,7 +249,13 @@ impl FakeDevice {
         for index in completed {
             let slot = &mut self.slots[index];
             slot.state = TX_FINAL;
-            slot.final_result = TX_SENT;
+            // A frame that completes after its client-declared deadline is a
+            // TIMEOUT (late delivery), not a clean SENT.
+            slot.final_result = if slot.deadline_tick != 0 && self.tick > slot.deadline_tick {
+                TX_TIMEOUT
+            } else {
+                TX_SENT
+            };
             slot.final_tick = self.tick;
             self.tx_frames += 1;
             emitted.push(slot.clone());
@@ -269,6 +284,18 @@ impl FakeDevice {
                 self.arm_epoch = 1;
             }
         }
+        // Reclaim FINAL slots once the tag-reuse guard has elapsed (spec 5.2):
+        // the FINAL snapshot stays queryable for tag_reuse_guard_ms, then the
+        // slot is freed so the ledger does not leak to permanent NO_RESOURCE.
+        let guard_ticks = 1_000u64 * 1_000; /* tag_reuse_guard_ms at 1 MHz */
+        self.slots.retain(|slot| {
+            !(slot.state == TX_FINAL && self.tick.saturating_sub(slot.final_tick) >= guard_ticks)
+        });
+    }
+
+    fn alloc_event_sequence(&mut self) -> u32 {
+        self.device_event_sequence = self.device_event_sequence.wrapping_add(1).max(1);
+        self.device_event_sequence
     }
 
     /// Emit a DATA_LOSS notice for a simulated ring overflow.
@@ -293,7 +320,7 @@ impl FakeDevice {
             flags: flags::EVENT,
             message_type: msg::DATA_LOSS,
             status: 0,
-            sequence: 0,
+            sequence: self.alloc_event_sequence(),
             payload,
         };
         if let Ok(bytes) = frame.encode(MAX_MESSAGE) {
@@ -317,7 +344,7 @@ impl FakeDevice {
                 flags: flags::EVENT,
                 message_type: msg::CAN_TX_RESULT,
                 status: 0,
-                sequence: 0,
+                sequence: self.alloc_event_sequence(),
                 payload,
             };
             if let Ok(bytes) = frame.encode(MAX_MESSAGE) {
@@ -349,7 +376,7 @@ impl FakeDevice {
                 flags: flags::EVENT,
                 message_type: msg::CHANNEL_STATE,
                 status: 0,
-                sequence: 0,
+                sequence: self.alloc_event_sequence(),
                 payload,
             };
             if let Ok(bytes) = frame.encode(MAX_MESSAGE) {
@@ -392,7 +419,7 @@ impl FakeDevice {
                     flags: flags::EVENT,
                     message_type: msg::CAN_RX_BATCH,
                     status: 0,
-                    sequence: 0,
+                    sequence: self.alloc_event_sequence(),
                     payload,
                 };
                 if let Ok(bytes) = frame.encode(MAX_MESSAGE) {
@@ -412,8 +439,28 @@ impl FakeDevice {
                 "device only accepts request frames".to_owned(),
             ));
         }
+        // Spec 2.2: host must HELLO first. Before negotiation only HELLO (and,
+        // after a version mismatch, GET_DEVICE_INFO) is permitted.
+        if !self.negotiated
+            && frame.message_type != msg::HELLO
+            && frame.message_type != msg::GET_DEVICE_INFO
+        {
+            return Ok(Some(self.error_response(
+                frame,
+                STATUS_BAD_STATE,
+                0x0002,
+                0,
+                0,
+            )));
+        }
         if let Some(cached) = self.replay_hit(frame) {
             return Ok(Some(cached));
+        }
+        // Spec 5.2: refuse a NEW side-effect request when the replay cache is
+        // full of entries still inside retention, rather than evicting a valid
+        // one mid-retention.
+        if Self::is_side_effect(frame.message_type) && self.replay_cache_full_of_retention() {
+            return Ok(Some(self.error_response(frame, STATUS_BUSY, 0x0001, 0, 0)));
         }
         let response = match frame.message_type {
             msg::HELLO => self.handle_hello(frame),
@@ -457,21 +504,38 @@ impl FakeDevice {
             return None;
         }
         let retention_ticks = 5_000u64 * 1_000; /* replay_retention_ms at 1 MHz */
-        let index = self.replay.iter().position(|entry| {
-            entry.sequence == frame.sequence
+        // The entry stays in the cache for the retention window so duplicate
+        // side-effect requests are suppressed repeatedly, not just once
+        // (spec 5.2). It is only evicted by replay_store FIFO pressure.
+        self.replay.iter().find_map(|entry| {
+            if entry.sequence == frame.sequence
                 && entry.message_type == frame.message_type
                 && entry.payload == frame.payload
                 && self.tick.saturating_sub(entry.stored_tick) <= retention_ticks
-        })?;
-        let response = self.replay[index].response.clone();
-        self.replay.remove(index);
-        Some(response)
+            {
+                Some(entry.response.clone())
+            } else {
+                None
+            }
+        })
+    }
+
+    fn replay_cache_full_of_retention(&self) -> bool {
+        if self.replay.len() < 8 {
+            return false;
+        }
+        let retention_ticks = 5_000u64 * 1_000; /* replay_retention_ms at 1 MHz */
+        self.replay
+            .iter()
+            .all(|entry| self.tick.saturating_sub(entry.stored_tick) <= retention_ticks)
     }
 
     fn replay_store(&mut self, frame: &Frame, response: &[u8]) {
         if !Self::is_side_effect(frame.message_type) {
             return;
         }
+        // FIFO pressure: drop the oldest. The preflight in process_request
+        // prevents this from evicting an entry still inside retention.
         if self.replay.len() >= 8 {
             self.replay.remove(0);
         }
@@ -537,6 +601,7 @@ impl FakeDevice {
         if request.max_major < PROTOCOL_MAJOR || request.min_major > PROTOCOL_MAJOR {
             return self.error_response(frame, STATUS_INCOMPATIBLE_VERSION, 0, 0, 0);
         }
+        self.negotiated = true;
         let response = HelloResponse {
             major: PROTOCOL_MAJOR,
             minor: PROTOCOL_MINOR,
@@ -653,6 +718,32 @@ impl FakeDevice {
         self.ok_response(frame, state.encode().expect("session state encodes"))
     }
 
+    /// Cancel pending TX and drop the armed state (spec 5.2/11: config changes
+    /// must not let a stale arm transmit). Used by config/filter mutations.
+    fn disarm(&mut self) {
+        if !self.tx_armed {
+            return;
+        }
+        let mut emitted = Vec::new();
+        for slot in self.slots.iter_mut() {
+            if slot.state == TX_PENDING {
+                slot.state = TX_FINAL;
+                slot.final_result = TX_DISARMED;
+                slot.final_tick = self.tick;
+                emitted.push(slot.clone());
+            }
+        }
+        for snapshot in emitted {
+            self.emit_tx_result(&snapshot);
+        }
+        self.tx_armed = false;
+        self.arm_expiry_tick = 0;
+        self.arm_epoch = self.arm_epoch.wrapping_add(1).max(1);
+        if self.arm_epoch == 0 {
+            self.arm_epoch = 1;
+        }
+    }
+
     fn handle_config_channel(&mut self, frame: &Frame) -> Vec<u8> {
         let Ok(request) = ChannelConfig::decode(&frame.payload) else {
             return self.error_response(frame, STATUS_INVALID_ARGUMENT, 0, 0, 0);
@@ -666,6 +757,7 @@ impl FakeDevice {
                 self.config_generation,
             );
         }
+        self.disarm();
         self.channel.mode = request.mode;
         self.channel.flags = request.flags;
         self.channel.nominal_bps = request.nominal_bps;
@@ -730,6 +822,7 @@ impl FakeDevice {
                 self.config_generation,
             );
         }
+        self.disarm();
         self.config_generation = self.config_generation.wrapping_add(1).max(1);
         self.channel.filters = request.rules.clone();
         self.channel.filter_generation = self.config_generation;
@@ -754,6 +847,7 @@ impl FakeDevice {
                 self.config_generation,
             );
         }
+        self.disarm();
         self.config_generation = self.config_generation.wrapping_add(1).max(1);
         self.channel.filters.clear();
         self.channel.filter_generation = self.config_generation;
@@ -953,6 +1047,7 @@ impl FakeDevice {
             final_tick: 0,
             can_error: 0,
             completion_tick,
+            deadline_tick: request.deadline_tick,
         });
         let response = CanTxResponse {
             client_tag: request.client_tag,

@@ -215,11 +215,11 @@ int ucan_decode_empty(const uint8_t *data, uint32_t len) {
 
 /* HELLO */
 
+static int hello_req_fields_valid(const ucan_hello_req_t *v);
+
 int ucan_encode_hello_req(const ucan_hello_req_t *v, uint8_t *out, uint32_t cap,
                           uint32_t *len) {
-    if (v->min_major == 0 || v->min_major > v->max_major ||
-        v->min_minor > v->max_minor || v->host_max_message == 0 ||
-        (v->host_features & ~V1_FEATURES) != 0) {
+    if (!hello_req_fields_valid(v)) {
         return UCAN_ERR_BAD_VALUE;
     }
     int rc = need(cap, 12);
@@ -236,6 +236,12 @@ int ucan_encode_hello_req(const ucan_hello_req_t *v, uint8_t *out, uint32_t cap,
     return 0;
 }
 
+static int hello_req_fields_valid(const ucan_hello_req_t *v) {
+    return v->min_major != 0 && v->min_major <= v->max_major &&
+           v->min_minor <= v->max_minor && v->host_max_message != 0 &&
+           (v->host_features & ~V1_FEATURES) == 0;
+}
+
 int ucan_decode_hello_req(const uint8_t *data, uint32_t len, ucan_hello_req_t *v) {
     if (len != 12) {
         return UCAN_ERR_PAYLOAD;
@@ -246,15 +252,15 @@ int ucan_decode_hello_req(const uint8_t *data, uint32_t len, ucan_hello_req_t *v
     v->max_minor = data[3];
     v->host_max_message = rd_u32(data + 4);
     v->host_features = rd_u32(data + 8);
-    return ucan_encode_hello_req(v, (uint8_t *)data, 12, &len) == 0
-               ? 0
-               : UCAN_ERR_BAD_VALUE;
+    /* Pure validation: never write back into the const input buffer. */
+    return hello_req_fields_valid(v) ? 0 : UCAN_ERR_BAD_VALUE;
 }
+
+static int hello_resp_fields_valid(const ucan_hello_resp_t *v);
 
 int ucan_encode_hello_resp(const ucan_hello_resp_t *v, uint8_t *out, uint32_t cap,
                            uint32_t *len) {
-    if (v->major == 0 || v->session_id == 0 || v->max_message == 0 ||
-        (v->device_features & ~V1_FEATURES) != 0) {
+    if (!hello_resp_fields_valid(v)) {
         return UCAN_ERR_BAD_VALUE;
     }
     int rc = need(cap, 16);
@@ -272,6 +278,11 @@ int ucan_encode_hello_resp(const ucan_hello_resp_t *v, uint8_t *out, uint32_t ca
     return 0;
 }
 
+static int hello_resp_fields_valid(const ucan_hello_resp_t *v) {
+    return v->major != 0 && v->session_id != 0 && v->max_message != 0 &&
+           (v->device_features & ~V1_FEATURES) == 0;
+}
+
 int ucan_decode_hello_resp(const uint8_t *data, uint32_t len, ucan_hello_resp_t *v) {
     if (len != 16) {
         return UCAN_ERR_PAYLOAD;
@@ -285,9 +296,8 @@ int ucan_decode_hello_resp(const uint8_t *data, uint32_t len, ucan_hello_resp_t 
     v->session_id = rd_u32(data + 4);
     v->max_message = rd_u32(data + 8);
     v->device_features = rd_u32(data + 12);
-    return ucan_encode_hello_resp(v, (uint8_t *)data, 16, &len) == 0
-               ? 0
-               : UCAN_ERR_BAD_VALUE;
+    /* Pure validation: never write back into the const input buffer. */
+    return hello_resp_fields_valid(v) ? 0 : UCAN_ERR_BAD_VALUE;
 }
 
 /* GET_DEVICE_INFO */
@@ -779,8 +789,11 @@ int ucan_decode_capture_req(const uint8_t *data, uint32_t len, ucan_capture_req_
     }
     v->expected_generation = rd_u32(data + 0);
     v->flags = rd_u32(data + 4);
-    return ucan_encode_capture_req(v, (uint8_t *)data, 8, &len) == 0 ? 0
-                                                                     : UCAN_ERR_BAD_VALUE;
+    /* Pure validation: never write back into the const input buffer. */
+    if (v->expected_generation == 0 || (v->flags & ~0x0007u) != 0) {
+        return UCAN_ERR_BAD_VALUE;
+    }
+    return 0;
 }
 
 int ucan_encode_capture_resp(const ucan_capture_resp_t *v, uint8_t *out, uint32_t cap,
@@ -804,8 +817,11 @@ int ucan_decode_capture_resp(const uint8_t *data, uint32_t len, ucan_capture_res
     }
     v->applied_generation = rd_u32(data + 0);
     v->state = rd_u32(data + 4);
-    return ucan_encode_capture_resp(v, (uint8_t *)data, 8, &len) == 0 ? 0
-                                                                      : UCAN_ERR_BAD_VALUE;
+    /* Pure validation: never write back into the const input buffer. */
+    if (v->applied_generation == 0 || v->state > 1) {
+        return UCAN_ERR_BAD_VALUE;
+    }
+    return 0;
 }
 
 /* SET/CLEAR_FILTERS */
@@ -1011,10 +1027,13 @@ int ucan_decode_tx_arm(const uint8_t *data, uint32_t len, ucan_tx_arm_req_t *v,
     if (len < 16) {
         return UCAN_ERR_PAYLOAD;
     }
-    uint8_t rule_count = (uint8_t)rd_u16(data + 14);
-    if (rule_count > 16 || rule_count > max_rules) {
+    /* Read the wire u16 in full before narrowing: (uint8_t)0x0100 == 0 would
+     * otherwise slip past the upper-bound check and decode as "no rules". */
+    uint16_t wire_rule_count = rd_u16(data + 14);
+    if (wire_rule_count > 16 || wire_rule_count > max_rules) {
         return UCAN_ERR_BAD_VALUE;
     }
+    uint8_t rule_count = (uint8_t)wire_rule_count;
     if (len != 16 + (uint32_t)rule_count * 16) {
         return UCAN_ERR_PAYLOAD;
     }
@@ -1143,6 +1162,8 @@ int ucan_decode_tx_disarm_resp(const uint8_t *data, uint32_t len,
 
 /* CAN_TX / CAN_TX_CANCEL */
 
+static int can_tx_fields_valid(const ucan_can_tx_req_t *v);
+
 static int can_payload_ok(uint8_t dlc, uint16_t flags, uint32_t payload_len) {
     if ((flags & 0x0008u) != 0 && (flags & 0x0004u) == 0) {
         return 0; /* BRS requires FD */
@@ -1159,16 +1180,7 @@ static int can_payload_ok(uint8_t dlc, uint16_t flags, uint32_t payload_len) {
 
 int ucan_encode_can_tx(const ucan_can_tx_req_t *v, uint8_t *out, uint32_t cap,
                        uint32_t *len) {
-    if ((v->can_flags & ~UCAN_CAN_TX_FLAGS_MASK) != 0 || v->arm_epoch == 0 ||
-        v->payload_len > 64) {
-        return UCAN_ERR_BAD_VALUE;
-    }
-    int ext = (v->can_flags & 0x0001u) != 0;
-    uint32_t id_max = ext ? UCAN_CAN_ID_EXT_MAX : UCAN_CAN_ID_STD_MAX;
-    if (v->id > id_max) {
-        return UCAN_ERR_BAD_VALUE;
-    }
-    if (!can_payload_ok(v->dlc, v->can_flags, v->payload_len)) {
+    if (!can_tx_fields_valid(v)) {
         return UCAN_ERR_BAD_VALUE;
     }
     int rc = need(cap, 28 + v->payload_len);
@@ -1193,6 +1205,19 @@ int ucan_encode_can_tx(const ucan_can_tx_req_t *v, uint8_t *out, uint32_t cap,
     return 0;
 }
 
+static int can_tx_fields_valid(const ucan_can_tx_req_t *v) {
+    if ((v->can_flags & ~UCAN_CAN_TX_FLAGS_MASK) != 0 || v->arm_epoch == 0 ||
+        v->payload_len > 64) {
+        return 0;
+    }
+    int ext = (v->can_flags & 0x0001u) != 0;
+    uint32_t id_max = ext ? UCAN_CAN_ID_EXT_MAX : UCAN_CAN_ID_STD_MAX;
+    if (v->id > id_max) {
+        return 0;
+    }
+    return can_payload_ok(v->dlc, v->can_flags, v->payload_len);
+}
+
 int ucan_decode_can_tx(const uint8_t *data, uint32_t len, ucan_can_tx_req_t *v) {
     if (len < 28) {
         return UCAN_ERR_PAYLOAD;
@@ -1214,8 +1239,8 @@ int ucan_decode_can_tx(const uint8_t *data, uint32_t len, ucan_can_tx_req_t *v) 
     v->deadline_tick = rd_u64(data + 16);
     v->payload_len = payload_len;
     v->payload = payload_len == 0 ? NULL : data + 28;
-    return ucan_encode_can_tx(v, (uint8_t *)data, len, &len) == 0 ? 0
-                                                                  : UCAN_ERR_BAD_VALUE;
+    /* Pure validation: never write back into the const input buffer. */
+    return can_tx_fields_valid(v) ? 0 : UCAN_ERR_BAD_VALUE;
 }
 
 int ucan_encode_can_tx_resp(const ucan_can_tx_resp_t *v, uint8_t *out, uint32_t cap,
@@ -1589,8 +1614,12 @@ int ucan_decode_can_tx_result(const uint8_t *data, uint32_t len,
     v->hardware_tick = rd_u64(data + 12);
     v->can_error = rd_u32(data + 20);
     v->queue_generation = rd_u32(data + 24);
-    return ucan_encode_can_tx_result(v, (uint8_t *)data, 28, &len) == 0 ? 0
-                                                                        : UCAN_ERR_BAD_VALUE;
+    /* Pure validation: never write back into the const input buffer. */
+    if (v->arm_epoch == 0 || v->result < 1 || v->result > 5 ||
+        (v->can_error & 0xfff80000u) != 0 || v->queue_generation == 0) {
+        return UCAN_ERR_BAD_VALUE;
+    }
+    return 0;
 }
 
 /* CHANNEL_STATE event */

@@ -62,10 +62,26 @@ impl CanRxBatch {
         let mut offset = Self::HEADER_LEN;
         let mut counted_bytes = 0usize;
         for _ in 0..record_count {
+            // Read the per-record payload length only after confirming the
+            // byte that carries it is inside the buffer; a hostile batch can
+            // declare a record_count larger than record_bytes describes.
+            if offset + 17 > bytes.len() {
+                return Err(PayloadError::InvalidLength {
+                    expected: offset + 17,
+                    actual: bytes.len(),
+                });
+            }
             let record_len = CanRxRecord::LEN + bytes[offset + 16] as usize;
-            let record = CanRxRecord::decode(&bytes[offset..offset + record_len])?;
+            let record_end = offset + record_len;
+            if record_end > bytes.len() {
+                return Err(PayloadError::InvalidLength {
+                    expected: record_end,
+                    actual: bytes.len(),
+                });
+            }
+            let record = CanRxRecord::decode(&bytes[offset..record_end])?;
             counted_bytes += record_len;
-            offset += record_len;
+            offset = record_end;
             records.push(record);
         }
         if counted_bytes != record_bytes {
@@ -566,6 +582,23 @@ mod tests {
 
         batch.records[0].payload = vec![0; 8];
         assert!(batch.encode().is_ok());
+    }
+
+    #[test]
+    fn rx_batch_rejects_truncated_records_without_panicking() {
+        // record_count=1 but record_bytes=0: the declared total length matches
+        // the header, yet the record would run past the end of the buffer.
+        let mut bytes = vec![0u8; CanRxBatch::HEADER_LEN];
+        bytes[0..2].copy_from_slice(&1u16.to_le_bytes()); // record_count = 1
+        // record_bytes stays 0; config_generation must be nonzero for the
+        // post-decode re-encode to pass, but we expect failure before that.
+        bytes[24..28].copy_from_slice(&1u32.to_le_bytes());
+        let result = CanRxBatch::decode(&bytes);
+        assert!(result.is_err());
+
+        // count higher than record_bytes: reads run past the header too.
+        bytes[0..2].copy_from_slice(&5u16.to_le_bytes());
+        assert!(CanRxBatch::decode(&bytes).is_err());
     }
 
     #[test]

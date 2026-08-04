@@ -64,6 +64,22 @@ typedef struct {
 static uint32_t seq_counter = 1;
 
 static resp_t send(ucan_session_t *s, uint16_t type, const uint8_t *payload,
+                   uint32_t payload_len);
+static void drain_all(ucan_session_t *s, uint16_t *types, uint32_t *seqs,
+                      uint32_t max, uint32_t *count);
+
+/* Spec 2.2: the host must HELLO before any other request. Each scenario
+ * negotiates first so the HELLO-first gate is exercised correctly. The HELLO
+ * response is drained so it does not consume response-reserve capacity the
+ * scenario relies on. */
+static void hello_negotiate(ucan_session_t *s) {
+    uint8_t hello[12] = {1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0}; /* max 65536 */
+    resp_t r = send(s, UCAN_MSG_HELLO, hello, 12);
+    check(r.status == UCAN_STATUS_OK && !r.is_error, "hello negotiate");
+    drain_all(s, NULL, NULL, 0, &(uint32_t){0});
+}
+
+static resp_t send(ucan_session_t *s, uint16_t type, const uint8_t *payload,
                    uint32_t payload_len) {
     uint8_t reqbuf[512];
     uint32_t reqlen = 0;
@@ -185,6 +201,7 @@ static void test_version_and_identity(void) {
 static void test_cas_and_capture(void) {
     ucan_session_t s;
     ucan_session_init(&s, &cfg);
+    hello_negotiate(&s);
 
     uint8_t cfg_buf[20];
     ucan_channel_config_t ch = {0, 2, 0, 500000, 0, 875, 5};
@@ -206,6 +223,7 @@ static void test_cas_and_capture(void) {
               0 &&
               applied.generation == 2 && applied.mode == 2,
           "config applied generation 2");
+    drain_all(&s, NULL, NULL, 0, &(uint32_t){0});
 
     uint8_t get[4] = {0, 0, 0, 0};
     r = send(&s, UCAN_MSG_GET_CHANNEL_CONFIG, get, 4);
@@ -220,6 +238,7 @@ static void test_cas_and_capture(void) {
     ucan_capture_resp_t cr;
     ucan_decode_capture_resp(r.frame.payload, r.frame.payload_len, &cr);
     check(cr.applied_generation == 3 && cr.state == 1, "capture generation 3");
+    drain_all(&s, NULL, NULL, 0, &(uint32_t){0});
 
     uint8_t filters[32];
     ucan_filter_rule_t fr = {0x123, 0x7ff, 0};
@@ -232,6 +251,7 @@ static void test_cas_and_capture(void) {
     ucan_decode_set_filters_resp(r.frame.payload, r.frame.payload_len, &sfr);
     check(sfr.applied_generation == 4 && sfr.applied_count == 1,
           "set filters generation 4");
+    drain_all(&s, NULL, NULL, 0, &(uint32_t){0});
 
     uint8_t canon[12] = {0x23, 0x01, 0x00, 0x00, 0xff, 0x07,
                          0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -248,6 +268,7 @@ static void test_cas_and_capture(void) {
           "session state generations");
     check(!st.tx_armed && st.arm_epoch == 1, "session state not armed");
     check(fs[0].filter_crc32c == expected_crc, "session state filter crc");
+    drain_all(&s, NULL, NULL, 0, &(uint32_t){0});
 
     uint8_t clear[8] = {0, 0, 0, 0, 4, 0, 0, 0};
     r = send(&s, UCAN_MSG_CLEAR_FILTERS, clear, 8);
@@ -255,6 +276,7 @@ static void test_cas_and_capture(void) {
     ucan_clear_filters_resp_t cfr;
     ucan_decode_clear_filters_resp(r.frame.payload, r.frame.payload_len, &cfr);
     check(cfr.applied_generation == 5, "clear filters generation 5");
+    drain_all(&s, NULL, NULL, 0, &(uint32_t){0});
 
     uint8_t stop[8] = {5, 0, 0, 0, 1, 0, 0, 0};
     r = send(&s, UCAN_MSG_STOP_CAPTURE, stop, 8);
@@ -267,6 +289,7 @@ static void test_cas_and_capture(void) {
 static void test_tx_lifecycle(void) {
     ucan_session_t s;
     ucan_session_init(&s, &cfg);
+    hello_negotiate(&s);
 
     ucan_channel_config_t ch = {0, 2, 0, 500000, 0, 875, 1};
     uint8_t cfg_buf[20];
@@ -366,6 +389,7 @@ static void test_tx_lifecycle(void) {
 static void test_disarm_and_expiry(void) {
     ucan_session_t s;
     ucan_session_init(&s, &cfg);
+    hello_negotiate(&s);
 
     ucan_channel_config_t ch = {0, 2, 0, 500000, 0, 875, 1};
     uint8_t cfg_buf[20];
@@ -451,6 +475,7 @@ static void test_disarm_and_expiry(void) {
 static void test_admission_and_replay(void) {
     ucan_session_t s;
     ucan_session_init(&s, &cfg);
+    hello_negotiate(&s);
 
     ucan_channel_config_t ch = {0, 2, 0, 500000, 0, 875, 1};
     uint8_t cfg_buf[20];
@@ -495,6 +520,7 @@ static void test_admission_and_replay(void) {
     /* Replay cache: identical config request returns cached response. */
     ucan_session_t s2;
     ucan_session_init(&s2, &cfg);
+    hello_negotiate(&s2);
     uint8_t cfg2[20];
     ucan_channel_config_t ch2 = {0, 2, 0, 500000, 0, 875, 1};
     ucan_encode_channel_config(&ch2, cfg2, sizeof(cfg2), &(uint32_t){0});
@@ -545,6 +571,7 @@ static void test_admission_and_replay(void) {
 static void test_loss_and_queues(void) {
     ucan_session_t s;
     ucan_session_init(&s, &cfg);
+    hello_negotiate(&s);
 
     ucan_channel_config_t ch = {0, 2, 0, 500000, 0, 875, 1};
     uint8_t cfg_buf[20];
@@ -595,6 +622,7 @@ static void test_loss_and_queues(void) {
     /* Data queue batch path. */
     ucan_session_t s3;
     ucan_session_init(&s3, &cfg);
+    hello_negotiate(&s3);
     ucan_channel_config_t ch3 = {0, 2, 0, 500000, 0, 875, 1};
     uint8_t c3[20];
     ucan_encode_channel_config(&ch3, c3, sizeof(c3), &(uint32_t){0});
@@ -637,6 +665,7 @@ static void test_loss_and_queues(void) {
 static void test_scheduler_and_reserve(void) {
     ucan_session_t s;
     ucan_session_init(&s, &cfg);
+    hello_negotiate(&s);
 
     /* 8 pings fill the response queue. */
     uint8_t ping[16];
