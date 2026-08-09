@@ -9,27 +9,50 @@
   "electrical": {
     "schematic_or_bom_ref": "",
     "cs_active_level": null,
-    "detect_present_level": null,
-    "detect_absent_level": null,
-    "detect_pull": "UNKNOWN",
+    "detect_present_level": 0,
+    "detect_absent_level": 1,
+    "detect_pull": "internal pull-up 100 kOhm configured; external schematic network unverified",
     "debounce_ms": null,
     "observations": [
       {
-        "condition": "initial sample; card state must be operator-confirmed",
+        "condition": "card inserted; operator subsequently confirmed removal",
         "jlink_command": "mem32 0xF00D00E0,1",
         "register_value": "0x0000000E",
         "py00_level": 0,
         "timestamp": "2026-08-09"
       },
       {
-        "condition": "card removal requested; physical state not independently confirmed",
+        "condition": "card removed; operator-confirmed empty slot",
         "jlink_command": "mem32 0xF00D00E0,1",
-        "register_value": "0x0000000E",
-        "py00_level": 0,
+        "register_value": "0x0000000F",
+        "py00_level": 1,
         "timestamp": "2026-08-09",
-        "result": "UNCHANGED; repeat with operator-confirmed empty slot and verify pull circuit"
+        "result": "PASS; card detect is active-low"
+      },
+      {
+        "condition": "card removed after board initialization with explicit internal pull-up",
+        "jlink_command": "mem32 0xF00D00E0,1",
+        "register_value": "0x0000000F",
+        "py00_level": 1,
+        "ioc_pad_ctl": "0x01060000",
+        "pioc_pad_ctl": "0x01060000",
+        "timestamp": "2026-08-09",
+        "result": "PASS; read-only probe returned NMED without SPI initialization"
       }
     ]
   },
-  "media": []
+  "media": [
+    {
+      "vendor": "aigo (爱国者)",
+      "marketed_capacity_gb": 16,
+      "card_type": "SD v2 SDHC",
+      "filesystem": "FAT32",
+      "logical_sector_bytes": 512,
+      "logical_sector_count": 30535680,
+      "capacity_bytes": 15634268160,
+      "probe_evidence": "docs/evidence/phase0/P0S-SPI-SD-probe-2026-08-09.json",
+      "firmware_sha256": "9b86828897bee0f39a741ac28564c601ca0db068d37805885755f7ac83cecb85",
+      "status": "PASS"
+    }
+  ]
 }

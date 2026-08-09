@@ -66,7 +66,7 @@ def validate(root: Path) -> list[str]:
         ),
         "docs/approved-plan/scope-addendum-linux-windows-cli.md": (
             "Phase 1B closure: `PASS`",
-            "Physical cable cycling remains P3A",
+            "Physical cable cycling is PASS at P3A/T-USB-007",
         ),
         "docs/development/adr-host-stack-spike.md": (
             "Status: **ACCEPTED**",

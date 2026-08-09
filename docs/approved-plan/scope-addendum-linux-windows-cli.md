@@ -23,8 +23,9 @@ Windows native CI and Windows functional vendor-Bulk HIL are complete. Protocol
 and device session implementation that already landed is valid P4P progress;
 it is no longer described as prohibited or pending on packaging.
 
-Physical cable cycling remains P3A/T-USB-007. Windows PnP binding capture is a
-P3A evidence item, while release EXE hashes, dependency/license bundle and
-installer packaging remain P6. Those items keep their own `PARTIAL` or
-`NOT_TESTED` states and are not implied by Phase 1B closure. macOS remains
-deferred for the current Linux/Windows CLI scope.
+Physical cable cycling is PASS at P3A/T-USB-007 with 100/100 recovery cycles.
+Windows PnP binding capture remains a P3A evidence item, while release EXE
+hashes, dependency/license bundle and installer packaging remain P6. Those
+items keep their own `PARTIAL` or `NOT_TESTED` states and are not implied by
+Phase 1B closure. macOS remains deferred for the current Linux/Windows CLI
+scope.
