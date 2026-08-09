@@ -12,10 +12,28 @@ if (( $# > 2 )); then
     exit 2
 fi
 
+if [[ -n "${GNURISCV_TOOLCHAIN_PATH:-}" ]]; then
+    GDB="${GNURISCV_TOOLCHAIN_PATH}/bin/riscv32-unknown-elf-gdb"
+else
+    GDB="$(command -v riscv32-unknown-elf-gdb || true)"
+fi
+GDB_SERVER="$(command -v JLinkGDBServerCLExe || true)"
+
+if [[ ! -x "${GDB}" ]]; then
+    printf 'riscv32-unknown-elf-gdb not found; set GNURISCV_TOOLCHAIN_PATH or PATH\n' >&2
+    exit 2
+fi
+if [[ -z "${GDB_SERVER}" ]]; then
+    printf 'JLinkGDBServerCLExe not found in PATH\n' >&2
+    exit 2
+fi
+
 exec python3 "${ROOT}/scripts/phase2/collect_heartbeat.py" \
     --test-id T-RTOS-003 \
     --elf "${ROOT}/build/hpm5321-flash-debug/output/demo.elf" \
     --expected-elf-sha256 "${FROZEN_ELF_SHA256}" \
     --output "${OUTPUT}" \
     --duration-seconds "${DURATION_SECONDS}" \
-    --interval-seconds "${INTERVAL_SECONDS:-60}"
+    --interval-seconds "${INTERVAL_SECONDS:-60}" \
+    --gdb "${GDB}" \
+    --gdb-server "${GDB_SERVER}"
