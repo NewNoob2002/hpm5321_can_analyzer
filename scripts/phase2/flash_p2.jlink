@@ -1,0 +1,10 @@
+device HPM5321xCFx
+si JTAG
+speed 4000
+jtagconf -1,-1
+connect
+r
+loadfile build/hpm5321-flash-debug/output/demo.elf
+r
+g
+exit

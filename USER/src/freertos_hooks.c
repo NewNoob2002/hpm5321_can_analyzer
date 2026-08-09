@@ -3,6 +3,7 @@
 #include "FreeRTOS.h"
 #include "app_fault.h"
 #include "app_time.h"
+#include "board.h"
 #include "task.h"
 
 #ifndef APP_FAULT_INJECT_REASON
@@ -38,6 +39,7 @@ static void app_fatal(uint32_t reason, const char *file, uint32_t line)
     g_app_fault_state.file_hash = hash_string(file);
     g_app_fault_state.timestamp = app_time_now();
     g_app_fault_state.magic = APP_FAULT_MAGIC;
+    board_led_write(BOARD_LED_ON_LEVEL);
     while (1) {
     }
 }

@@ -83,9 +83,10 @@ priorities at or below 4 during kernel critical sections; priorities above 4
 remain active and cannot call FreeRTOS APIs. The application header provides a
 compile-time assertion for every future API-calling ISR.
 
-This freezes the contract but does not close the target half of `T-RTOS-005`:
-there is no product USB, MCAN or storage peripheral ISR yet to exercise with an
-ISR-safe API.
+This originally froze only the contract. The final P2 qualification firmware
+subsequently closed the target half of `T-RTOS-005` with the real MCAN0 ISR,
+`xQueueSendFromISR`, a static queue and a static receiver task at priority 4.
+See `T-RTOS-005-2026-08-09.json` for the artifact-bound PASS evidence.
 
 ## T-BSP-001 UART Boot Banner
 

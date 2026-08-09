@@ -34,7 +34,8 @@ Planning addendum: `spi2-sd-led-2026-08-09`. Product aliases are
 |---|---:|---|
 | Source pin mapping | PASS | `scripts/validate_planning_contract.py` remains green |
 | Five LED active levels | PASS | Operator confirmed STATUS/CAN1 TX/RX/CAN2 TX/RX all illuminate at GPIO level 0; raw record is `T-LED-polarity-2026-08-09.json` |
-| LED drive, resistor, reset/default state and one-by-one routing | NOT_TESTED | Schematic review plus target voltage/routing evidence |
+| LED one-by-one routing, polarity and post-BSP default-off | PASS | `led_chaser` target registers plus operator observation; see `T-LED-polarity-2026-08-09.json` |
+| LED drive topology, resistor and pre-BSP reset voltage | NOT_TESTED | Schematic/BOM is not present in this repository; retain as electrical evidence gap |
 | SD CS polarity, drive and reset/default state | NOT_TESTED | Schematic review plus target voltage/routing evidence |
 | PY00 present/absent level and polarity | PASS | J-Link `mem32 0xF00D00E0,1`: inserted `0x0000000E`/PY00=0; operator-confirmed empty slot `0x0000000F`/PY00=1; raw record `P0S-PY00-detect-2026-08-09.json` |
 | PY00 internal pull-up and empty-slot behavior | PASS | IOC/PIOC `PAD_CTL=0x01060000`; target read PY00=1 and the read-only probe returned `NMED` without SPI initialization; `P0S-SPI-SD-probe-2026-08-09.json` |
