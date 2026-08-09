@@ -62,9 +62,11 @@ USB 1a86:55d3, serial 586D017868
 921600 baud, 8 data bits, 1 stop bit, no parity, no flow control
 ```
 
-With DTR/RTS asserted, a 30-second raw capture was armed before a J-Link debug
-reset and resume. The adapter received 447 bytes. The raw byte stream used CRLF
-line endings and had SHA-256
+For the successful capture, board PA00/TX was connected to adapter RX and the
+grounds were common; adapter TX was disconnected. With DTR/RTS asserted, a
+30-second raw capture was armed before a J-Link debug reset and resume. The
+adapter received 447 bytes. The raw byte stream used CRLF line endings and had
+SHA-256
 `e06b47bc574c19ce5ff149f40a3548f9ad184da1268f1e1fd80e4afb45a8a961`.
 Decoded as ASCII with line endings normalized for Markdown, its complete text
 was:
@@ -110,6 +112,9 @@ host_tx_bytes=13
 UART_RX_PROBE lsr=0x000d0061 rfifo_count=13 errors=0x00 heartbeat=281
 ```
 
-Those diagnostics isolated the wiring error to board PA00/TX to adapter RX.
-After that lead was corrected, the successful capture above closed the fault
-and confirmed both directions of the physical UART connection.
+Those diagnostics proved the adapter-TX-to-board-RX direction in the earlier
+setup, but they did not identify why board TX produced no host bytes. The later
+successful boot capture was taken with adapter TX disconnected; it proves the
+board-PA00/TX-to-adapter-RX direction required by `T-BSP-001`. Because capture
+timing was also restarted before the successful J-Link reset, this evidence
+does not by itself prove that disconnecting adapter TX was the causal fix.
