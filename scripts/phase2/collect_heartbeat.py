@@ -35,7 +35,26 @@ SAMPLE_PATTERN = re.compile(
     r"stall=(?P<stall>[0-9a-fA-F]+) "
     r"alloc_frozen=(?P<alloc_frozen>\d+) "
     r"allocations=(?P<allocations>\d+) "
-    r"post_freeze_allocations=(?P<post_freeze_allocations>\d+)"
+    r"post_freeze_allocations=(?P<post_freeze_allocations>\d+) "
+    r"mcan_magic=(?P<mcan_magic>[0-9a-fA-F]+) "
+    r"mcan_priority=(?P<mcan_priority>\d+) "
+    r"mcan_irqs=(?P<mcan_irqs>\d+) "
+    r"mcan_submitted=(?P<mcan_submitted>\d+) "
+    r"mcan_received=(?P<mcan_received>\d+) "
+    r"mcan_matched=(?P<mcan_matched>\d+) "
+    r"mcan_queue_sends=(?P<mcan_queue_sends>\d+) "
+    r"mcan_queue_drops=(?P<mcan_queue_drops>\d+) "
+    r"mcan_errors=(?P<mcan_errors>[0-9a-fA-F]+) "
+    r"mcan_terminal_faults=(?P<mcan_terminal_faults>[0-9a-fA-F]+) "
+    r"mcan_tx_errors=(?P<mcan_tx_errors>\d+) "
+    r"mcan_rx_errors=(?P<mcan_rx_errors>\d+) "
+    r"mcan_error_log=(?P<mcan_error_log>\d+) "
+    r"mcan_mismatches=(?P<mcan_mismatches>\d+) "
+    r"mcan_timeouts=(?P<mcan_timeouts>\d+) "
+    r"mcan_stack=(?P<mcan_stack>\d+) "
+    r"mcan_cleanup_status=(?P<mcan_cleanup_status>-?\d+) "
+    r"mcan_cccr=(?P<mcan_cccr>[0-9a-fA-F]+) "
+    r"mcan_cleanup=(?P<mcan_cleanup>\d+)"
 )
 
 
@@ -69,7 +88,17 @@ def parse_sample(output: str) -> dict[str, int]:
     if match is None:
         raise RuntimeError("GDB output does not contain a P2_SAMPLE record")
 
-    hexadecimal = {"boot", "reset", "fault_magic", "missing", "stall"}
+    hexadecimal = {
+        "boot",
+        "reset",
+        "fault_magic",
+        "missing",
+        "stall",
+        "mcan_magic",
+        "mcan_errors",
+        "mcan_terminal_faults",
+        "mcan_cccr",
+    }
     return {
         name: int(value, 16 if name in hexadecimal else 10)
         for name, value in match.groupdict().items()
@@ -95,6 +124,36 @@ def validate_sample(
         raise RuntimeError("runtime allocation policy is not frozen")
     if sample["post_freeze_allocations"] != 0:
         raise RuntimeError("runtime allocation occurred after the freeze point")
+    if sample["mcan_magic"] != 0x50415353:
+        raise RuntimeError("MCAN0 IRQ qualification did not complete")
+    if sample["mcan_priority"] != 4:
+        raise RuntimeError("MCAN0 ISR priority is not 4")
+    expected_frames = 1024
+    for field in (
+        "mcan_irqs",
+        "mcan_submitted",
+        "mcan_received",
+        "mcan_matched",
+        "mcan_queue_sends",
+    ):
+        if sample[field] != expected_frames:
+            raise RuntimeError(f"MCAN0 qualification count is invalid: {field}")
+    if sample["mcan_queue_drops"] != 0:
+        raise RuntimeError("MCAN0 ISR queue dropped a frame")
+    if sample["mcan_errors"] != 0:
+        raise RuntimeError("MCAN0 IRQ qualification recorded an error interrupt")
+    if sample["mcan_terminal_faults"] != 0:
+        raise RuntimeError("MCAN0 IRQ qualification ended with a fault flag")
+    if (sample["mcan_tx_errors"] != 0 or sample["mcan_rx_errors"] != 0 or
+            sample["mcan_error_log"] != 0):
+        raise RuntimeError("MCAN0 IRQ qualification ended with error counters")
+    if sample["mcan_mismatches"] != 0 or sample["mcan_timeouts"] != 0:
+        raise RuntimeError("MCAN0 IRQ qualification recorded a frame failure")
+    if sample["mcan_stack"] < minimum_stack:
+        raise RuntimeError("MCAN0 receiver stack watermark is below the threshold")
+    if (sample["mcan_cleanup_status"] != 0 or sample["mcan_cleanup"] != 1 or
+            (sample["mcan_cccr"] & 1) == 0):
+        raise RuntimeError("MCAN0 controller cleanup did not reach INIT state")
     if previous is not None:
         if sample["boot_tick"] != previous["boot_tick"]:
             raise RuntimeError("boot timestamp changed; target reset detected")
@@ -126,7 +185,14 @@ def _sample_target(gdb: Path, elf: Path, port: int) -> dict[str, int]:
             "heartbeat=%u drops=%u "
             "stack=%u tick=%llu fault_magic=%08x fault_reason=%u "
             "evaluations=%u healthy=%u missing=%08x stall=%08x "
-            "alloc_frozen=%u allocations=%u post_freeze_allocations=%u\\n\", "
+            "alloc_frozen=%u allocations=%u post_freeze_allocations=%u "
+            "mcan_magic=%08x mcan_priority=%u mcan_irqs=%u "
+            "mcan_submitted=%u mcan_received=%u mcan_matched=%u "
+            "mcan_queue_sends=%u mcan_queue_drops=%u mcan_errors=%08x "
+            "mcan_terminal_faults=%08x mcan_tx_errors=%u mcan_rx_errors=%u "
+            "mcan_error_log=%u mcan_mismatches=%u mcan_timeouts=%u "
+            "mcan_stack=%u mcan_cleanup_status=%d mcan_cccr=%08x "
+            "mcan_cleanup=%u\\n\", "
             "g_app_boot_state.magic, g_app_boot_state.boot_timestamp, "
             "g_app_boot_state.reset_flags, "
             "g_app_health_state.heartbeat_count, "
@@ -140,7 +206,26 @@ def _sample_target(gdb: Path, elf: Path, port: int) -> dict[str, int]:
             "g_app_watchdog_state.test_stall_mask, "
             "g_app_allocation_state.frozen, "
             "g_app_allocation_state.allocation_calls, "
-            "g_app_allocation_state.post_freeze_allocation_calls"
+            "g_app_allocation_state.post_freeze_allocation_calls, "
+            "g_app_mcan_irq_test_state.magic, "
+            "g_app_mcan_irq_test_state.irq_priority, "
+            "g_app_mcan_irq_test_state.interrupt_count, "
+            "g_app_mcan_irq_test_state.frames_submitted, "
+            "g_app_mcan_irq_test_state.frames_received, "
+            "g_app_mcan_irq_test_state.frames_matched, "
+            "g_app_mcan_irq_test_state.queue_send_count, "
+            "g_app_mcan_irq_test_state.queue_drops, "
+            "g_app_mcan_irq_test_state.error_interrupt_flags, "
+            "g_app_mcan_irq_test_state.terminal_fault_flags, "
+            "g_app_mcan_irq_test_state.tx_error_count, "
+            "g_app_mcan_irq_test_state.rx_error_count, "
+            "g_app_mcan_irq_test_state.error_logging_count, "
+            "g_app_mcan_irq_test_state.frame_mismatches, "
+            "g_app_mcan_irq_test_state.receive_timeouts, "
+            "g_app_mcan_irq_test_state.receiver_stack_high_watermark, "
+            "g_app_mcan_irq_test_state.cleanup_status, "
+            "g_app_mcan_irq_test_state.post_cleanup_cccr, "
+            "g_app_mcan_irq_test_state.cleanup_completed"
         ),
         "-ex",
         "monitor go",
@@ -161,14 +246,16 @@ def collect(
     elf = args.elf.resolve()
     output = args.output.resolve()
     evidence: dict[str, Any] = {
-        "schema_version": 1,
-        "test_id": "T-RTOS-003",
+        "schema_version": 2,
+        "test_id": args.test_id,
         "status": "RUNNING",
         "qualification_status": "PARTIAL",
         "started_at": _now(),
         "operator": args.operator,
         "requested_duration_seconds": args.duration_seconds,
-        "qualification_duration_seconds": QUALIFICATION_SECONDS,
+        "qualification_duration_seconds": (
+            QUALIFICATION_SECONDS if args.test_id == "T-RTOS-003" else 0
+        ),
         "interval_seconds": args.interval_seconds,
         "minimum_stack_words": args.minimum_stack_words,
         "elf": str(elf.relative_to(ROOT) if elf.is_relative_to(ROOT) else elf),
@@ -217,7 +304,8 @@ def collect(
             _write_evidence(output, evidence)
             print(
                 f"sample={len(evidence['samples'])} "
-                f"heartbeat={sample['heartbeat']} missing=0x{sample['missing']:x}",
+                f"heartbeat={sample['heartbeat']} missing=0x{sample['missing']:x} "
+                f"mcan={sample['mcan_matched']}/{sample['mcan_submitted']}",
                 flush=True,
             )
             previous = sample
@@ -235,7 +323,8 @@ def collect(
         )
         evidence["completed_at"] = _now()
         evidence["status"] = "PASS"
-        if evidence["actual_duration_seconds"] >= QUALIFICATION_SECONDS:
+        if (args.test_id == "T-RTOS-005" or
+                evidence["actual_duration_seconds"] >= QUALIFICATION_SECONDS):
             evidence["qualification_status"] = "PASS"
         _write_evidence(output, evidence)
         print(
@@ -262,6 +351,11 @@ def collect(
 
 def main() -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--test-id",
+        choices=("T-RTOS-003", "T-RTOS-005"),
+        default="T-RTOS-003",
+    )
     parser.add_argument(
         "--elf",
         type=Path,
