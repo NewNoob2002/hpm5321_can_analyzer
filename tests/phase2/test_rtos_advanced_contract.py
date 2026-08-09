@@ -191,6 +191,17 @@ class RtosAdvancedContractTests(unittest.TestCase):
         self.assertNotIn("usb_owner_task", main)
         self.assertNotIn("mcan_owner_task", main)
 
+    def test_frozen_heartbeat_runner_pins_the_qualified_elf(self):
+        runner = (ROOT / "scripts/phase2/run_frozen_heartbeat.sh").read_text()
+
+        self.assertIn(
+            'FROZEN_ELF_SHA256="c3feef5d36867d021e26a95548b4bd055150ca2e4be54cf907d847c8afee70d2"',
+            runner,
+        )
+        self.assertIn('--expected-elf-sha256 "${FROZEN_ELF_SHA256}"', runner)
+        self.assertIn('DURATION_SECONDS="${1:-86400}"', runner)
+        self.assertIn('--interval-seconds "${INTERVAL_SECONDS:-60}"', runner)
+
     def test_timer_votes_and_health_independently_evaluates(self):
         source = (USER / "src/app_health.c").read_text()
 

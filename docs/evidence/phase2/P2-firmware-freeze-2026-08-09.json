@@ -65,7 +65,7 @@
     "production_usb_owner_task_started": false,
     "production_mcan_owner_task_started": false,
     "mcan_pads_connected_by_test": false,
-    "post_freeze_allowed_changes": "evidence and closure documents only",
+    "post_freeze_allowed_changes": "qualification tooling, evidence and closure documents that do not change the frozen ELF",
     "invalidation_rule": "Any firmware, build configuration, SDK or toolchain change requires rebuild, reflash, short qualification and a new 86400-second run."
   },
   "remaining_gate": "T-RTOS-003 86400-second heartbeat qualification"

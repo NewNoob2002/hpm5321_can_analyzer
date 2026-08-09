@@ -12,6 +12,16 @@ SPEC.loader.exec_module(MODULE)
 
 
 class HeartbeatCollectorTests(unittest.TestCase):
+    def test_validates_frozen_elf_hash(self):
+        digest = "c3feef5d36867d021e26a95548b4bd055150ca2e4be54cf907d847c8afee70d2"
+
+        MODULE.validate_expected_sha256(digest, None)
+        MODULE.validate_expected_sha256(digest, digest.upper())
+        with self.assertRaisesRegex(RuntimeError, "64-digit"):
+            MODULE.validate_expected_sha256(digest, "c3feef")
+        with self.assertRaisesRegex(RuntimeError, "mismatch"):
+            MODULE.validate_expected_sha256(digest, "0" * 64)
+
     def test_clamps_sleep_to_zero_after_slow_first_sample(self):
         self.assertEqual(MODULE._bounded_sleep_seconds(5.0, -0.25), 0.0)
         self.assertEqual(MODULE._bounded_sleep_seconds(5.0, 2.0), 2.0)

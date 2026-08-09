@@ -47,10 +47,11 @@ resume. See `P2-final-flash-jlink-2026-08-09.txt`.
 
 ## Freeze Rule
 
-Only endurance evidence and closure documents may change after this point.
-Any firmware source, build configuration, SDK or toolchain change invalidates
-this freeze and requires a new three-preset clean build, flash, short
-qualification and 86,400-second run.
+Only qualification tooling, endurance evidence and closure documents that do
+not change the frozen ELF may change after this point. Any firmware source,
+build configuration, SDK or toolchain change invalidates this freeze and
+requires a new three-preset clean build, flash, short qualification and
+86,400-second run.
 
 The only remaining P2 runtime gate is the full 86,400-second `T-RTOS-003`
 heartbeat qualification. CAN2 activity semantics remain a Beta gate and are
