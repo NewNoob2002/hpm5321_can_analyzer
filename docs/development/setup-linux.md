@@ -11,8 +11,8 @@ export GNURISCV_TOOLCHAIN_PATH=/path/to/riscv-toolchain
 
 The accepted SDK commits are recorded in `dependencies/hpm-sdk.lock`.
 `scripts/env/check.sh` rejects any other checkout. The validated fork supports
-current hardware work; the official v1.12.1 build remains a separate Gate A
-requirement.
+artifact-specific hardware work; the official v1.12.1 three-preset clean build
+has separate PASS evidence and is the Gate A reproducibility baseline.
 
 ## Build
 
@@ -37,5 +37,6 @@ Flashing remains a safety-preflight operation and is not part of a build task.
 HPM_SDK_BASE="$HPM_SDK_BASE" scripts/phase0/run_tests.sh
 ```
 
-Phase 1 is not closed by this Linux lane alone: Windows/macOS clean builds,
-debug-adapter evidence and the Rust versus C++/Qt host-stack spike remain.
+Phase 1B is closed by the aggregate manifest in
+`docs/evidence/phase1/phase1b-closure.json`; this Linux procedure is one input,
+not the sole closure proof. macOS remains outside the current CLI scope.

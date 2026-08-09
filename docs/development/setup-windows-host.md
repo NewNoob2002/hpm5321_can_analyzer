@@ -49,7 +49,14 @@ Stable smoke-tool exit codes:
 | 2 | Device, permission, USB transfer, or data-integrity failure |
 | 64 | Invalid command-line usage |
 
-## Evidence needed to close the Windows lane
+## Evidence Boundaries
+
+Phase 1B requires the pinned native Windows build/test/clippy lane plus a real
+functional open/transfer/reset/recovery result. Those are archived in
+`T-HOST-WINDOWS-CI-report.md` and `T-HOST-USB-WINDOWS-report.md`.
+
+P3A/P6 product qualification additionally archives all of the following under
+`docs/evidence/phase1/` (the collector script writes a fresh bundle):
 
 Archive all of the following under `docs/evidence/phase1/`:
 
@@ -61,5 +68,7 @@ Archive all of the following under `docs/evidence/phase1/`:
 6. One disconnect/reset during a long transfer, a non-zero exit, re-enumeration,
    and a subsequent successful transfer.
 
-CI proves that the Windows source compiles and its host-only tests pass. It does
-not replace this physical WinUSB hardware evidence.
+Run `scripts/phase1/collect_windows_phase1b.ps1` from PowerShell to collect the
+current environment, PnP record, clean build/tests, hashes and a 64 MiB HIL
+result. CI proves native source/build correctness; it does not replace PnP,
+physical USB or release-artifact provenance.

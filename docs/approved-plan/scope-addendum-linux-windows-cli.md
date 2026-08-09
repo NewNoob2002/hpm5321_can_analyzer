@@ -15,12 +15,16 @@ the approved PRD while preserving all non-conflicting protocol and safety gates.
 5. A future Qt GUI may consume the single Rust host core through a reviewed
    boundary; it must not introduce a second protocol/USB core.
 
-## Remaining Phase 1B gates
+## Phase 1B Closure
 
-- Linux and Windows real vendor-Bulk enumeration, transfer and hotplug;
-- Windows WinUSB binding and packaging/exit-code evidence;
-- dependency and license manifest for Rust/libusb packaging;
-- fake-backend parity remains a regression gate.
+Phase 1B closure: `PASS` on 2026-08-09. The official SDK build, selected
+J-Link adapter, Rust core, fake-backend parity, Linux real vendor-Bulk lane,
+Windows native CI and Windows functional vendor-Bulk HIL are complete. Protocol
+and device session implementation that already landed is valid P4P progress;
+it is no longer described as prohibited or pending on packaging.
 
-Formal protocol codec implementation begins only after these remaining USB and
-packaging gates close. macOS evidence is rescheduled after the Windows CLI MVP.
+Physical cable cycling remains P3A/T-USB-007. Windows PnP binding capture is a
+P3A evidence item, while release EXE hashes, dependency/license bundle and
+installer packaging remain P6. Those items keep their own `PARTIAL` or
+`NOT_TESTED` states and are not implied by Phase 1B closure. macOS remains
+deferred for the current Linux/Windows CLI scope.

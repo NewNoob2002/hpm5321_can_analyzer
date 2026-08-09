@@ -4,6 +4,7 @@
 > 上下文：`planning context (not a normative versioned artifact)`  
 > 测试规格：`docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md`  
 > 协议规格：`docs/approved-plan/usb-can-protocol-v1.md`
+> SPI2 SD/LED addendum：`spi2-sd-led-2026-08-09`
 
 ## 1. 产品目标
 
@@ -40,14 +41,11 @@
 
 ## 3. 当前基线与关键判断
 
-- Review baseline 因 `FreeRTOSConfig.h` 漂移重新冻结于 Context 中的
-  `2026-07-30T10:31:39Z` source hashes。
-  当前工程为 `hpm5321_can_analyzer`，`CMakeLists.txt` 编译
+- 当前工程为 `hpm5321_can_analyzer`，`CMakeLists.txt` 编译
   `USER/src/main.c`，已启用 FreeRTOS、SEGGER RTT、Debug-only `DEBUG` 和
-  easylogger，并有 preset/既有生成物；但现有产物只标记为
-  `UNVERIFIED-EXISTING-ARTIFACT`，因为缺少同一 pinned source 的 exact clean
-  command、完整日志和 checksum bundle。Phase 1 必须从空 build directory 形成
-  `T-DEV-001/002/004` 正式证据。
+  easylogger。Phase 1 已在 official SDK v1.12.1 commit `12bd9249...` 上从空
+  build directory 完成三个 preset 的 `T-DEV-001/002/003/004` 日志、manifest
+  和 checksum；历史硬件 artifact 仍只绑定其各自记录的 fork revision。
 - 自定义板包已覆盖 UART0、USB0、MCAN0、MCAN2、SPI2 和 LED/SD detect，
   可按垂直切片验证；证据见上下文快照。
 - 本地 SDK 1.12.1 已提供 FreeRTOS、CherryUSB CDC/WinUSB、MCAN 全套示例和
@@ -59,6 +57,28 @@
   执行前必须以芯片手册、原理图和 linker map 明确实际启动/擦写介质。
 - UART0 当前承担调试控制台。除非原理图确认第二 UART，否则本期不把 UART0
   同时作为高吞吐桥接通道，避免日志与业务数据竞争；板包当前波特率为 921600。
+
+### 3.1 SPI2 SD 与指示灯硬件合同
+
+产品命名固定为 `CAN1 = MCAN0`、`CAN2 = MCAN2`；CAN2 不是 MCAN1 外设。
+
+| Signal | Pin | Planned role |
+|---|---|---|
+| SPI2 SCLK | PB11 | SD SPI clock |
+| SPI2 MISO | PB12 | SD-to-MCU data |
+| SPI2 MOSI | PB13 | MCU-to-SD data |
+| SD CS | PB10 | GPIO CS；active-low 仅为 BSP 假设，P0S 验证 |
+| SD detect | PY00 | card-present input；P0S 冻结 polarity/pull/debounce |
+| CAN1 TX LED | PY01 | MCAN0 successful TX completion activity |
+| CAN1 RX LED | PY02 | MCAN0 accepted RX activity |
+| CAN2 TX LED | PY03 | MCAN2 successful TX completion activity |
+| CAN2 RX LED | PA09 | MCAN2 accepted RX activity |
+| STATUS LED | PA31 | health/status indication |
+
+规范来源与完整决策见
+`docs/approved-plan/scope-addendum-spi2-sd-led.md`（stable ID
+`spi2-sd-led-2026-08-09`）。CS/LED active-low 常量必须与原理图和目标电压证据
+一致后才能作为硬件结论。
 
 ## 4. RALPLAN-DR
 
@@ -154,8 +174,8 @@ bsp/
 | `can0_task` | MCAN0 寄存器、RX/TX queue、completion | 唯一 MCAN0 owner；消费 ISR snapshot |
 | `can2_task` | MCAN2 寄存器、RX/TX queue、completion | 唯一 MCAN2 owner；消费 ISR snapshot |
 | `usb_tx_task` | Bulk IN endpoint 和 response/event/data scheduler | 控制响应保留配额并反饥饿 |
-| `storage_task` | SPI2/SD/FATFS | SD 分块写入与恢复，低于采集路径优先级 |
-| `health_task` | watchdog liveness ledger、watermark snapshot | 只采样，不直接复位外设 |
+| `storage_task` | SPI2、PB10 CS、PY00 hot-plug、SD/FatFs、capture file | 唯一存储 owner；以 `media_generation` 管理拔插；低于 CAN/USB 优先级 |
+| `health_task` | watchdog liveness ledger、watermark snapshot、PA31/PY01/PY02/PY03/PA09 | BSP init 后唯一 LED GPIO writer；timer/ISR 只发布状态 |
 
 关键约束：
 
@@ -171,6 +191,10 @@ bsp/
 - 每通道记录 RX/TX/filtered/drop/error/bus-off/recovery counters。
 - watchdog 采用 per-task generation/liveness voting；只有所有必需 owner 在期限内
   推进时才喂狗，超时记录缺失 voter 和队列水位。
+- CAN TX/RX ISR 和任务只发布有界 activity counter/event；TX 在控制器成功完成后
+  发布，RX 在有效帧被接受后发布。LED pulse 可合并，不能 busy-wait 或反压 CAN。
+- SD/FatFs 调用全部 marshalled 到 `storage_task`；移除卡时递增
+  `media_generation`，拒绝新块并使旧 handle/token 失效。
 
 ### 5.2 固件强制 TX 安全状态机
 
@@ -237,6 +261,7 @@ host/
 | P0C CAN/clock contract | context snapshot | PLL1/kernel clock/transceiver/termination | 只阻塞 P3B/P5 |
 | P0F flash/update contract | context snapshot | flash/linker/erase/boot topology | 只阻塞 update/release |
 | P0H reference-host/product profile | context snapshot | named hosts + workload profiles | 阻塞对应性能 claim |
+| P0S storage/I/O contract | schematic/BOM + P0H workload | pin electrical contract、SDHC media matrix、BP-STORAGE-v1、stack/patch ownership | P3C1；不阻塞无 STORAGE claim 的发布 |
 | P1 repo/toolchain + host stack spike | P0H reference hosts | fresh clean build、debug adapter evidence、Host A/B verdict | 阻塞 host codec/CLI；Qt 时整体切 C++ core |
 | P2 RTOS/time/ownership baseline | P1 firmware build | IRQ/API、static allocation、timestamp、watchdog tests | 阻塞固件数据面 |
 | P3A USB slice | P0U + P2 | descriptor/loopback/hotplug | 与 P3B 可并行 |
@@ -244,9 +269,10 @@ host/
 | P4P protocol + host codec | P1 host verdict | normative spec、golden vectors、fake transport | 可与 P3A/P3B 并行，E2E 前必须合流 |
 | P4E single-channel E2E | P3A + P3B + P4P | named benchmark profile + CLI evidence | MVP 核心门 |
 | P5 dual-channel/reliability | P4E | soak/fault/safety evidence | Beta 门 |
-| P3C SD branch | P0 选择 storage | recoverability/throughput | **不阻塞 MVP**；仅阻塞 lossless-recording 声明 |
-| P5S STORAGE protocol/host addendum | P3C + P4P | wire contract、host codec、golden vectors、E2E | conditional(STORAGE) |
-| P6 host core/CLI productization | P4E + selected host core | three-platform package/session/soak | 可与 P5 并行；CLI release |
+| P3C1 storage substrate | P0S + P2 | SPI2/detect/media generation、geometry/sync、bounded DMA、mount/recovery | P3C2 |
+| P3C2 CAN capture integration | P3C1 + P3B | bounded admission、preallocation/commit、throughput/fault/isolation | P5S 和 recording claim |
+| P5S STORAGE protocol/host addendum | P3C2 + P4P | wire contract、host codec、golden vectors、E2E | conditional(1.0,STORAGE) |
+| P6 host core/CLI productization | P4E + selected host core | Linux/Windows package/session/soak；macOS deferred | 可与 P5 并行；CLI release |
 | P7 GUI | P6 | UI benchmark/package | Beta 推荐但不阻塞；**1.0 required** |
 | P5U update branch | P0F + P4E | boot/update/rollback evidence | conditional(UPDATE)，不阻塞未声明 update 的 scope |
 | P8R(scope) release evidence | scope 对应 feature nodes | T-REL-001..004 evidence bundle | 每个 MVP/Beta/1.0 scope 都必须生成 |
@@ -254,9 +280,13 @@ host/
 
 关键合流：`P0H → P1 → P2 → (P3A || P3B || P4P) → P4E →
 (P5 || P6)`，P5/P6 不互相依赖；`P0U→P3A`、`P0C→P3B/P5`、
-`P0F→P5U`；`P3C` 与 P5U 是条件分支，GUI 是 1.0 必需分支。任何 capability
+`P0F→P5U`；storage 的精确条件链为
+`P0S -> P3C1 -> P3C2 -> P5S`，P5U 是另一条件分支，GUI 是 1.0 必需分支。任何 capability
 不支持的条件分支必须按测试规范标记 conditional/skip，
 不能悄悄降低 MVP 核心门。
+
+只有 `1.0 + STORAGE` 可以声明 STORAGE；MVP 与 Beta 不能声明。早期执行 P0S、
+P3C1 或 P3C2 只用于消除风险，不改变发布依赖或 capability advertisement。
 
 P8 唯一 scoped prerequisites：
 
@@ -264,7 +294,7 @@ P8 唯一 scoped prerequisites：
 |---|---|---|
 | MVP | P4E + P6(MVP package/CLI) + P8R(MVP) | none |
 | Beta | MVP + P5 + P6(Beta soak/package) + P8R(Beta) | CAN_FD only when capability is claimed；P7 recommended, non-blocking |
-| 1.0 | Beta + P7 + P8R(1.0) | P3C + P5S when STORAGE claimed；P5U when UPDATE claimed；CAN_FD capability-controlled |
+| 1.0 | Beta + P7 + P8R(1.0) | P3C1 + P3C2 + P5S when STORAGE claimed；P5U when UPDATE claimed；CAN_FD capability-controlled |
 
 ## Phase 0 — 硬件/产品约束冻结
 
@@ -284,12 +314,17 @@ P8 唯一 scoped prerequisites：
 6. 冻结产品负载模型：Classic/FD、DLC/payload mix、standard/extended 比例、
    channel split、bus utilization、batch/latency 和 storage 模式。
 7. 确认 SD 是否为 MVP、VID/PID/字符串/序列号策略及 reference host。
+8. 建立 P0S：验证本节 pin table、CS/LED 电气属性、PY00 polarity/pull/debounce；
+   对 4/8/16/32 GB SD v2 SDHC/FAT32/512-byte sector 多 vendor matrix 测试，
+   冻结 `BP-STORAGE-v1` 和 native stack/versioned patch ownership。
 
 ### Exit criteria
 
 - P0U/P0C/P0F/P0H 分别有 owner、版本、证据和 `PASS/BLOCKED` 状态；它们可独立关闭；
 - P0C `PASS` 时 CAN-FD 能力不再是推断，板/探针/adapter 有稳定唯一标识；
 - P0H `PASS` 时 MVP/Beta benchmark profiles 与 reference hosts 已冻结；
+- P0S `PASS` 时 `BP-STORAGE-v1` 的 encoded rate、queue absorption 和 operation
+  deadline 已为正数，且 frozen-mode planning validator 通过；
 - 任一未通过 contract 只阻塞 DAG 中明确依赖它的 node，不无谓阻塞 repo clean
   build；但未知项绝不能越过其依赖边。
 
@@ -314,25 +349,27 @@ P8 唯一 scoped prerequisites：
 3. 建立 Debug/Release、flash_xip/ram_debug 等明确 preset；始终导出
    `compile_commands.json`。
 4. VSCode 使用 C/C++ 或 clangd 阅读；构建任务只调用 CMake preset。
-5. 对 OpenOCD + VSCode debug adapter、J-Link GDB Server 分别做 stop-at-main、
-   breakpoint、step/reset 的证据门。未获得当前 HPM RISC-V 目标的官方兼容证据和
-   实测前，不预设 Cortex-Debug 为首选；选择由可复现实测决定。
+5. J-Link GDB Server 是选中的 MVP adapter；以 stop-at-main、breakpoint、
+   source/register inspect、step/reset 证据验证 checked-in VSCode profile。
+   当前 board 无 SDK OpenOCD config，因此 OpenOCD 为 non-selected/non-gating。
 6. 定义 `build -> flash -> reset -> UART smoke` 的脚本接口，但实际烧录必须在
    执行期经过硬件安全预检。
 7. 修复正式 Git 仓库状态；忽略 `build/`，保留可追溯版本号。
-8. **在任何 host codec/CLI 实现前**完成 Rust vs C++/Qt spike：同一 fake/USB
-   backend、10k synthetic profile、hotplug、崩溃恢复、许可和三平台打包；记录
-   单一 host core 的 go/no-go。若 Qt 胜出，core/CLI/GUI 整体采用 C++/Qt，
-   v1 不维护 Rust/C++ 双核心。
+8. Rust vs C++/Qt spike 已选定 Rust single core；fake/USB backend、10k
+   synthetic、recovery 和 Linux/Windows functional lane 已通过。Qt 只在 1.0
+   GUI phase 重新评估，不允许引入第二套 protocol/USB core。
 
 ### Exit criteria
 
-- Linux/Windows/macOS 至少各完成一次 clean configure/build；
+- Linux/Windows 各完成 clean configure/build；macOS 按当前 CLI scope deferred；
 - VSCode 跳转、补全与真实编译参数一致；
 - Debug 可停在 `main`、查看变量、单步和复位；
 - 构建产物包含 ELF/BIN/MAP、size、SDK/toolchain version 和 checksum；
-- 新成员按文档在 30 分钟内完成首次构建（不含 SDK 下载时间）；
+- setup docs 与 CI 可从 clean checkout 完成首次构建；新成员 30 分钟 timed
+  onboarding exercise 留给 P6 packaging evidence；
 - host stack 与 debug adapter 的决策均有官方兼容资料、实测日志和 ADR addendum。
+- Phase 1B closure manifest/validator 为 PASS；physical cable/PnP/release package
+  evidence 留在 P3A/P6，不混入 Gate A。
 
 ## Phase 2 — 板级与 FreeRTOS 最小验证
 
@@ -348,6 +385,8 @@ P8 唯一 scoped prerequisites：
 5. 建立 fault handler：保存 reset cause、断言位置和最小故障信息。
 6. 用 target tests 锁定 IRQ priority/ISR API、32-bit rollover 下的 64-bit timestamp
    原子读取、runtime allocation freeze、逐 task watchdog generation voter stall。
+7. 验证五个 LED 上电/软件接管后的 default-off、逐个 routing、实际 polarity，
+   将现有 `idleTask` writer 迁移为 health-owned indicator service，并测量 STATUS pattern。
 
 ### Exit criteria
 
@@ -364,7 +403,8 @@ P8 唯一 scoped prerequisites：
 1. 从 CherryUSB FreeRTOS CDC 示例验证枚举、断连/重连；
 2. 从 WinUSB 2.0 示例演进 vendor bulk interface；
 3. 实现异步 RX/TX、endpoint reset、host disconnect 和统计；
-4. 三平台完成枚举、权限、热插拔和 1 小时 bulk loopback。
+4. Linux/Windows 完成枚举、权限、热插拔和 1 小时 bulk loopback；macOS 在
+   后续 scope 启用时执行，不阻塞当前 CLI scope。
 
 **通过**：按已冻结 `benchmark-profile-v1` 的随机 payload loopback，累计至少
 10 GiB（仅 USB speed/profile 支持时），校验无错误；拔插 100 次无死锁；
@@ -390,13 +430,21 @@ USB 不可用不阻塞调度器。
 本分支只有 Phase 0 明确选择 storage/lossless recording 时才进入；不阻塞 P4E
 单通道 USB-CAN CLI MVP。
 
-1. SPI2 loop/器件 ID 或 SD init；
-2. DMA、detect、插拔、容量和 FATFS；
-3. 设备内部采用带 CRC 和 sequence 的分块 capture 格式；
-4. 断电/拔卡后最多损失一个未提交块，已提交块可扫描恢复。
+1. **P3C1 substrate**：确认 mode-0，初始化时钟不高于 400 kHz，数据时钟配置和
+   实测均不高于 20 MHz；实现 PY00 debounce、`media_generation` 和 sole-owner API；
+2. 审计并修复 logical sector count、erase-block sectors、last LBA 和
+   `CTRL_SYNC`；用有限 deadline、task notification/semaphore 和 cache-correct DMA
+   取代 SDK sample 的无限等待；
+3. **P3C2 capture integration**：预分配 128 MiB segment，写入 generation、
+   sequence、length、CRC 和最后提交 marker；truthful sync 后更新冗余 checkpoint；
+4. 运行 full/remove/DMA timeout/real power-cut matrix；重新插卡不得复用旧 handle；
+5. 以 frozen `BP-STORAGE-v1` 验证 committed throughput、p99 stall、CPU/queue、
+   CAN/USB drop 和 p95 regression。
 
-**通过**：连续写入 4 GiB 或卡容量上限，记录吞吐高于目标 CAN 数据率 2 倍；
-执行故障注入后文件系统和已提交记录可恢复。
+**通过**：`T-SD-001..007` 通过，committed payload throughput 至少为 frozen
+encoded capture rate 的 2 倍，geometry/sync 与独立 host tool 一致，故障后只接受
+matching generation/sequence/CRC 的 committed block。未完成真实 power-cut
+commit-state matrix 前，不声明“最多丢失一个未提交 block”。
 
 ### 3D UART
 
@@ -450,7 +498,8 @@ USB 不可用不阻塞调度器。
 
 ### Conditional P3C STORAGE branch
 
-仅当 1.0 claim manifest 声明 `STORAGE` 时执行；依赖 Phase 0 的 storage 决策，
+仅当 1.0 claim manifest 声明 `STORAGE` 时执行；即 `1.0 + STORAGE`，并严格依赖
+`P0S -> P3C1 -> P3C2 -> P5S`。依赖 Phase 0 的 storage 决策，
 实现 SD capture/replay、恢复与诊断，并通过 `T-SD-001..007`。未声明时固件 capability
 不得发布 STORAGE，CLI/GUI 省略入口或稳定返回 `UNSUPPORTED`。
 
@@ -480,11 +529,11 @@ UPDATE，任何主机入口必须省略或稳定返回 `UNSUPPORTED`。
    `P5U complete && UPDATE claimed` 时构建/显示，否则省略或稳定返回
    `UNSUPPORTED`；
 5. 支持 JSON Lines 输出供 CI/HIL，终端输出与机器输出分离；
-6. 三平台打包、权限/udev/WinUSB 指南和签名策略。
+6. Linux/Windows 打包、权限/udev/WinUSB 指南和签名策略；macOS deferred。
 
 ### Exit criteria
 
-- 三平台同一 golden vector 和协议测试全部通过；
+- Linux/Windows 同一 golden vector 和协议测试全部通过；
 - CLI 在设备断连、重新枚举、协议版本不兼容时返回稳定 exit code；
 - CLI HIL 可自动执行双通道 capture/send/error 测试；
 - 主机长期采集 72 小时无内存无界增长。
@@ -515,13 +564,13 @@ UPDATE，任何主机入口必须省略或稳定返回 `UNSUPPORTED`。
 - 20k frames/s 输入下 UI 保持可交互，参考机 p95 frame time < 33 ms；
 - GUI 暂停/切换页面不增加设备 drop；
 - 2 小时高负载后内存达到稳态，无持续线性增长；
-- Windows/Linux/macOS 安装、首次枚举和卸载路径有文档。
+- Windows/Linux 安装、首次枚举和卸载路径有文档；macOS deferred。
 
 ## Phase 8 — CI、HIL、发布与维护
 
 1. 固件 clean build matrix、warning-as-error、static analysis、size budget；
 2. 协议 codec fuzz/property tests、golden vector compatibility；
-3. 主机三平台 unit/integration/package；
+3. 主机 Linux/Windows unit/integration/package；macOS deferred；
 4. HIL 资源锁：板卡/探针/CAN 适配器唯一 ID；
 5. 自动 flash、UART health、USB enumerate、CAN loop、fault injection、cleanup；
 6. 发布 SBOM/依赖许可、版本矩阵、固件/协议兼容表、checksum；
@@ -583,7 +632,7 @@ UPDATE，任何主机入口必须省略或稳定返回 `UNSUPPORTED`。
 - 双通道、CAN-FD（硬件允许时）、filter；
 - 72 小时 soak、热插拔、bus-off；
 - GUI trace/filter/send/capture 推荐交付，但不作为 Beta release blocker；
-- 三平台安装。
+- Linux/Windows 安装；macOS 在后续 scope 启用时补测。
 
 ### 1.0
 
@@ -607,6 +656,7 @@ Phase 0 必须把下表的 `TBD` 冻结为版本化 profile；未冻结前数值
 | `BP-LATENCY-v1` | BP-CAN-MVP 输入；channel/payload mix=`TBD` | reference host/controller=`TBD` | 60 s warm-up；≥1M samples；测试前后及每 60 s ≥20 PING；线性拟合 offset+drift；报告 p50/p95/p99 | p95 ≤ 5 ms；fit residual p95 ≤ target 的 20% |
 | `BP-BACKPRESSURE-v1` | 当前 release scope 的 BP-CAN-MVP/BETA 输入；host stop windows=`TBD` | fixed ring/pool/batch | 分别验证 normal 与 overload；对账 drop/event/sequence | normal=0 drop；overload=显式、精确可计数 |
 | `BP-GUI-v1` | recorded 20k frame/s | named host；viewport/filter=`TBD` | 5 min warm-up；2 h；frame-time histogram/RSS slope | p95 < 33 ms；后 60 min RSS slope ≤ `TBD` |
+| `BP-STORAGE-v1` | 4 KiB blocks、queue 8、128 MiB segments、frozen BP-CAN-BETA | 8 queued 16 KiB USB reads；20 MHz ceiling | 60 s warm-up；30 min/card；72 h soak | `BLOCKED(P0S)` until numeric rate/absorption/deadline are frozen |
 
 所有 profile 记录 Classic/FD、DLC/payload、standard/extended、channel split、
 bus utilization、USB speed、batch、reference host/OS/controller、样本数、warm-up、
@@ -628,6 +678,8 @@ percentile 算法。设备 tick 与 host time 只能通过明确的 PING 校准�
 | CAN-04 | CAN-FD/BRS/64 B capability | T-CAN-010 | analyzer/HIL；P0 conditional(Beta+,CAN_FD) |
 | CAN-02 | error/timestamp 与外部仪器一致 | T-CAN-006/008/011 | CAN/UART trace；P0 required(MVP+) |
 | CAN-05 | MCAN2 smoke 与 filter hit/miss | T-CAN-002/005 | CAN analyzer；P0 required(Beta+)，MVP advisory |
+| LED-01 | STATUS/CAN1 electrical, ownership and semantics | T-LED-001,T-LED-002,T-LED-003,T-LED-006 | schematic/target/static/HIL；P0 required(MVP+) |
+| LED-02 | CAN2 electrical and semantics | T-LED-004,T-LED-005 | schematic/target/HIL；P0 required(Beta+)，MVP advisory |
 | PROTO-01 | C/selected-host codec golden vectors 一致 | T-PROTO-001 | vector corpus/report；P0 required(MVP+) |
 | PROTO-02 | malformed input 安全且稳定错误 | T-PROTO-003..005/009 | fuzz corpus/report；P0 required(MVP+) |
 | PROTO-03 | version/sequence/cancel/capability/QoS closure | T-PROTO-002/006..008/010..012 | compatibility/state-machine/HIL；P0 required(MVP+) |
@@ -639,7 +691,7 @@ percentile 算法。设备 tick 与 host time 只能通过明确的 PING 校准�
 | FW-02 | Beta flash/RAM/stack budget 与运行期内存稳态 | T-FW-008 | map/watermark/RSS；P1 required(Beta+) |
 | FW-03 | watchdog/config/static/safety/cancel/cleanup | T-FW-006/007/009/010/012/013 | target/HIL/static evidence；P0 required(MVP+) |
 | FW-04 | dual-channel timestamp/order | T-FW-011 | HIL/order trace；P0 required(Beta+) |
-| HOST-01 | 三平台 CLI 同套件、稳定 exit code | T-HOST-001..004 | package/test report；P0 required(MVP+) |
+| HOST-01 | Linux/Windows CLI 同套件、稳定 exit code | T-HOST-001/002/004 | package/test report；P0 required(MVP+)；T-HOST-003 deferred(macOS) |
 | HOST-02 | CLI 72 h memory plateau | T-HOST-005 | profiler/RSS trace；P1 required(Beta+) |
 | GUI-01 | BP-GUI、filter/export/recovery | T-GUI-001..006 | GUI/profiler evidence；P1 required(1.0)，Beta recommended |
 | STORE-01 | 设备存储恢复 + protocol/host/E2E | T-SD-001..010 | fault/golden/host E2E；P1 conditional(1.0,storage) |
