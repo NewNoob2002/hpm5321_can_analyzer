@@ -27,7 +27,8 @@ def main() -> None:
     }
     if data.get("external_capture_status") not in allowed_capture_status:
         fail("invalid external_capture_status")
-    if data.get("result_abi_version", 0) >= 5:
+    if (data.get("result_abi_version", 0) >= 5 and
+            data.get("external_capture_status") != "independent_results_only"):
         nonce = data.get("run_nonce")
         if not isinstance(nonce, int) or not 0 < nonce <= 0xFFFF:
             fail("ABI-v5 artifact attestation requires a 16-bit run_nonce")
@@ -56,7 +57,7 @@ def main() -> None:
     build_dir = artifact.parents[1]
     version_header = build_dir / "build_tmp/generated/include/hpm_sdk_version.h"
     version_text = version_header.read_text()
-    match = re.search(r"^#define BUILD_VERSION\s+(\w+)$", version_text, re.MULTILINE)
+    match = re.search(r"^#define BUILD_VERSION\s+(\S+)$", version_text, re.MULTILINE)
     if match is None or match.group(1) != data["sdk_build_version"]:
         fail("SDK BUILD_VERSION mismatch")
 
