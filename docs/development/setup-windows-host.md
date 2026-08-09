@@ -70,5 +70,20 @@ Archive all of the following under `docs/evidence/phase1/`:
 
 Run `scripts/phase1/collect_windows_phase1b.ps1` from PowerShell to collect the
 current environment, PnP record, clean build/tests, hashes and a 64 MiB HIL
-result. CI proves native source/build correctness; it does not replace PnP,
-physical USB or release-artifact provenance.
+result. The collector rejects a vendor interface that is not bound to the
+`WinUSB` service and records driver provider/version/INF properties in
+`manifest.json`.
+
+For the physical failure/recovery evidence, run:
+
+```powershell
+.\scripts\phase1\collect_windows_phase1b.ps1 -ExerciseDisconnectRecovery
+```
+
+Unplug the device cable when prompted and reconnect it after the interrupted
+long transfer reports failure. The collector then requires re-enumeration and a
+1 MiB exact recovery echo. It produces a ZIP evidence bundle and a sibling
+SHA-256 file. That ZIP is an evidence archive, not the P6 product installer;
+clean install/upgrade/uninstall remains a separate `T-REL-003` release gate.
+CI proves native source/build correctness; it does not replace PnP, physical
+USB or release-package provenance.

@@ -1,3 +1,3 @@
 # Phase-0 development VID/PID inherited from the HPM SDK WinUSB sample.
 # Replace these identifiers before product release.
-SUBSYSTEM=="usb", ATTR{idVendor}=="34b7", ATTR{idProduct}=="1236", MODE="0660", GROUP="plugdev", TAG+="uaccess"
+SUBSYSTEM=="usb", ATTR{idVendor}=="34b7", ATTR{idProduct}=="1236", MODE="0660", GROUP="dialout", TAG+="uaccess"

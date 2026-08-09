@@ -45,6 +45,21 @@ class DevelopmentContractTests(unittest.TestCase):
         self.assertIn("macOS is deferred", addendum)
         self.assertIn("must not introduce a second protocol/USB core", addendum)
 
+    def test_windows_collector_fails_closed_on_product_evidence(self):
+        collector = (ROOT / "scripts/phase1/collect_windows_phase1b.ps1").read_text()
+        for token in (
+            "DEVPKEY_Device_Service",
+            "DEVPKEY_Device_DriverProvider",
+            "DEVPKEY_Device_DriverVersion",
+            '$_.Service -ieq "WinUSB"',
+            "Get-FileHash -Algorithm SHA256 $exe, $lock",
+            "--bytes 67108864",
+            "$ExerciseDisconnectRecovery",
+            "DisconnectRecoveryExercised",
+            "Compress-Archive",
+        ):
+            self.assertIn(token, collector)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -34,9 +34,9 @@ Planning addendum: `spi2-sd-led-2026-08-09`. Product aliases are
 |---|---:|---|
 | Source pin mapping | PASS | `scripts/validate_planning_contract.py` remains green |
 | CS/LED polarity, drive, resistor and reset/default state | NOT_TESTED | Schematic review plus target voltage/routing evidence |
-| PY00 present level, pull and debounce | NOT_TESTED | Schematic review plus insertion/removal trace |
+| PY00 present level, pull and debounce | NOT_TESTED | Two J-Link reads of `0xF00D00E0` returned `0x0000000E`/PY00=0 before and after a requested removal, but the physical states were not independently confirmed and no transition was observed; repeat with an operator-confirmed empty slot, then add schematic pull and debounce proof |
 | SD v2 SDHC 4/8/16/32 GB FAT32 matrix | NOT_TESTED | P0S multi-vendor media results |
-| `BP-STORAGE-v1` derived rate/deadline freeze | BLOCKED | Measure encoded rate and queue absorption; run frozen-mode validator |
+| `BP-STORAGE-v1` derived rate/deadline freeze | BLOCKED | Freeze `BP-CAN-BETA-v1`, calculate/validate with `scripts/phase0/storage_profile.py`, then run the frozen-mode planning validator |
 
 The source-reviewed table is not electrical proof. Only `1.0 + STORAGE` may
 claim STORAGE, through `P0S -> P3C1 -> P3C2 -> P5S`; MVP/Beta remain

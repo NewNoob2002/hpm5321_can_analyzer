@@ -31,6 +31,23 @@ compilation database. Start J-Link GDB Server separately with target
 `HPM5321xCFx`, JTAG 4 MHz, port 2331, then use the checked-in attach profile.
 Flashing remains a safety-preflight operation and is not part of a build task.
 
+## USB device access
+
+Install the repository rule once, reload udev, then physically reconnect the
+device:
+
+```sh
+sudo install -m 0644 config/udev/99-hpm5321-can-analyzer.rules \
+  /etc/udev/rules.d/99-hpm5321-can-analyzer.rules
+sudo udevadm control --reload-rules
+```
+
+The rule grants the active desktop user through `uaccess` and uses `dialout`
+for non-desktop development sessions. If the current account is not already in
+that group, add it once with `sudo usermod -aG dialout "$USER"`, then log out
+and back in. Verify that the current `/dev/bus/usb/<bus>/<device>` node is
+readable and writable before running the host smoke or T-USB-007 collector.
+
 ## Verification
 
 ```sh
