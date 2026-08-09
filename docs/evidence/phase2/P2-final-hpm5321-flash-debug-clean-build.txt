@@ -1,0 +1,104 @@
+PASS sdk=88b01b43900d8c30844a1e5cdd3f3b7aff6db40e class=validated-fork cmake=4.3.0 ninja=1.13.2
+-- Application: /home/gtc/Desktop/workspace/HPM_PROJ/hpm5321_can_analyzer
+-- Board (custom board): hpm5321_custom from /home/gtc/Desktop/workspace/HPM_PROJ/hpm5321_can_analyzer/boards
+-- Found toolchain: gnu (/home/gtc/.local/opt/hpmicro/riscv32-toolchain-2023.10.18)
+-- hpm_sdk: 1.12.1 (/home/gtc/.local/opt/hpmicro/hpm_sdk)
+-- The C compiler identification is GNU 13.2.0
+-- The CXX compiler identification is GNU 13.2.0
+-- The ASM compiler identification is GNU
+-- Found assembler: /home/gtc/.local/opt/hpmicro/riscv32-toolchain-2023.10.18/bin/riscv32-unknown-elf-gcc
+-- FreeRTOS use custom heap allocation
+-- GNU ld linker script: /home/gtc/.local/opt/hpmicro/hpm_sdk/soc/HPM5300/HPM5361/toolchains/gcc/flash_xip.ld
+--   - easylogger 库已配置
+-- IAR linker script: /home/gtc/.local/opt/hpmicro/hpm_sdk/soc/HPM5300/HPM5361/toolchains/iar/flash_xip.icf
+-- IAR device name: HPM5321xCFx
+-- IAR Embedded Workbench Project: /home/gtc/Desktop/workspace/HPM_PROJ/hpm5321_can_analyzer/build/hpm5321-flash-debug/iar_embedded_workbench/hpm5321_can_analyzer.ewp
+-- Segger linker script: /home/gtc/.local/opt/hpmicro/hpm_sdk/soc/HPM5300/HPM5361/toolchains/segger/flash_xip.icf
+-- Segger device name: HPM5321xCFx
+-- Segger openocd board config is not found
+-- Segger Embedded Studio Project: /home/gtc/Desktop/workspace/HPM_PROJ/hpm5321_can_analyzer/build/hpm5321-flash-debug/segger_embedded_studio/hpm5321_can_analyzer.emProject
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/gtc/Desktop/workspace/HPM_PROJ/hpm5321_can_analyzer/build/hpm5321-flash-debug
+[1/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/soc/HPM5300/HPM5361/system.c.obj
+[2/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/soc/HPM5300/HPM5361/hpm_otp_drv.c.obj
+[3/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/home/gtc/Desktop/workspace/HPM_PROJ/hpm5321_can_analyzer/boards/hpm5321_custom/clock.c.obj
+[4/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/soc/HPM5300/HPM5361/hpm_qeiv2_soc_drv.c.obj
+[5/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/arch/riscv/l1c/hpm_l1c_drv.c.obj
+[6/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/soc/HPM5300/HPM5361/boot/hpm_bootheader.c.obj
+[7/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/home/gtc/Desktop/workspace/HPM_PROJ/hpm5321_can_analyzer/boards/hpm5321_custom/pinmux.c.obj
+[8/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/soc/HPM5300/HPM5361/hpm_clock_drv.c.obj
+[9/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/soc/HPM5300/HPM5361/hpm_sysctl_drv.c.obj
+[10/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/home/gtc/Desktop/workspace/HPM_PROJ/hpm5321_can_analyzer/boards/hpm5321_custom/board.c.obj
+[11/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_rng_drv.c.obj
+[12/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_gpio_drv.c.obj
+[13/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_uart_drv.c.obj
+[14/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_pmp_drv.c.obj
+[15/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_gptmr_drv.c.obj
+[16/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_i2c_drv.c.obj
+[17/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_spi_drv.c.obj
+[18/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_sdp_drv.c.obj
+[19/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_pwm_drv.c.obj
+[20/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_usb_drv.c.obj
+[21/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_pllctlv2_drv.c.obj
+[22/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_mchtmr_drv.c.obj
+[23/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_tsns_drv.c.obj
+[24/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_acmp_drv.c.obj
+[25/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_pcfg_drv.c.obj
+[26/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_ptpc_drv.c.obj
+[27/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_adc16_drv.c.obj
+[28/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_crc_drv.c.obj
+[29/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_enc_pos_drv.c.obj
+[30/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_sei_drv.c.obj
+[31/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_qeo_drv.c.obj
+[32/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_dac_drv.c.obj
+[33/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_rdc_drv.c.obj
+[34/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_mmc_drv.c.obj
+[35/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_qeiv2_drv.c.obj
+[36/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_dmav2_drv.c.obj
+[37/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/utils/hpm_swap.c.obj
+[38/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/utils/hpm_sbrk.c.obj
+[39/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_opamp_drv.c.obj
+[40/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/utils/hpm_ffssi.c.obj
+[41/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_plb_drv.c.obj
+[42/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/utils/hpm_crc32.c.obj
+[43/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_ewdg_drv.c.obj
+[44/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/FreeRTOS/Source/croutine.c.obj
+[45/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/components/debug_console/hpm_debug_console.c.obj
+[46/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/drivers/src/hpm_mcan_drv.c.obj
+[47/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/FreeRTOS/Source/list.c.obj
+[48/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/FreeRTOS/Source/event_groups.c.obj
+[49/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/segger_rtt/RTT/SEGGER_RTT.c.obj
+[50/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/FreeRTOS/Source/queue.c.obj
+[51/76] Building C object build_tmp/CMakeFiles/hpm_sdk_gcc_lib.dir/soc/HPM5300/HPM5361/toolchains/reset.c.obj
+[52/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/FreeRTOS/Source/timers.c.obj
+[53/76] Building ASM object build_tmp/CMakeFiles/hpm_sdk_gcc_startup_lib.dir/soc/HPM5300/HPM5361/toolchains/gcc/start.S.obj
+[54/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/FreeRTOS/Source/stream_buffer.c.obj
+[55/76] Building C object build_tmp/CMakeFiles/hpm_sdk_gcc_startup_lib.dir/soc/HPM5300/HPM5361/toolchains/gcc/initfini.c.obj
+[56/76] Building C object build_tmp/CMakeFiles/hpm_sdk_gcc_lib.dir/middleware/FreeRTOS/Source/portable/GCC/RISC-V/port.c.obj
+[57/76] Building C object build_tmp/CMakeFiles/hpm_sdk_gcc_lib.dir/middleware/FreeRTOS/Source/portable/GCC/RISC-V/chip_specific_extensions/HPMicro/hpm_port.c.obj
+[58/76] Building C object build_tmp/CMakeFiles/hpm_sdk_gcc_lib.dir/soc/HPM5300/HPM5361/toolchains/trap.c.obj
+[59/76] Building ASM object build_tmp/CMakeFiles/hpm_sdk_gcc_lib.dir/middleware/FreeRTOS/Source/portable/GCC/RISC-V/portASM.S.obj
+[60/76] Building C object build_tmp/CMakeFiles/hpm_sdk_lib.dir/middleware/FreeRTOS/Source/tasks.c.obj
+[61/76] Building C object third_party/easylogger/CMakeFiles/easylogger.dir/src/elog_utils.c.obj
+[62/76] Building C object third_party/easylogger/CMakeFiles/easylogger.dir/port/elog_port.c.obj
+[63/76] Building C object CMakeFiles/app.dir/USER/src/app_allocation.c.obj
+[64/76] Building C object CMakeFiles/app.dir/USER/src/app_time_core.c.obj
+[65/76] Building C object CMakeFiles/app.dir/USER/src/app_watchdog.c.obj
+[66/76] Building C object CMakeFiles/app.dir/USER/src/app_time.c.obj
+[67/76] Linking C static library lib/libhpm_sdk_gcc_lib.a
+[68/76] Linking C static library lib/libhpm_sdk_gcc_startup_lib.a
+[69/76] Linking C static library lib/libhpm_sdk_lib.a
+[70/76] Building C object CMakeFiles/app.dir/USER/src/app_health.c.obj
+[71/76] Building C object third_party/easylogger/CMakeFiles/easylogger.dir/src/elog.c.obj
+[72/76] Building C object CMakeFiles/app.dir/USER/src/app_mcan_irq_test.c.obj
+[73/76] Linking C static library lib/libeasylogger.a
+[74/76] Building C object CMakeFiles/app.dir/USER/src/freertos_hooks.c.obj
+[75/76] Building C object CMakeFiles/app.dir/USER/src/main.c.obj
+[76/76] Linking C executable output/demo.elf
+Memory region         Used Size  Region Size  %age Used
+           FLASH:       96704 B         1 MB      9.22%
+             ILM:       12224 B       128 KB      9.33%
+             DLM:       43696 B     130304 B     33.53%
+        AHB_SRAM:        2560 B        32 KB      7.81%
+PASS manifest=/home/gtc/Desktop/workspace/HPM_PROJ/hpm5321_can_analyzer/build/hpm5321-flash-debug/build-manifest.json
