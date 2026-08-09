@@ -1,5 +1,6 @@
 /* HPM5321 USB-CAN analyzer RTOS ownership baseline. */
 #include <stdint.h>
+#include <stdio.h>
 
 #include "FreeRTOS.h"
 #include "app_allocation.h"
@@ -11,9 +12,25 @@
 #include "elog.h"
 #include "hpm_clock_drv.h"
 #include "hpm_ppor_drv.h"
+#include "hpm_sdk_version.h"
 #include "task.h"
 
 #define APP_BOOT_MAGIC (0x424F4F54U) /* "BOOT" */
+#define APP_STRINGIFY_VALUE(value) #value
+#define APP_STRINGIFY(value) APP_STRINGIFY_VALUE(value)
+
+#ifndef APP_FIRMWARE_VERSION
+#error "APP_FIRMWARE_VERSION must be provided by the build"
+#endif
+#ifndef APP_BOARD_REVISION
+#error "APP_BOARD_REVISION must be provided by the build"
+#endif
+
+#ifdef BUILD_VERSION
+#define APP_SDK_BUILD_VERSION APP_STRINGIFY(BUILD_VERSION)
+#else
+#define APP_SDK_BUILD_VERSION "unknown"
+#endif
 
 typedef struct {
     uint32_t magic;
@@ -70,11 +87,55 @@ static void capture_clock_state(void)
     configASSERT(g_app_boot_state.spi2_hz != 0U);
 }
 
+static const char *reset_cause_name(uint32_t flags)
+{
+    const uint32_t known_mask =
+        ppor_reset_brownout | ppor_reset_debug | ppor_reset_wdog0 |
+        ppor_reset_wdog1 | ppor_reset_pmic_wdog | ppor_reset_software;
+    const uint32_t known = flags & known_mask;
+
+    if (known == 0U) {
+        return flags == 0U ? "power_on_or_unknown" : "unknown";
+    }
+    if ((known & (known - 1U)) != 0U) {
+        return "multiple";
+    }
+    if (known == ppor_reset_brownout) {
+        return "brownout";
+    }
+    if (known == ppor_reset_debug) {
+        return "debug";
+    }
+    if (known == ppor_reset_wdog0) {
+        return "watchdog0";
+    }
+    if (known == ppor_reset_wdog1) {
+        return "watchdog1";
+    }
+    if (known == ppor_reset_pmic_wdog) {
+        return "pmic_watchdog";
+    }
+    return "software";
+}
+
+static void print_boot_banner(void)
+{
+    printf("P2_BOOT firmware=%s sdk=%s sdk_build=%s board=%s "
+           "board_revision=%s uart=UART0 baud=%lu reset_flags=0x%08lx "
+           "reset_cause=%s\n",
+           APP_FIRMWARE_VERSION, SDK_VERSION_STRING, APP_SDK_BUILD_VERSION,
+           BOARD_NAME, APP_BOARD_REVISION,
+           (unsigned long)BOARD_CONSOLE_UART_BAUDRATE,
+           (unsigned long)g_app_boot_state.reset_flags,
+           reset_cause_name(g_app_boot_state.reset_flags));
+}
+
 int main(void)
 {
     board_init();
     init_logger();
     capture_clock_state();
+    print_boot_banner();
 
     log_i("P2 RTOS baseline: static health task, queue, timer, 64-bit time");
     configASSERT(app_health_start());

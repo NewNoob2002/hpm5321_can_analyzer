@@ -6,15 +6,20 @@ Board: `hpm5321_custom`, serial `20260723`
 Probe: J-Link PLUS, S/N `607000454`, JTAG 4 MHz, VTref 3.30 V
 SDK: `88b01b43900d8c30844a1e5cdd3f3b7aff6db40e` (`validated-fork`)
 
-## Final Default Artifact
+## RTOS Qualification Artifact
 
 Flash Debug ELF SHA-256:
 `08364c0d6fca038dcafe5ef0fdb7f8bfb63d6667c04a7c47fadc0f6e1f155f8a`
 
-The board was restored to this default image after all injection tests. The
-ELF contains `USE_SYSCALL_INTERRUPT_PRIORITY=1`, the HPM threshold-aware port
-symbols, static FreeRTOS object creation, allocation wrappers, and no
-`pvPortMalloc` or `vPortFree` symbol.
+This ELF contains `USE_SYSCALL_INTERRUPT_PRIORITY=1`, the HPM threshold-aware
+port symbols, static FreeRTOS object creation, allocation wrappers, and no
+`pvPortMalloc` or `vPortFree` symbol. Its target results remain artifact-bound
+to this hash.
+
+The board now runs the UART-enabled Flash Debug image
+`faddfc9174fc3c1b9d4395a40c97bb1a89a66e20ab3378d098b93edb30494a90`.
+That image received a target health spot check; it does not relabel the earlier
+fault-injection or 30-second soak results.
 
 ## T-RTOS-002 Direct Hook Injection
 
@@ -81,6 +86,23 @@ compile-time assertion for every future API-calling ISR.
 This freezes the contract but does not close the target half of `T-RTOS-005`:
 there is no product USB, MCAN or storage peripheral ISR yet to exercise with an
 ISR-safe API.
+
+## T-BSP-001 UART Boot Banner
+
+The root firmware now enables the board UART0 console on PA00/PA01 at 921600
+baud. A machine-readable `P2_BOOT` line reports firmware semantic version,
+SDK release and build, board name and PCB revision, UART settings, raw PPOR
+reset flags and a decoded reset cause. EasyLogger retains the RTT core without
+linking RTT libc syscalls, so UART remains the sole stdout owner.
+
+All three presets build. The UART-enabled Flash Debug image was programmed and
+verified, then reported UART0 as configured and continued with heartbeat 36,
+watchdog healthy 36/36, 447-word stack watermark, and zero post-freeze
+allocations. A QinHeng `1a86:55d3` adapter (serial `586D017868`) then captured
+the complete 447-byte UART boot output at 921600 8N1 after a J-Link reset. The
+exact `P2_BOOT` line matched the firmware, SDK/build, board/revision, UART and
+debug-reset contract, so `T-BSP-001` is `PASS`. See
+`T-BSP-001-uart-banner-2026-08-09.md` for the complete raw text.
 
 ## Short Soak
 
