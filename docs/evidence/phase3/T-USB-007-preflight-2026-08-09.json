@@ -1,0 +1,25 @@
+{
+  "completed_at": "2026-08-09T02:17:12.738661+00:00",
+  "completed_cycles": 0,
+  "cycles": [],
+  "disconnect_method": "physical-cable",
+  "failure": "initial recovery smoke failed",
+  "initial_smoke": {
+    "exit_code": 2,
+    "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+    "stdout": ""
+  },
+  "minimum_disconnect_ms": 250,
+  "operator": "gtc",
+  "pid": "1236",
+  "required_cycles": 100,
+  "schema_version": 1,
+  "smoke_bytes": 1048576,
+  "smoke_executable": "host/target/release/hpm-usb-smoke",
+  "smoke_sha256": "e11427c2804ebe1442c2973469d875b0c2242289d71d0cc56bf7ff748a2c8c47",
+  "started_at": "2026-08-09T02:13:03.211193+00:00",
+  "status": "FAIL",
+  "test_id": "T-USB-007",
+  "topology_path": "7-1.4",
+  "vid": "34b7"
+}

@@ -16,6 +16,8 @@ Planning addendum `spi2-sd-led-2026-08-09` is approved and normalized. Product
 firmware still has no `storage_task` and does not drive CAN activity LEDs; the
 current idle-task STATUS writer must be retired when the health-owned indicator
 service is introduced. P0S remains blocked on electrical/media/profile proof.
+`scripts/phase0/storage_profile.py` makes the numeric and evidence requirements
+executable; it intentionally rejects the checked-in BLOCKED evidence template.
 
 ## Phase 0 probes
 
@@ -47,3 +49,9 @@ native CI/functional HIL are complete. Physical cable cycling stays in P3A
 `T-USB-007`; Windows PnP/archive/package provenance stays in P6. OpenOCD was
 not selected and macOS is deferred by the Linux/Windows CLI scope. These
 downstream items are not represented as completed evidence.
+
+The local Linux host toolchain is also closed: Rust/Cargo 1.97.1, GCC 16
+ASan/UBSan, host tests and clippy pass. The physical P3A hotplug collector and
+the stricter Windows PnP/provenance collector are ready, but their hardware and
+Windows-native runs are not represented as PASS until their evidence bundles
+exist.
