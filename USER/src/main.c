@@ -9,6 +9,7 @@
 #include "app_irq_contract.h"
 #include "app_mcan_irq_test.h"
 #include "app_time.h"
+#include "app_usb_owner.h"
 #include "board.h"
 #include "elog.h"
 #include "hpm_clock_drv.h"
@@ -138,9 +139,10 @@ int main(void)
     capture_clock_state();
     print_boot_banner();
 
-    log_i("P2 RTOS baseline: static health and MCAN0 IRQ qualification");
+    log_i("P3A USB vertical slice: static USB owner and RTOS health");
     configASSERT(app_health_start());
     configASSERT(app_mcan_irq_test_start());
+    configASSERT(app_usb_owner_start());
     app_allocation_freeze();
     app_fault_inject_if_configured();
 
