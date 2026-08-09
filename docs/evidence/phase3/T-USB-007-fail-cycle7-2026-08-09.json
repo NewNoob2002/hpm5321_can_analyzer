@@ -1,0 +1,113 @@
+{
+  "completed_at": "2026-08-09T02:51:45.173233+00:00",
+  "completed_cycles": 6,
+  "cycles": [
+    {
+      "cycle": 1,
+      "disconnect_ms": 5161.817,
+      "disconnected_at": "2026-08-09T02:47:08.213306+00:00",
+      "reconnected_at": "2026-08-09T02:47:13.700799+00:00",
+      "recovery_smoke": {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.323 throughput_MiB_s=3.099"
+      },
+      "topology_path": "7-1.4"
+    },
+    {
+      "cycle": 2,
+      "disconnect_ms": 4960.494,
+      "disconnected_at": "2026-08-09T02:49:23.433142+00:00",
+      "reconnected_at": "2026-08-09T02:49:28.720419+00:00",
+      "recovery_smoke": {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.081"
+      },
+      "topology_path": "7-1.4"
+    },
+    {
+      "cycle": 3,
+      "disconnect_ms": 2233.575,
+      "disconnected_at": "2026-08-09T02:50:20.223163+00:00",
+      "reconnected_at": "2026-08-09T02:50:22.783693+00:00",
+      "recovery_smoke": {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.081"
+      },
+      "topology_path": "7-1.4"
+    },
+    {
+      "cycle": 4,
+      "disconnect_ms": 2632.471,
+      "disconnected_at": "2026-08-09T02:50:41.036479+00:00",
+      "reconnected_at": "2026-08-09T02:50:43.994975+00:00",
+      "recovery_smoke": {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.324 throughput_MiB_s=3.086"
+      },
+      "topology_path": "7-1.4"
+    },
+    {
+      "cycle": 5,
+      "disconnect_ms": 4760.364,
+      "disconnected_at": "2026-08-09T02:50:57.791275+00:00",
+      "reconnected_at": "2026-08-09T02:51:02.878214+00:00",
+      "recovery_smoke": {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.324 throughput_MiB_s=3.085"
+      },
+      "topology_path": "7-1.4"
+    },
+    {
+      "cycle": 6,
+      "disconnect_ms": 4054.04,
+      "disconnected_at": "2026-08-09T02:51:28.422801+00:00",
+      "reconnected_at": "2026-08-09T02:51:32.803932+00:00",
+      "recovery_smoke": {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+      },
+      "topology_path": "7-1.4"
+    },
+    {
+      "cycle": 7,
+      "disconnect_ms": 2537.661,
+      "disconnected_at": "2026-08-09T02:51:42.632634+00:00",
+      "reconnected_at": "2026-08-09T02:51:45.173193+00:00",
+      "recovery_smoke": {
+        "exit_code": 2,
+        "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+        "stdout": ""
+      },
+      "topology_path": "7-1.4"
+    }
+  ],
+  "device_node": "/dev/bus/usb/007/111",
+  "device_node_readable": true,
+  "device_node_writable": true,
+  "disconnect_method": "physical-cable",
+  "failure": "cycle 7 recovery smoke failed",
+  "initial_smoke": {
+    "exit_code": 0,
+    "stderr": "",
+    "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.080"
+  },
+  "minimum_disconnect_ms": 250,
+  "operator": "gtc",
+  "pid": "1236",
+  "required_cycles": 100,
+  "schema_version": 1,
+  "smoke_bytes": 1048576,
+  "smoke_executable": "host/target/release/hpm-usb-smoke",
+  "smoke_sha256": "e11427c2804ebe1442c2973469d875b0c2242289d71d0cc56bf7ff748a2c8c47",
+  "started_at": "2026-08-09T02:33:27.739973+00:00",
+  "status": "FAIL",
+  "test_id": "T-USB-007",
+  "topology_path": "7-1.4",
+  "vid": "34b7"
+}

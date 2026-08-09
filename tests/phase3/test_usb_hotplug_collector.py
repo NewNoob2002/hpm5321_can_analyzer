@@ -7,6 +7,7 @@ import threading
 import time
 from types import SimpleNamespace
 import unittest
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -18,6 +19,22 @@ SPEC.loader.exec_module(MODULE)
 
 
 class UsbHotplugCollectorTests(unittest.TestCase):
+    def test_recovery_smoke_retries_transient_enumeration_failure(self):
+        failed = {
+            "exit_code": 2,
+            "stdout": "",
+            "stderr": "FAIL device absent or inaccessible",
+        }
+        passed = {"exit_code": 0, "stdout": "PASS", "stderr": ""}
+        with mock.patch.object(MODULE, "_run_smoke", side_effect=[failed, passed]):
+            result = MODULE._run_smoke_with_retry(
+                Path("/tmp/smoke"), 1024, timeout_seconds=1.0, retry_ms=1
+            )
+        self.assertEqual(result["exit_code"], 0)
+        self.assertEqual(result["attempt_count"], 2)
+        self.assertEqual(result["attempts"], [failed, passed])
+        self.assertGreaterEqual(result["recovery_ms"], 0)
+
     def test_finds_only_matching_vid_pid(self):
         with tempfile.TemporaryDirectory() as temporary:
             sysfs = Path(temporary)
@@ -92,6 +109,8 @@ class UsbHotplugCollectorTests(unittest.TestCase):
                 poll_ms=5,
                 minimum_disconnect_ms=10,
                 overall_timeout_seconds=3,
+                recovery_timeout_seconds=1.0,
+                smoke_retry_ms=5,
                 smoke_bytes=1024,
                 smoke_executable=smoke,
                 output=output,
@@ -105,6 +124,9 @@ class UsbHotplugCollectorTests(unittest.TestCase):
             self.assertEqual(len(evidence["cycles"]), 2)
             self.assertTrue(
                 all(item["recovery_smoke"]["exit_code"] == 0 for item in evidence["cycles"])
+            )
+            self.assertTrue(
+                all(item["recovery_smoke"]["attempt_count"] == 1 for item in evidence["cycles"])
             )
 
 

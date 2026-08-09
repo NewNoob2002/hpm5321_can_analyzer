@@ -23,19 +23,23 @@ Planning addendum: `spi2-sd-led-2026-08-09`. Product aliases are
 | SPI2 MISO | PB12 | Board pinmux selects SPI2 MISO |
 | SPI2 MOSI | PB13 | Board pinmux selects SPI2 MOSI |
 | SD CS | PB10 | Board pinmux/header select GPIO CS; active-low is not yet electrically proven |
-| SD detect | PY00 | Board pinmux/header select GPIO input; polarity/pull/debounce not yet proven |
-| CAN1 TX LED | PY01 | Board pinmux/header select GPIO; active-low assumption |
-| CAN1 RX LED | PY02 | Board pinmux/header select GPIO; active-low assumption |
-| CAN2 TX LED | PY03 | Board pinmux/header select GPIO; active-low assumption |
-| CAN2 RX LED | PA09 | Board pinmux/header select GPIO; active-low assumption |
-| STATUS LED | PA31 | Existing board GPIO; active-low assumption |
+| SD detect | PY00 | Board pinmux/header select GPIO input; inserted=0 and empty=1 observed; explicit 100 kOhm internal pull-up and Schmitt input configured |
+| CAN1 TX LED | PY01 | Board pinmux/header select GPIO; active-low confirmed |
+| CAN1 RX LED | PY02 | Board pinmux/header select GPIO; active-low confirmed |
+| CAN2 TX LED | PY03 | Board pinmux/header select GPIO; active-low confirmed |
+| CAN2 RX LED | PA09 | Board pinmux/header select GPIO; active-low confirmed |
+| STATUS LED | PA31 | Existing board GPIO; active-low confirmed |
 
 | Contract item | Status | Required closure |
 |---|---:|---|
 | Source pin mapping | PASS | `scripts/validate_planning_contract.py` remains green |
-| CS/LED polarity, drive, resistor and reset/default state | NOT_TESTED | Schematic review plus target voltage/routing evidence |
-| PY00 present level, pull and debounce | NOT_TESTED | Two J-Link reads of `0xF00D00E0` returned `0x0000000E`/PY00=0 before and after a requested removal, but the physical states were not independently confirmed and no transition was observed; repeat with an operator-confirmed empty slot, then add schematic pull and debounce proof |
-| SD v2 SDHC 4/8/16/32 GB FAT32 matrix | NOT_TESTED | P0S multi-vendor media results |
+| Five LED active levels | PASS | Operator confirmed STATUS/CAN1 TX/RX/CAN2 TX/RX all illuminate at GPIO level 0; raw record is `T-LED-polarity-2026-08-09.json` |
+| LED drive, resistor, reset/default state and one-by-one routing | NOT_TESTED | Schematic review plus target voltage/routing evidence |
+| SD CS polarity, drive and reset/default state | NOT_TESTED | Schematic review plus target voltage/routing evidence |
+| PY00 present/absent level and polarity | PASS | J-Link `mem32 0xF00D00E0,1`: inserted `0x0000000E`/PY00=0; operator-confirmed empty slot `0x0000000F`/PY00=1; raw record `P0S-PY00-detect-2026-08-09.json` |
+| PY00 internal pull-up and empty-slot behavior | PASS | IOC/PIOC `PAD_CTL=0x01060000`; target read PY00=1 and the read-only probe returned `NMED` without SPI initialization; `P0S-SPI-SD-probe-2026-08-09.json` |
+| PY00 external network and debounce | NOT_TESTED | Add schematic/BOM external-network proof and measured insertion/removal bounce trace |
+| SD v2 SDHC 4/8/16/32 GB FAT32 matrix | PARTIAL | aigo 16 GB passed read-only init, CID/CSD/geometry, sector-0 and FAT32 mount at a 20 MHz ceiling; still needs a second 16 GB vendor and two vendors at each of 4/8/32 GB; `P0S-SPI-SD-probe-2026-08-09.json` |
 | `BP-STORAGE-v1` derived rate/deadline freeze | BLOCKED | Freeze `BP-CAN-BETA-v1`, calculate/validate with `scripts/phase0/storage_profile.py`, then run the frozen-mode planning validator |
 
 The source-reviewed table is not electrical proof. Only `1.0 + STORAGE` may

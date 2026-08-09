@@ -16,6 +16,10 @@
 #include "hpm_soc.h"
 
 #define BOARD_GPIO_DEFAULT_OFF_LEVEL (1U)
+#define BOARD_SD_DETECT_PAD_CTL                                              \
+  (IOC_PAD_PAD_CTL_HYS_SET(1) | IOC_PAD_PAD_CTL_PE_SET(1) |                 \
+   IOC_PAD_PAD_CTL_PS_SET(1) | IOC_PAD_PAD_CTL_PRS_SET(0))
+#define BOARD_SPI_MISO_PAD_CTL BOARD_SD_DETECT_PAD_CTL
 
 static void init_gpio_output(uint32_t port, uint8_t pin, uint8_t initial) {
   gpiom_set_pin_controller(HPM_GPIOM, port, pin, gpiom_soc_gpio0);
@@ -75,6 +79,7 @@ void init_spi2_pins(void) {
   HPM_IOC->PAD[IOC_PAD_PB11].FUNC_CTL =
       IOC_PB11_FUNC_CTL_SPI2_SCLK | IOC_PAD_FUNC_CTL_LOOP_BACK_MASK;
   HPM_IOC->PAD[IOC_PAD_PB12].FUNC_CTL = IOC_PB12_FUNC_CTL_SPI2_MISO;
+  HPM_IOC->PAD[IOC_PAD_PB12].PAD_CTL = BOARD_SPI_MISO_PAD_CTL;
   HPM_IOC->PAD[IOC_PAD_PB13].FUNC_CTL = IOC_PB13_FUNC_CTL_SPI2_MOSI;
 
   init_gpio_output(GPIO_DO_GPIOB, 10U, 1U);
@@ -103,7 +108,9 @@ void init_board_gpio_pins(void) {
 
   /* SD card detect: PY00 input. */
   HPM_IOC->PAD[IOC_PAD_PY00].FUNC_CTL = IOC_PY00_FUNC_CTL_GPIO_Y_00;
+  HPM_IOC->PAD[IOC_PAD_PY00].PAD_CTL = BOARD_SD_DETECT_PAD_CTL;
   HPM_PIOC->PAD[IOC_PAD_PY00].FUNC_CTL = PIOC_PY00_FUNC_CTL_SOC_GPIO_Y_00;
+  HPM_PIOC->PAD[IOC_PAD_PY00].PAD_CTL = BOARD_SD_DETECT_PAD_CTL;
   init_gpio_input(GPIO_DI_GPIOY, 0U);
 }
 

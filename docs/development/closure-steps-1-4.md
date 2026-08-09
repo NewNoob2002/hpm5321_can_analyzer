@@ -6,9 +6,9 @@ Date: 2026-08-09
 
 | Step | Status | Close condition |
 |---|---:|---|
-| 1. P0S / `BP-STORAGE-v1` | BLOCKED | Frozen `BP-CAN-BETA-v1`, schematic/BOM electrical proof, distinct PY00 inserted/removed levels, and two-vendor 4/8/16/32 GB SDHC matrix |
-| 2. P3A / `T-USB-007` | NOT_TESTED | 100 physical cable disconnect/reconnect cycles with successful recovery transfer after every cycle |
-| 3. Windows PnP/provenance | PARTIAL | Current native collector bundle proves interface-0 WinUSB binding, hashes, 64 MiB echo and disconnect recovery; P6 separately requires the actual product package install lifecycle |
+| 1. P0S / `BP-STORAGE-v1` | BLOCKED | PY00 polarity/internal pull and one aigo 16 GB read-only SDHC/FAT32 run are PASS; still needs frozen `BP-CAN-BETA-v1`, schematic/BOM CS/external-detect proof, measured debounce, a second 16 GB vendor and two vendors at each of 4/8/32 GB |
+| 2. P3A / `T-USB-007` | PASS | 100/100 physical cable cycles, readable/writable udev nodes and exact 1 MiB recovery echo after every cycle; `T-USB-007-current.json` |
+| 3. Windows PnP/provenance | PARTIAL | Functional WinUSB HIL proves 64 MiB echo and disconnect recovery; a current native PnP binding record and native EXE hash archive remain P3A, while the product installer lifecycle remains P6 |
 | 4. Local Cargo/sanitizers | PASS | Rust/Cargo, fmt, 55 release tests, clippy, GCC sanitizer probe and four C parity/session tests all pass |
 
 ## 1. P0S
@@ -26,9 +26,13 @@ python3 scripts/phase0/storage_profile.py validate \
 python3 scripts/validate_planning_contract.py --require-storage-frozen
 ```
 
-The current two J-Link samples both read `0xF00D00E0 = 0x0000000E`
-(`PY00=0`). Because no confirmed state transition was captured, these samples
-do not prove detect polarity.
+J-Link `mem32 0xF00D00E0,1` read `0x0000000E`/PY00=0 with the card inserted and
+`0x0000000F`/PY00=1 with the operator-confirmed empty slot. Detect polarity is
+therefore PASS and active-low. The explicit 100 kOhm internal pull-up produced
+the correct empty-slot level. A read-only run on an operator-identified aigo
+16 GB card passed SD v2 SDHC initialization, CID/CSD/geometry, sector-0 and
+FAT32 mount at a 20 MHz ceiling; the remaining media matrix, schematic/BOM
+external network and measured contact-debounce evidence remain open.
 
 ## 2. Linux physical hotplug
 
@@ -42,11 +46,24 @@ cargo +1.97.1 build --manifest-path host/Cargo.toml \
 python3 scripts/phase3/collect_usb_hotplug.py --cycles 100
 ```
 
+The collector allows up to 15 seconds after each sysfs re-enumeration for xHCI
+port recovery, udev and libusb to become ready. Every smoke attempt and the
+measured recovery time remain in the evidence; exhausting the window fails the
+run. Wait for the printed PASS before the next unplug and keep each physical
+disconnect stable for about one second to avoid counting connector bounce.
+
 Only physically unplugging/reconnecting the device cable qualifies. A J-Link
 reset, USB software reset or unproven hub-control operation does not.
-The archived 2026-08-09 permission preflight reached topology `7-1.4` but
-failed before cycle 1 because the USB device node was `root:root 0660`; install
-the udev rule from `setup-linux.md` and reconnect before retrying.
+The archived permission preflight failed at cycle 0. After installing the udev
+rule and reconnecting, `/dev/bus/usb/007/111` became `root:dialout 0660` and a
+1 MiB exact echo passed before the formal 100-cycle rerun.
+
+The formal run completed 100/100 cycles with continuous cycle numbering, all
+device nodes readable/writable and every 1 MiB exact echo successful. Maximum
+measured recovery was 432.549 ms. The executable SHA-256 was
+`e11427c2804ebe1442c2973469d875b0c2242289d71d0cc56bf7ff748a2c8c47`;
+the machine-readable record is
+`docs/evidence/phase3/T-USB-007-current.json`.
 
 ## 3. Windows native evidence
 
