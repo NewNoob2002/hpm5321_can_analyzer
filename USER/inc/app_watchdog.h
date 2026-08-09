@@ -11,12 +11,14 @@
 typedef enum {
     APP_WATCHDOG_VOTER_HEALTH = 0,
     APP_WATCHDOG_VOTER_TIMER_SERVICE = 1,
+    APP_WATCHDOG_VOTER_USB_OWNER = 2,
 } app_watchdog_voter_id_t;
 
 #define APP_WATCHDOG_VOTER_MASK(id) (1UL << (uint32_t)(id))
 #define APP_WATCHDOG_REQUIRED_MASK                                           \
     (APP_WATCHDOG_VOTER_MASK(APP_WATCHDOG_VOTER_HEALTH) |                   \
-     APP_WATCHDOG_VOTER_MASK(APP_WATCHDOG_VOTER_TIMER_SERVICE))
+     APP_WATCHDOG_VOTER_MASK(APP_WATCHDOG_VOTER_TIMER_SERVICE) |            \
+     APP_WATCHDOG_VOTER_MASK(APP_WATCHDOG_VOTER_USB_OWNER))
 
 typedef struct {
     uint32_t magic;

@@ -5,6 +5,9 @@ cmake_minimum_required(VERSION 3.13)
 
 set(CONFIG_FREERTOS 1)
 set(CONFIG_FREERTOS_HEAP custom)
+set(CONFIG_CHERRYUSB 1)
+set(CONFIG_CHERRYUSB_DEVICE 1)
+set(CONFIG_USB_DEVICE 1)
 
 set(APP_FIRMWARE_VERSION "0.1.0-dev" CACHE STRING
     "Firmware semantic version reported by the P2 UART boot banner")
@@ -28,6 +31,15 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(hpm5321_can_analyzer)
 
+# The SDK adds CherryUSB's dynamic FreeRTOS OSAL and OTG translation units
+# unconditionally. This device-only slice uses neither surface and removes both
+# so no dynamic RTOS API is present in the firmware image.
+get_property(APP_HPM_SDK_SOURCES TARGET ${HPM_SDK_LIB} PROPERTY SOURCES)
+list(REMOVE_ITEM APP_HPM_SDK_SOURCES
+    "${HPM_SDK_BASE}/middleware/cherryusb/osal/usb_osal_freertos.c"
+    "${HPM_SDK_BASE}/middleware/cherryusb/core/usbotg_core.c")
+set_property(TARGET ${HPM_SDK_LIB} PROPERTY SOURCES "${APP_HPM_SDK_SOURCES}")
+
 # EasyLogger owns RTT directly. Do not enable the SDK RTT syscall layer because
 # libc stdout is reserved for the UART debug console.
 set(APP_SEGGER_RTT_ROOT "${HPM_SDK_BASE}/middleware/segger_rtt")
@@ -48,12 +60,14 @@ foreach(allocation_symbol malloc calloc realloc free
     sdk_ld_options("-Wl,--wrap=${allocation_symbol}")
 endforeach()
 
+sdk_inc(config)
 sdk_inc(USER/inc)
 sdk_app_src(USER/src/app_allocation.c)
 sdk_app_src(USER/src/app_health.c)
 sdk_app_src(USER/src/app_mcan_irq_test.c)
 sdk_app_src(USER/src/app_time.c)
 sdk_app_src(USER/src/app_time_core.c)
+sdk_app_src(USER/src/app_usb_owner.c)
 sdk_app_src(USER/src/app_watchdog.c)
 sdk_app_src(USER/src/freertos_hooks.c)
 sdk_app_src(USER/src/main.c)

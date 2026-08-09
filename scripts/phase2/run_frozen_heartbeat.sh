@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 FROZEN_ELF_SHA256="c3feef5d36867d021e26a95548b4bd055150ca2e4be54cf907d847c8afee70d2"
+P2_FROZEN_ELF="${P2_FROZEN_ELF:-${ROOT}/build/p2-frozen-980a38c/demo.elf}"
 DURATION_SECONDS="${1:-86400}"
 RUN_DATE="$(date +%F)"
 OUTPUT="${2:-${ROOT}/docs/evidence/phase2/T-RTOS-003-${DURATION_SECONDS}-${RUN_DATE}.json}"
@@ -30,7 +31,7 @@ fi
 
 exec python3 "${ROOT}/scripts/phase2/collect_heartbeat.py" \
     --test-id T-RTOS-003 \
-    --elf "${ROOT}/build/hpm5321-flash-debug/output/demo.elf" \
+    --elf "${P2_FROZEN_ELF}" \
     --expected-elf-sha256 "${FROZEN_ELF_SHA256}" \
     --output "${OUTPUT}" \
     --duration-seconds "${DURATION_SECONDS}" \

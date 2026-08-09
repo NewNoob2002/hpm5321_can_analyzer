@@ -107,33 +107,40 @@ class RtosAdvancedContractTests(unittest.TestCase):
                     APP_WATCHDOG_VOTER_MASK(APP_WATCHDOG_VOTER_HEALTH);
                 const uint32_t timer =
                     APP_WATCHDOG_VOTER_MASK(APP_WATCHDOG_VOTER_TIMER_SERVICE);
+                const uint32_t usb =
+                    APP_WATCHDOG_VOTER_MASK(APP_WATCHDOG_VOTER_USB_OWNER);
 
                 assert(!app_watchdog_init(0U));
                 assert(!app_watchdog_init(1UL << APP_WATCHDOG_VOTER_CAPACITY));
                 assert(app_watchdog_init(APP_WATCHDOG_REQUIRED_MASK));
                 assert(!app_watchdog_evaluate());
-                assert(g_app_watchdog_state.missing_mask == (health | timer));
+                assert(g_app_watchdog_state.missing_mask ==
+                       (health | timer | usb));
 
                 app_watchdog_vote(APP_WATCHDOG_VOTER_HEALTH);
                 app_watchdog_vote(APP_WATCHDOG_VOTER_TIMER_SERVICE);
+                app_watchdog_vote(APP_WATCHDOG_VOTER_USB_OWNER);
                 assert(app_watchdog_evaluate());
                 assert(g_app_watchdog_state.missing_mask == 0U);
 
                 g_app_watchdog_state.test_stall_mask = timer;
                 app_watchdog_vote(APP_WATCHDOG_VOTER_HEALTH);
                 app_watchdog_vote(APP_WATCHDOG_VOTER_TIMER_SERVICE);
+                app_watchdog_vote(APP_WATCHDOG_VOTER_USB_OWNER);
                 assert(!app_watchdog_evaluate());
                 assert(g_app_watchdog_state.missing_mask == timer);
 
                 g_app_watchdog_state.test_stall_mask = health;
                 app_watchdog_vote(APP_WATCHDOG_VOTER_HEALTH);
                 app_watchdog_vote(APP_WATCHDOG_VOTER_TIMER_SERVICE);
+                app_watchdog_vote(APP_WATCHDOG_VOTER_USB_OWNER);
                 assert(!app_watchdog_evaluate());
                 assert(g_app_watchdog_state.missing_mask == health);
 
                 g_app_watchdog_state.test_stall_mask = 0U;
                 app_watchdog_vote(APP_WATCHDOG_VOTER_HEALTH);
                 app_watchdog_vote(APP_WATCHDOG_VOTER_TIMER_SERVICE);
+                app_watchdog_vote(APP_WATCHDOG_VOTER_USB_OWNER);
                 assert(app_watchdog_evaluate());
                 assert(g_app_watchdog_state.healthy_evaluation_count == 2U);
                 assert(g_app_watchdog_state.evaluation_count == 5U);
@@ -188,7 +195,7 @@ class RtosAdvancedContractTests(unittest.TestCase):
             main.index("app_mcan_irq_test_start()"),
             main.index("app_allocation_freeze();"),
         )
-        self.assertNotIn("usb_owner_task", main)
+        self.assertIn("app_usb_owner_start()", main)
         self.assertNotIn("mcan_owner_task", main)
 
     def test_frozen_heartbeat_runner_pins_the_qualified_elf(self):
@@ -199,6 +206,8 @@ class RtosAdvancedContractTests(unittest.TestCase):
             runner,
         )
         self.assertIn('--expected-elf-sha256 "${FROZEN_ELF_SHA256}"', runner)
+        self.assertIn('P2_FROZEN_ELF=', runner)
+        self.assertIn('--elf "${P2_FROZEN_ELF}"', runner)
         self.assertIn('DURATION_SECONDS="${1:-86400}"', runner)
         self.assertIn('--interval-seconds "${INTERVAL_SECONDS:-60}"', runner)
         self.assertIn('GNURISCV_TOOLCHAIN_PATH', runner)
