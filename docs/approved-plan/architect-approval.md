@@ -26,3 +26,22 @@
 
 `APPROVE` for the independent sequential Critic gate. Implementation remains
 unauthorized until Critic approval and durable handoff completion.
+
+## SPI2 SD/LED Addendum - 2026-08-09
+
+- Stable addendum ID: `spi2-sd-led-2026-08-09`
+- Plan: `docs/approved-plan/scope-addendum-spi2-sd-led.md`
+- Verdict: `APPROVE`
+- Sequence: 1
+
+The addendum closes the architecture gate with a target-verified SDHC/FAT32
+baseline, repository-owned HPM SDK SPI-SD/FatFs productionization, unique
+`storage_task` and `health_task` ownership, explicit media generation and the
+conditional `P0S -> P3C1 -> P3C2 -> P5S` release chain. SdFat remains a real
+alternative only when larger/exFAT media, files over 4 GiB or identical-profile
+benchmark failure reopens the decision.
+
+Electrical active-low values remain BSP assumptions until schematic and target
+proof. STATUS/CAN1 LED evidence is MVP-required; CAN2 evidence is a Beta gate
+and an MVP advisory. Approval is limited to planning normalization and does not
+claim P0S or storage implementation completion.

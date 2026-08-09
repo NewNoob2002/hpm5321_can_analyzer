@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "addendum_id": "spi2-sd-led-2026-08-09",
+  "status": "APPROVED",
+  "id_documents": [
+    "docs/approved-plan/scope-addendum-spi2-sd-led.md",
+    "docs/approved-plan/prd-hpm5321-usb-can-analyzer.md",
+    "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+    "docs/approved-plan/profiles/bp-storage-v1.md",
+    "docs/hardware/phase0-hardware-manifest.md"
+  ],
+  "pin_documents": [
+    "docs/approved-plan/scope-addendum-spi2-sd-led.md",
+    "docs/approved-plan/prd-hpm5321-usb-can-analyzer.md",
+    "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+    "docs/hardware/phase0-hardware-manifest.md"
+  ],
+  "pins": [
+    {"signal": "SPI2 SCLK", "pin": "PB11"},
+    {"signal": "SPI2 MISO", "pin": "PB12"},
+    {"signal": "SPI2 MOSI", "pin": "PB13"},
+    {"signal": "SD CS", "pin": "PB10"},
+    {"signal": "SD detect", "pin": "PY00"},
+    {"signal": "CAN1 TX LED", "pin": "PY01"},
+    {"signal": "CAN1 RX LED", "pin": "PY02"},
+    {"signal": "CAN2 TX LED", "pin": "PY03"},
+    {"signal": "CAN2 RX LED", "pin": "PA09"},
+    {"signal": "STATUS LED", "pin": "PA31"}
+  ],
+  "source_tokens": {
+    "boards/hpm5321_custom/board.h": [
+      "SD card over SPI2: PB10/PB11/PB12/PB13",
+      "BOARD_APP_SPI_BASE HPM_SPI2",
+      "BOARD_SPI_CS_PIN IOC_PAD_PB10",
+      "BOARD_SD_DETECT_GPIO_PIN (0U)",
+      "BOARD_CAN0_TX_LED_GPIO_PIN (1U)",
+      "BOARD_CAN0_RX_LED_GPIO_PIN (2U)",
+      "BOARD_CAN2_TX_LED_GPIO_PIN (3U)",
+      "BOARD_CAN2_RX_LED_GPIO_PIN (9U)",
+      "BOARD_LED_GPIO_NAME \"PA31\""
+    ],
+    "boards/hpm5321_custom/pinmux.c": [
+      "IOC_PB10_FUNC_CTL_GPIO_B_10",
+      "IOC_PB11_FUNC_CTL_SPI2_SCLK",
+      "IOC_PB12_FUNC_CTL_SPI2_MISO",
+      "IOC_PB13_FUNC_CTL_SPI2_MOSI",
+      "IOC_PY00_FUNC_CTL_GPIO_Y_00",
+      "IOC_PY01_FUNC_CTL_GPIO_Y_01",
+      "IOC_PY02_FUNC_CTL_GPIO_Y_02",
+      "IOC_PY03_FUNC_CTL_GPIO_Y_03",
+      "IOC_PA09_FUNC_CTL_GPIO_A_09",
+      "IOC_PA31_FUNC_CTL_GPIO_A_31"
+    ]
+  },
+  "channel_aliases": {
+    "CAN1": "MCAN0",
+    "CAN2": "MCAN2"
+  },
+  "alias_documents": [
+    "docs/approved-plan/scope-addendum-spi2-sd-led.md",
+    "docs/approved-plan/prd-hpm5321-usb-can-analyzer.md",
+    "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+    "docs/hardware/phase0-hardware-manifest.md"
+  ],
+  "led_tests": [
+    {"id": "T-LED-001", "gate": "B", "applicability": "P0 required(MVP+)"},
+    {"id": "T-LED-002", "gate": "B", "applicability": "P0 required(MVP+)"},
+    {"id": "T-LED-003", "gate": "D", "applicability": "P0 required(MVP+)"},
+    {"id": "T-LED-004", "gate": "B", "applicability": "P0 required(Beta+), MVP advisory"},
+    {"id": "T-LED-005", "gate": "D", "applicability": "P0 required(Beta+)"},
+    {"id": "T-LED-006", "gate": "H", "applicability": "P0 required(MVP+)"}
+  ],
+  "release_contract": {
+    "capability": "STORAGE",
+    "claim_scope": "1.0 + STORAGE",
+    "forbidden_scopes": ["MVP", "Beta"],
+    "conditional_chain": "P0S -> P3C1 -> P3C2 -> P5S",
+    "documents": [
+      "docs/approved-plan/scope-addendum-spi2-sd-led.md",
+      "docs/approved-plan/prd-hpm5321-usb-can-analyzer.md",
+      "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+      "docs/approved-plan/profiles/bp-storage-v1.md"
+    ]
+  },
+  "profile": {
+    "path": "docs/approved-plan/profiles/bp-storage-v1.md",
+    "allowed_statuses": ["BLOCKED", "FROZEN"],
+    "required_fields": [
+      "status",
+      "media",
+      "spi_init_max_hz",
+      "spi_data_max_hz",
+      "io_block_bytes",
+      "queue_depth",
+      "segment_bytes",
+      "fat_allocation_unit_bytes",
+      "usb_reads_queued",
+      "usb_read_bytes",
+      "warmup_seconds",
+      "measurement_seconds",
+      "soak_hours",
+      "throughput_multiplier",
+      "encoded_capture_bytes_per_s",
+      "queue_absorption_ms",
+      "operation_deadline_ms"
+    ],
+    "freeze_numeric_fields": [
+      "encoded_capture_bytes_per_s",
+      "queue_absorption_ms",
+      "operation_deadline_ms"
+    ]
+  },
+  "approvals": [
+    {
+      "role": "Architect",
+      "file": "docs/approved-plan/architect-approval.md",
+      "heading": "## SPI2 SD/LED Addendum - 2026-08-09",
+      "sequence": 1,
+      "verdict": "APPROVE"
+    },
+    {
+      "role": "Critic",
+      "file": "docs/approved-plan/critic-approval.md",
+      "heading": "## SPI2 SD/LED Addendum - 2026-08-09",
+      "sequence": 2,
+      "verdict": "APPROVE"
+    }
+  ],
+  "handoff": {
+    "file": "docs/approved-plan/consensus-handoff.md",
+    "heading": "## SPI2 SD/LED Addendum - 2026-08-09",
+    "complete": true,
+    "execution_authorized": true,
+    "approved_order": "Architect -> Critic"
+  }
+}

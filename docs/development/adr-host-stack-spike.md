@@ -1,6 +1,6 @@
 # ADR Addendum — Host Stack Spike
 
-Status: **ACCEPTED for Linux/Windows CLI; USB integration pending**
+Status: **ACCEPTED**
 Date: 2026-08-03
 
 ## Decision under evaluation
@@ -36,15 +36,15 @@ not predict USB latency or GUI performance.
   licensing constraints that require an explicit shipping policy:
   <https://doc.qt.io/qt-6/licensing.html>.
 
-## Current disposition
+## Current Disposition
 
 Rust synthetic and crash-recovery lane: **PASS**.  
 C++ protocol-core synthetic lane: **PASS**.  
-Qt 6 is not required for the CLI. Native libusb development metadata is absent,
-so Rust has not completed real USB hotplug testing. Windows packaging remains
-NOT_TESTED; macOS is explicitly deferred from the MVP.
+Real Linux and Windows vendor-Bulk functional lanes: **PASS**.  
+Windows native build/test/clippy CI: **PASS**.
 
-The stack decision is locked to Rust for the Linux/Windows CLI. The next gate
-provisions libusb/WinUSB inputs and executes real device hotplug plus Windows
-packaging checks. Formal host codec work remains prohibited until that USB gate
-closes. Qt licensing is revisited only if the 1.0 GUI selects Qt.
+The stack decision is locked to Rust for the Linux/Windows CLI, and the shared
+protocol/session/transport core is implemented. Qt 6 is not a CLI dependency.
+Physical cable cycling, Windows PnP binding archive and release packaging stay
+in P3A/P6; macOS is explicitly deferred from the current scope. Qt licensing
+is revisited only if the 1.0 GUI selects Qt.

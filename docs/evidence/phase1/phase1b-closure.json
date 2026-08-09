@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "phase": "1B",
+  "status": "PASS",
+  "closed_date": "2026-08-09",
+  "evidence_revision": "e55d3c001673b1c9fa2a66a16949e36156fad5d3",
+  "required_gates": {
+    "repository_and_environment_contract": {
+      "status": "PASS",
+      "evidence": ["tests/phase1/test_development_contract.py"]
+    },
+    "official_sdk_clean_build": {
+      "status": "PASS",
+      "evidence": ["docs/evidence/phase1/T-DEV-001-003-official-sdk-clean-build-report.md"]
+    },
+    "jlink_debug_adapter": {
+      "status": "PASS",
+      "evidence": ["docs/evidence/phase1/T-DEV-005-jlink-gdb-report.md"]
+    },
+    "rust_host_stack_decision": {
+      "status": "PASS",
+      "evidence": ["docs/development/adr-host-stack-spike.md"]
+    },
+    "linux_vendor_bulk": {
+      "status": "PASS",
+      "evidence": ["docs/evidence/phase1/T-HOST-USB-LINUX-report.md"]
+    },
+    "windows_native_ci": {
+      "status": "PASS",
+      "evidence": ["docs/evidence/phase1/T-HOST-WINDOWS-CI-report.md"]
+    },
+    "windows_vendor_bulk_functional": {
+      "status": "PASS",
+      "evidence": ["docs/evidence/phase1/T-HOST-USB-WINDOWS-report.md"]
+    }
+  },
+  "deferred_non_gating": {
+    "physical_cable_hotplug": "P3A / T-USB-007",
+    "windows_pnp_binding_and_release_artifact_provenance": "P3A and P6",
+    "windows_installer_packaging": "P6",
+    "openocd": "NOT_SELECTED; J-Link is the primary adapter",
+    "macos": "Deferred by Linux/Windows CLI-first scope"
+  }
+}

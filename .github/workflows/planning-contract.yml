@@ -1,0 +1,47 @@
+name: Planning Contract
+
+on:
+  push:
+    paths:
+      - "boards/hpm5321_custom/**"
+      - "docs/approved-plan/**"
+      - "docs/development/**"
+      - "docs/evidence/phase1/**"
+      - "docs/hardware/**"
+      - "docs/implementation-status.md"
+      - "scripts/validate_planning_contract.py"
+      - "scripts/validate_phase1b_contract.py"
+      - "tests/phase1/**"
+      - ".github/workflows/planning-contract.yml"
+  pull_request:
+    paths:
+      - "boards/hpm5321_custom/**"
+      - "docs/approved-plan/**"
+      - "docs/development/**"
+      - "docs/evidence/phase1/**"
+      - "docs/hardware/**"
+      - "docs/implementation-status.md"
+      - "scripts/validate_planning_contract.py"
+      - "scripts/validate_phase1b_contract.py"
+      - "tests/phase1/**"
+      - ".github/workflows/planning-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate planning normalization
+        run: python3 scripts/validate_planning_contract.py
+      - name: Validate Phase 1B closure
+        run: python3 scripts/validate_phase1b_contract.py
+      - name: Run Phase 1 contract tests
+        run: >-
+          python3 -m unittest
+          tests.phase1.test_planning_contract
+          tests.phase1.test_phase1b_contract
+          tests.phase1.test_development_contract
