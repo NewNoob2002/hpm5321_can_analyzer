@@ -8,15 +8,16 @@ board and a CAN debugger:
    debugger must explicitly write `0x41524D21` (`ARM!`) to
    `g_mcan0_tx_arm_token`; the token is consumed before normal mode is entered.
    The probe then transmits exactly 100 Classic CAN frames at 10 ms intervals,
-   standard ID `0x123`, DLC 8, payload `48 50 4D 30
-   <big-endian-sequence>`. It subsequently deinitializes MCAN, disconnects the
-   pinmux, and clears the token.
+   standard ID `0x123` and DLC 8. Each payload is `48 50 <nonce-be16>
+   <sequence-be32>`, where the debugger supplies a fresh nonzero run nonce.
+   It subsequently deinitializes MCAN, disconnects the pinmux, and clears the
+   token.
 
 Both builds disable automatic retransmission and publish the volatile
 `g_mcan0_external_result` structure for GDB evidence. This probe is not product
 firmware.
 
-The result ABI is version 4 and includes post-cleanup CCCR, IOC FUNC_CTL,
+The result ABI is version 5 and includes the run nonce plus post-cleanup CCCR, IOC FUNC_CTL,
 GPIO OE, and GPIOM snapshots. DONE requires the cleanup readback to pass.
 Build options accept only literal `0` or `1`;
 active TX cannot be combined with either RX-proof option.

@@ -120,6 +120,11 @@ class CanCaptureTests(unittest.TestCase):
         metadata = ROOT / "docs/evidence/phase0/T-CAN-013-ABI4-adapter-metadata.json"
         self.assertEqual(self.run_validator(capture, metadata).returncode, 0)
 
+    def test_nonce_bound_capture_uses_archived_source_commit(self):
+        capture = ROOT / "docs/evidence/phase0/T-CAN-013-ABI5-A504-adapter-capture.txt"
+        metadata = ROOT / "docs/evidence/phase0/T-CAN-013-ABI5-A504-adapter-metadata.json"
+        self.assertEqual(self.run_validator(capture, metadata).returncode, 0)
+
     def test_historical_capture_cannot_use_current_nonce_attestation(self):
         if "HPM_SDK_BASE" not in os.environ:
             self.skipTest("HPM_SDK_BASE is required for SDK revision validation")
