@@ -1,19 +1,93 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "status": "PARTIAL",
+  "target_evidence_status": "PASS",
   "date": "2026-08-09",
-  "evidence_source": "operator hardware confirmation",
+  "board": "hpm5321_custom",
+  "board_serial": "20260723",
+  "probe": {
+    "model": "J-Link PLUS",
+    "serial": "607000454",
+    "interface": "JTAG",
+    "speed_khz": 4000,
+    "vtref_volts": 3.303
+  },
+  "led_chaser": {
+    "elf": "build/phase0-led-chaser/output/demo.elf",
+    "elf_sha256": "86cea3900d51666c075d4c9fe9a23aafb0d39399df1e4e3d43d42fb2974615b0",
+    "step_ms": 1000,
+    "completed_cycles_observed": 2,
+    "default_off_snapshot": {
+      "current_index": 5,
+      "gpio_a_output": "0x80000200",
+      "gpio_y_output": "0x0000000e",
+      "gpio_a_output_enable": "0x80000200",
+      "gpio_y_output_enable": "0x0000000e"
+    },
+    "operator_observation": {
+      "question_id": "question-2026-08-09T10-31-46-706Z-e9b0f518",
+      "answer": "pass",
+      "assertion": "Exactly one LED was lit in STATUS, CAN1 TX, CAN1 RX, CAN2 TX, CAN2 RX order."
+    }
+  },
   "results": [
-    {"test_id": "T-LED-001", "signal": "STATUS LED", "pin": "PA31", "active_level": 0, "polarity": "PASS"},
-    {"test_id": "T-LED-001", "signal": "CAN1 TX LED", "pin": "PY01", "active_level": 0, "polarity": "PASS"},
-    {"test_id": "T-LED-001", "signal": "CAN1 RX LED", "pin": "PY02", "active_level": 0, "polarity": "PASS"},
-    {"test_id": "T-LED-004", "signal": "CAN2 TX LED", "pin": "PY03", "active_level": 0, "polarity": "PASS"},
-    {"test_id": "T-LED-004", "signal": "CAN2 RX LED", "pin": "PA09", "active_level": 0, "polarity": "PASS"}
+    {
+      "test_id": "T-LED-001",
+      "signal": "STATUS LED",
+      "pin": "PA31",
+      "active_level": 0,
+      "default_off_level": 1,
+      "routing": "PASS",
+      "polarity": "PASS",
+      "default_off": "PASS"
+    },
+    {
+      "test_id": "T-LED-001",
+      "signal": "CAN1 TX LED",
+      "pin": "PY01",
+      "active_level": 0,
+      "default_off_level": 1,
+      "routing": "PASS",
+      "polarity": "PASS",
+      "default_off": "PASS"
+    },
+    {
+      "test_id": "T-LED-001",
+      "signal": "CAN1 RX LED",
+      "pin": "PY02",
+      "active_level": 0,
+      "default_off_level": 1,
+      "routing": "PASS",
+      "polarity": "PASS",
+      "default_off": "PASS"
+    },
+    {
+      "test_id": "T-LED-004",
+      "signal": "CAN2 TX LED",
+      "pin": "PY03",
+      "active_level": 0,
+      "default_off_level": 1,
+      "routing": "PASS",
+      "polarity": "PASS",
+      "default_off": "PASS",
+      "release_gate": "Beta"
+    },
+    {
+      "test_id": "T-LED-004",
+      "signal": "CAN2 RX LED",
+      "pin": "PA09",
+      "active_level": 0,
+      "default_off_level": 1,
+      "routing": "PASS",
+      "polarity": "PASS",
+      "default_off": "PASS",
+      "release_gate": "Beta"
+    }
   ],
   "remaining": [
-    "schematic drive topology and resistor values",
-    "reset/default-off voltage evidence",
-    "one-by-one pin routing observation",
-    "health-task and CAN completion/acceptance semantics"
+    "schematic drive topology and resistor values are not present in the repository",
+    "pre-BSP reset-state pin voltage was not captured",
+    "T-LED-003 CAN1 completion/acceptance semantics remain a P3B data-plane gate",
+    "T-LED-005 CAN2 semantics remain a Beta gate"
   ]
 }

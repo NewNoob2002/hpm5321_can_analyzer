@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import unittest
 
 
@@ -18,7 +19,7 @@ class RtosBaselineContractTests(unittest.TestCase):
         self.assertIn("xTimerCreateStatic", health)
         self.assertNotIn("xTaskCreate(", health)
 
-    def test_health_task_is_the_only_post_bsp_led_writer(self):
+    def test_health_task_owns_runtime_leds_with_terminal_fault_override(self):
         writer_tokens = ("board_led_write(", "board_led_toggle(", "gpio_write_pin(")
         writers = []
         for source in (USER / "src").glob("*.c"):
@@ -26,8 +27,14 @@ class RtosBaselineContractTests(unittest.TestCase):
             if any(token in text for token in writer_tokens):
                 writers.append(source.name)
 
-        self.assertEqual(writers, ["app_health.c"])
+        self.assertEqual(writers, ["app_health.c", "freertos_hooks.c"])
         self.assertNotIn("idleTask", (USER / "src/main.c").read_text())
+
+        fault = (USER / "src/freertos_hooks.c").read_text()
+        self.assertLess(
+            fault.index("taskDISABLE_INTERRUPTS();"),
+            fault.index("board_led_write(BOARD_LED_ON_LEVEL);"),
+        )
 
     def test_timebase_uses_stable_high_low_high_sampling(self):
         source = (USER / "src/app_time_core.c").read_text()
@@ -47,6 +54,19 @@ class RtosBaselineContractTests(unittest.TestCase):
         self.assertIn("vApplicationStackOverflowHook", hooks)
         self.assertIn("vApplicationMallocFailedHook", hooks)
         self.assertIn("uxTaskGetStackHighWaterMark", (USER / "src/app_health.c").read_text())
+
+    def test_status_evidence_covers_heartbeat_and_fault_modes(self):
+        evidence = json.loads(
+            (ROOT / "docs/evidence/phase2/T-LED-002-status-2026-08-09.json")
+            .read_text()
+        )
+
+        self.assertEqual(evidence["test_id"], "T-LED-002")
+        self.assertEqual(evidence["status"], "PASS")
+        self.assertEqual(evidence["normal_mode"]["period_ms_nominal"], 1000.0)
+        self.assertEqual(evidence["normal_mode"]["duty_cycle_percent"], 50.0)
+        self.assertEqual(evidence["fault_mode"]["pattern"],
+                         "STATUS solid on; all CAN LEDs off")
 
 
 if __name__ == "__main__":

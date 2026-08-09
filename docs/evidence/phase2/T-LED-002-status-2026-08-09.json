@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "test_id": "T-LED-002",
+  "status": "PASS",
+  "date": "2026-08-09",
+  "board": "hpm5321_custom",
+  "board_serial": "20260723",
+  "normal_mode": {
+    "elf": "build/hpm5321-flash-debug/output/demo.elf",
+    "elf_sha256": "c3feef5d36867d021e26a95548b4bd055150ca2e4be54cf907d847c8afee70d2",
+    "timestamp_frequency_hz": 24000000,
+    "first_heartbeat": 70,
+    "last_heartbeat": 90,
+    "transitions_observed": 21,
+    "transition_interval_ticks_min": 11999998,
+    "transition_interval_ticks_max": 12000002,
+    "half_period_ms_nominal": 500.0,
+    "period_ms_nominal": 1000.0,
+    "duty_cycle_percent": 50.0,
+    "pa31_active_level": 0,
+    "state_to_output_match": "PASS",
+    "fault_magic": 0,
+    "queue_drops": 0
+  },
+  "fault_mode": {
+    "build_option": "APP_FAULT_INJECT_REASON=1",
+    "elf": "build/p2-status-fault/output/demo.elf",
+    "elf_sha256": "0bc3a8049f58d59a8e2de7b147e61f0d5c2468e484df23f2cc6fe3bbc6a244e6",
+    "fault_magic": "0x4641554c",
+    "fault_reason": 1,
+    "pa31_output_level": 0,
+    "can_led_output_levels": {
+      "PY01": 1,
+      "PY02": 1,
+      "PY03": 1,
+      "PA09": 1
+    },
+    "post_freeze_allocations": 0,
+    "pattern": "STATUS solid on; all CAN LEDs off",
+    "operator_observation": {
+      "question_id": "question-2026-08-09T10-44-16-000Z-40863418",
+      "answer": "pass"
+    }
+  },
+  "writer_audit": {
+    "normal_runtime_writer": "USER/src/app_health.c",
+    "terminal_fault_override": "USER/src/freertos_hooks.c",
+    "isr_or_timer_gpio_writes": 0
+  }
+}

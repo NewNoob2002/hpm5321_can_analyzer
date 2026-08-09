@@ -160,6 +160,37 @@ class RtosAdvancedContractTests(unittest.TestCase):
         self.assertIn("app_fault_inject_if_configured();", main)
         self.assertNotIn("ebreak", hooks)
 
+    def test_mcan0_irq_qualification_uses_static_freertos_path(self):
+        cmake = (ROOT / "CMakeLists.txt").read_text()
+        source = (USER / "src/app_mcan_irq_test.c").read_text()
+        header = (USER / "inc/app_mcan_irq_test.h").read_text()
+        main = (USER / "src/main.c").read_text()
+
+        self.assertIn("sdk_app_src(USER/src/app_mcan_irq_test.c)", cmake)
+        self.assertIn("APP_MCAN_IRQ_TEST_ISR_PRIORITY (4U)", header)
+        self.assertIn(
+            "APP_IRQ_ASSERT_FREERTOS_API_PRIORITY(APP_MCAN_IRQ_TEST_ISR_PRIORITY)",
+            source,
+        )
+        self.assertIn("mcan_mode_loopback_internal", source)
+        self.assertIn("SDK_DECLARE_EXT_ISR_M(BOARD_CAN0_IRQn", source)
+        self.assertIn("xQueueSendFromISR", source)
+        self.assertIn("xQueueCreateStatic", source)
+        self.assertIn("xTaskCreateStatic", source)
+        self.assertIn("intc_m_enable_irq_with_priority", source)
+        self.assertIn("mcan_begin_reconfig", source)
+        self.assertIn("cleanup_completed", source)
+        self.assertIn("terminal_fault_flags", header)
+        self.assertNotIn("board_init_can(HPM_MCAN0)", source)
+        self.assertNotIn("xQueueCreate(", source)
+        self.assertNotIn("xTaskCreate(", source)
+        self.assertLess(
+            main.index("app_mcan_irq_test_start()"),
+            main.index("app_allocation_freeze();"),
+        )
+        self.assertNotIn("usb_owner_task", main)
+        self.assertNotIn("mcan_owner_task", main)
+
     def test_timer_votes_and_health_independently_evaluates(self):
         source = (USER / "src/app_health.c").read_text()
 

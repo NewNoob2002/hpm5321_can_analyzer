@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import unittest
 
 
@@ -38,6 +39,23 @@ class LedChaserContractTests(unittest.TestCase):
         self.assertIn("set(LED_CHASER_STEP_MS 250 CACHE STRING", cmake)
         self.assertIn("-DLED_CHASER_STEP_MS=${LED_CHASER_STEP_MS}", cmake)
         self.assertIn("sdk_app_src(src/main.c)", cmake)
+
+    def test_target_evidence_records_all_five_routes(self):
+        evidence = json.loads(
+            (ROOT / "docs/evidence/phase0/T-LED-polarity-2026-08-09.json")
+            .read_text()
+        )
+
+        self.assertEqual(evidence["target_evidence_status"], "PASS")
+        self.assertEqual(evidence["led_chaser"]["completed_cycles_observed"], 2)
+        self.assertEqual(
+            [result["pin"] for result in evidence["results"]],
+            ["PA31", "PY01", "PY02", "PY03", "PA09"],
+        )
+        for result in evidence["results"]:
+            self.assertEqual(result["routing"], "PASS")
+            self.assertEqual(result["polarity"], "PASS")
+            self.assertEqual(result["default_off"], "PASS")
 
 
 if __name__ == "__main__":

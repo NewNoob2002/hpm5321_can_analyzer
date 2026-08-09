@@ -24,7 +24,13 @@ class HeartbeatCollectorTests(unittest.TestCase):
             "drops=0 stack=447 tick=504000000 fault_magic=00000000 "
             "fault_reason=0 evaluations=42 healthy=42 missing=00000000 "
             "stall=00000000 alloc_frozen=1 allocations=0 "
-            "post_freeze_allocations=0\n"
+            "post_freeze_allocations=0 mcan_magic=50415353 mcan_priority=4 "
+            "mcan_irqs=1024 mcan_submitted=1024 mcan_received=1024 "
+            "mcan_matched=1024 mcan_queue_sends=1024 mcan_queue_drops=0 "
+            "mcan_errors=00000000 mcan_terminal_faults=00000000 "
+            "mcan_tx_errors=0 mcan_rx_errors=0 mcan_error_log=0 "
+            "mcan_mismatches=0 mcan_timeouts=0 mcan_stack=335 "
+            "mcan_cleanup_status=0 mcan_cccr=00000001 mcan_cleanup=1\n"
         )
 
         self.assertEqual(sample["boot"], 0x424F4F54)
@@ -51,6 +57,25 @@ class HeartbeatCollectorTests(unittest.TestCase):
             "alloc_frozen": 1,
             "allocations": 0,
             "post_freeze_allocations": 0,
+            "mcan_magic": 0x50415353,
+            "mcan_priority": 4,
+            "mcan_irqs": 1024,
+            "mcan_submitted": 1024,
+            "mcan_received": 1024,
+            "mcan_matched": 1024,
+            "mcan_queue_sends": 1024,
+            "mcan_queue_drops": 0,
+            "mcan_errors": 0,
+            "mcan_terminal_faults": 0,
+            "mcan_tx_errors": 0,
+            "mcan_rx_errors": 0,
+            "mcan_error_log": 0,
+            "mcan_mismatches": 0,
+            "mcan_timeouts": 0,
+            "mcan_stack": 335,
+            "mcan_cleanup_status": 0,
+            "mcan_cccr": 1,
+            "mcan_cleanup": 1,
         }
         second = {
             **first,
@@ -81,6 +106,25 @@ class HeartbeatCollectorTests(unittest.TestCase):
             "alloc_frozen": 1,
             "allocations": 0,
             "post_freeze_allocations": 0,
+            "mcan_magic": 0x50415353,
+            "mcan_priority": 4,
+            "mcan_irqs": 1024,
+            "mcan_submitted": 1024,
+            "mcan_received": 1024,
+            "mcan_matched": 1024,
+            "mcan_queue_sends": 1024,
+            "mcan_queue_drops": 0,
+            "mcan_errors": 0,
+            "mcan_terminal_faults": 0,
+            "mcan_tx_errors": 0,
+            "mcan_rx_errors": 0,
+            "mcan_error_log": 0,
+            "mcan_mismatches": 0,
+            "mcan_timeouts": 0,
+            "mcan_stack": 335,
+            "mcan_cleanup_status": 0,
+            "mcan_cccr": 1,
+            "mcan_cleanup": 1,
         }
         failures = (
             {**healthy, "boot": 0},
@@ -92,6 +136,25 @@ class HeartbeatCollectorTests(unittest.TestCase):
             {**healthy, "healthy": 9},
             {**healthy, "alloc_frozen": 0},
             {**healthy, "post_freeze_allocations": 1},
+            {**healthy, "mcan_magic": 0x4641494C},
+            {**healthy, "mcan_priority": 3},
+            {**healthy, "mcan_irqs": 1023},
+            {**healthy, "mcan_submitted": 1023},
+            {**healthy, "mcan_received": 1023},
+            {**healthy, "mcan_matched": 1023},
+            {**healthy, "mcan_queue_sends": 1023},
+            {**healthy, "mcan_queue_drops": 1},
+            {**healthy, "mcan_errors": 1},
+            {**healthy, "mcan_terminal_faults": 1},
+            {**healthy, "mcan_tx_errors": 1},
+            {**healthy, "mcan_rx_errors": 1},
+            {**healthy, "mcan_error_log": 1},
+            {**healthy, "mcan_mismatches": 1},
+            {**healthy, "mcan_timeouts": 1},
+            {**healthy, "mcan_stack": 127},
+            {**healthy, "mcan_cleanup_status": 1},
+            {**healthy, "mcan_cccr": 0},
+            {**healthy, "mcan_cleanup": 0},
         )
         for sample in failures:
             with self.subTest(sample=sample):
