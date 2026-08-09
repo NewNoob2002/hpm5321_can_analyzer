@@ -97,6 +97,32 @@ PA01/RX. It again received 447 bytes and produced the identical SHA-256
 A byte-for-byte comparison reported no differences. This confirms that the
 fully connected three-wire setup does not interfere with board UART output.
 
+## Three-Wire Host-to-Board Retest
+
+With all three wires still connected, the target was reset to clear UART0 RX,
+then the host wrote this 13-byte payload through `/dev/ttyACM0` at 921600 8N1:
+
+```text
+ASCII: USB2BOARD_OK\n
+HEX:   55534232424f4152445f4f4b0a
+```
+
+J-Link then halted the target and read the UART0 line-status register and all
+13 receiver-buffer entries:
+
+```text
+UART_RX_LSR_BEFORE=0x000d0061 fifo=13 errors=0x00
+UART_RX_DATA_HEX=55534232424f4152445f4f4b0a
+UART_RX_LSR_AFTER=0x00000060 fifo=0 errors=0x00
+```
+
+The initial FIFO count exactly matched the host write, the received bytes were
+identical, and no overrun, parity, framing, break or aggregate FIFO error was
+set. After the reads, the FIFO count returned to zero. This proves the active
+adapter-TX-to-board-PA01/RX hardware path. The product firmware does not yet
+consume UART commands, so this is a physical/UART-peripheral receive proof,
+not application-protocol handling evidence.
+
 ## Connection Diagnosis History
 
 Before the adapter RX lead was corrected, three capture attempts produced zero
