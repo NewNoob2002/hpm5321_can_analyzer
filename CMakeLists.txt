@@ -5,7 +5,17 @@ cmake_minimum_required(VERSION 3.13)
 
 set(CONFIG_FREERTOS 1)
 set(CONFIG_FREERTOS_HEAP custom)
-set(CONFIG_SEGGER_RTT 1)
+
+set(APP_FIRMWARE_VERSION "0.1.0-dev" CACHE STRING
+    "Firmware semantic version reported by the P2 UART boot banner")
+if(NOT APP_FIRMWARE_VERSION MATCHES "^[0-9]+[.][0-9]+[.][0-9]+(-[0-9A-Za-z.-]+)?$")
+    message(FATAL_ERROR "APP_FIRMWARE_VERSION must be a semantic version")
+endif()
+set(APP_BOARD_REVISION "Gerber_PCB1_2026-07-23" CACHE STRING
+    "PCB revision reported by the product firmware boot banner")
+if(APP_BOARD_REVISION STREQUAL "")
+    message(FATAL_ERROR "APP_BOARD_REVISION must not be empty")
+endif()
 
 set(APP_FAULT_INJECT_REASON "0" CACHE STRING
     "Direct P2 fault-hook injection: 0=off, 1=assert, 2=stack hook, 3=malloc hook")
@@ -18,8 +28,16 @@ find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(hpm5321_can_analyzer)
 
+# EasyLogger owns RTT directly. Do not enable the SDK RTT syscall layer because
+# libc stdout is reserved for the UART debug console.
+set(APP_SEGGER_RTT_ROOT "${HPM_SDK_BASE}/middleware/segger_rtt")
+sdk_inc(${APP_SEGGER_RTT_ROOT}/Config ${APP_SEGGER_RTT_ROOT}/RTT)
+sdk_src(${APP_SEGGER_RTT_ROOT}/RTT/SEGGER_RTT.c)
+
 sdk_compile_definitions(
-    -DCONFIG_NDEBUG_CONSOLE=1
+    -DCONFIG_NDEBUG_CONSOLE=0
+    -DAPP_FIRMWARE_VERSION=\"${APP_FIRMWARE_VERSION}\"
+    -DAPP_BOARD_REVISION=\"${APP_BOARD_REVISION}\"
     -DUSE_SYSCALL_INTERRUPT_PRIORITY=1
     -DAPP_FAULT_INJECT_REASON=${APP_FAULT_INJECT_REASON}
     $<$<CONFIG:Debug>:DEBUG>
