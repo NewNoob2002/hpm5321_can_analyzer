@@ -25,6 +25,6 @@ Status values: `PASS`, `PARTIAL`, `BLOCKED`, `NOT_TESTED`, `NOT_APPLICABLE`.
 | Host transport + fake backend | PASS | `host/crates/core` (hpm-usb-can-core) defines the frame-oriented `Transport` trait with `FakeTransport`/`FakeDevice` (in-memory v1.0 device: HELLO-first negotiation, CAS, arm epoch, TX ledger reclaim, replay cache, capture streaming, loss injection, hotplug reset) and a rusb `UsbTransport` (FIFO frame order); fake-backend parity flows pass, clippy clean |
 | Official SDK v1.12.1 clean build | PASS | Official commit `12bd9249...` clean rebuild evidence: `docs/evidence/phase1/T-DEV-001-003-official-sdk-clean-build-report.md` |
 
-Phase 1B is closed. The next primary implementation node is P2 RTOS/time/
-ownership; P3A owns physical USB reconnect qualification, while the
+Phase 1B is closed. P2 RTOS/time/ownership has a target-verified initial
+baseline but remains `PARTIAL`; P3A owns physical USB reconnect qualification, while the
 conditional STORAGE branch starts with P0S profile/electrical/media freeze.
