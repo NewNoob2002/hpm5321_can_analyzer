@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "preset": "hpm5321-flash-debug",
+  "source_revision": "980a38c9196dfe5971ff3b624c235edb33625e6d",
+  "source_dirty": false,
+  "sdk_commit": "88b01b43900d8c30844a1e5cdd3f3b7aff6db40e",
+  "compiler": "riscv32-unknown-elf-gcc (gc891d8dc23e) 13.2.0",
+  "compile_commands_sha256": "51971a51a1c98fd4a246c8a22bee1c89c8de67fb1b154b6863737c41e0d22344",
+  "artifacts": {
+    "demo.elf": {
+      "size": 545508,
+      "sha256": "c3feef5d36867d021e26a95548b4bd055150ca2e4be54cf907d847c8afee70d2"
+    },
+    "demo.bin": {
+      "size": 96392,
+      "sha256": "3b551f289d3c8e2ec333dab063b4594755abeb6d676304934e28608ae909af74"
+    },
+    "demo.map": {
+      "size": 536487,
+      "sha256": "cca0b34767c3f520a4ae4aa5180bb1a24f9dd8f89e3d344b6f0b26e92df2e643"
+    }
+  }
+}
