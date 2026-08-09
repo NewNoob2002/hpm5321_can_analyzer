@@ -90,6 +90,13 @@ The machine-readable line exactly matches the banner contract. The raw
 J-Link reset used for the capture. `T-BSP-001` is therefore `PASS` for the
 UART boot-banner requirement.
 
+A second capture then repeated the same procedure with all three UART wires
+connected: common ground, board PA00/TX to adapter RX, and adapter TX to board
+PA01/RX. It again received 447 bytes and produced the identical SHA-256
+`e06b47bc574c19ce5ff149f40a3548f9ad184da1268f1e1fd80e4afb45a8a961`.
+A byte-for-byte comparison reported no differences. This confirms that the
+fully connected three-wire setup does not interfere with board UART output.
+
 ## Connection Diagnosis History
 
 Before the adapter RX lead was corrected, three capture attempts produced zero
@@ -115,6 +122,8 @@ UART_RX_PROBE lsr=0x000d0061 rfifo_count=13 errors=0x00 heartbeat=281
 Those diagnostics proved the adapter-TX-to-board-RX direction in the earlier
 setup, but they did not identify why board TX produced no host bytes. The later
 successful boot capture was taken with adapter TX disconnected; it proves the
-board-PA00/TX-to-adapter-RX direction required by `T-BSP-001`. Because capture
-timing was also restarted before the successful J-Link reset, this evidence
-does not by itself prove that disconnecting adapter TX was the causal fix.
+board-PA00/TX-to-adapter-RX direction required by `T-BSP-001`. The subsequent
+byte-identical capture with adapter TX reconnected rules out its normal
+connection to PA01/RX as the cause. The earlier zero-byte result was therefore
+transient wiring/contact or capture/reset timing, but the available evidence
+does not distinguish those possibilities.
