@@ -88,6 +88,56 @@ def verify_source_manifest(path: Path) -> str:
     return sha256_file(path)
 
 
+def verify_archived_source_manifest(attestation: dict) -> str:
+    commit = attestation.get("source_commit", "")
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise SystemExit("archived attestation requires a full source_commit")
+    manifest_name = attestation.get("source_manifest", "")
+    if not isinstance(manifest_name, str) or not manifest_name:
+        raise SystemExit("archived attestation requires a source manifest")
+
+    def git_blob(path: str) -> bytes:
+        if Path(path).is_absolute() or ".." in Path(path).parts:
+            raise SystemExit("archived attestation contains an unsafe path")
+        result = subprocess.run(
+            ["git", "show", f"{commit}:{path}"],
+            cwd=ROOT,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            raise SystemExit(f"archived source is missing at {commit}: {path}")
+        return result.stdout
+
+    manifest_bytes = git_blob(manifest_name)
+    manifest_digest = hashlib.sha256(manifest_bytes).hexdigest()
+    if manifest_digest != attestation.get("source_manifest_sha256"):
+        raise SystemExit("archived source manifest SHA-256 mismatch")
+
+    seen = []
+    for line_number, line in enumerate(manifest_bytes.decode().splitlines(), 1):
+        try:
+            expected, member_name = line.split("  ", 1)
+        except ValueError as error:
+            raise SystemExit(
+                f"archived manifest line {line_number}: invalid syntax"
+            ) from error
+        if not re.fullmatch(r"[0-9a-f]{64}", expected):
+            raise SystemExit(
+                f"archived manifest line {line_number}: invalid SHA-256"
+            )
+        if member_name in seen:
+            raise SystemExit(
+                f"archived manifest line {line_number}: duplicate member"
+            )
+        seen.append(member_name)
+        if hashlib.sha256(git_blob(member_name)).hexdigest() != expected:
+            raise SystemExit(f"archived manifest member mismatch: {member_name}")
+    if tuple(seen) != EXPECTED_MANIFEST_MEMBERS:
+        raise SystemExit("archived manifest is not the canonical member list")
+    return manifest_digest
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("capture", type=Path)
@@ -113,15 +163,6 @@ def main() -> None:
         raise SystemExit("metadata capture_sha256 does not match capture")
 
     provenance = metadata.get("provenance_status")
-    if provenance == "artifact-attested":
-        elf_path = Path(metadata.get("elf_path", ""))
-        if not elf_path.is_absolute():
-            elf_path = ROOT / elf_path
-        if not elf_path.is_file():
-            raise SystemExit(f"metadata ELF does not exist: {elf_path}")
-        elf_digest = sha256_file(elf_path)
-        if metadata.get("elf_sha256") != elf_digest:
-            raise SystemExit("metadata elf_sha256 does not match ELF")
     manifest_digest = metadata.get("source_manifest_sha256")
     if provenance == "historical-unbound":
         if metadata.get("approved_test_ids") != ["T-CAN-003"]:
@@ -153,6 +194,22 @@ def main() -> None:
             raise SystemExit("capture run_nonce does not match artifact attestation")
         if attestation.get("external_capture_status") != "target_and_external_pass":
             raise SystemExit("artifact attestation does not declare external PASS")
+        if metadata.get("elf_path") != attestation.get("artifact"):
+            raise SystemExit("capture ELF path does not match artifact attestation")
+        if metadata.get("elf_sha256") != attestation.get("elf_sha256"):
+            raise SystemExit("capture ELF digest does not match artifact attestation")
+
+        archived = "source_commit" in attestation
+        if archived:
+            verify_archived_source_manifest(attestation)
+        else:
+            elf_path = Path(metadata.get("elf_path", ""))
+            if not elf_path.is_absolute():
+                elf_path = ROOT / elf_path
+            if not elf_path.is_file():
+                raise SystemExit(f"metadata ELF does not exist: {elf_path}")
+            if metadata.get("elf_sha256") != sha256_file(elf_path):
+                raise SystemExit("metadata elf_sha256 does not match ELF")
         target_log = verified_evidence_text(
             metadata, "target_gdb_evidence", "target_gdb_sha256"
         )
@@ -178,20 +235,17 @@ def main() -> None:
             raise SystemExit("target flash evidence does not bind the ELF")
         if any("mismatch" in line.lower() for line in flash_log.splitlines()):
             raise SystemExit("target flash compare-sections reported a mismatch")
-        if metadata.get("elf_path") != attestation.get("artifact"):
-            raise SystemExit("capture ELF path does not match artifact attestation")
-        if metadata.get("elf_sha256") != attestation.get("elf_sha256"):
-            raise SystemExit("capture ELF digest does not match artifact attestation")
-        validator = ROOT / "scripts/phase0/validate_current_artifact.py"
-        result = subprocess.run(
-            [sys.executable, str(validator), str(attestation_path)],
-            cwd=ROOT,
-            text=True,
-            capture_output=True,
-        )
-        if result.returncode != 0:
-            detail = result.stderr.strip() or result.stdout.strip()
-            raise SystemExit(f"artifact attestation validation failed: {detail}")
+        if not archived:
+            validator = ROOT / "scripts/phase0/validate_current_artifact.py"
+            result = subprocess.run(
+                [sys.executable, str(validator), str(attestation_path)],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+            )
+            if result.returncode != 0:
+                detail = result.stderr.strip() or result.stdout.strip()
+                raise SystemExit(f"artifact attestation validation failed: {detail}")
     else:
         raise SystemExit("unsupported provenance_status")
 
