@@ -5,7 +5,8 @@ Date: 2026-08-09
 Board: `hpm5321_custom`, serial `20260723`
 Probe: J-Link PLUS, S/N `607000454`, JTAG 4 MHz, VTref 3.30 V
 SDK: `88b01b43900d8c30844a1e5cdd3f3b7aff6db40e` (`validated-fork`)
-Flash Debug ELF SHA-256: `08364c0d6fca038dcafe5ef0fdb7f8bfb63d6667c04a7c47fadc0f6e1f155f8a`
+RTOS qualification ELF SHA-256:
+`08364c0d6fca038dcafe5ef0fdb7f8bfb63d6667c04a7c47fadc0f6e1f155f8a`
 
 ## Implemented Baseline
 
@@ -64,9 +65,10 @@ This short run does not close P2. The following remain required:
 - 24-hour heartbeat with reset/assert accounting (`T-RTOS-003`);
 - product-peripheral IRQ and ISR-safe API target proof (`T-RTOS-005`); the
   priority contract is frozen, but no product peripheral ISR exists yet;
-- UART firmware-version/SDK/board/reset-cause logging (`T-BSP-001`);
 - physical STATUS timing/polarity confirmation remains operator evidence.
 
 Host and target evidence now cover `T-RTOS-002`, `T-RTOS-006`,
 `T-RTOS-007`, and `T-RTOS-008`. Direct stack-hook injection proves the hook
 path only; it is not represented as a naturally induced stack overflow.
+See `T-BSP-001-uart-banner-2026-08-09.md` for the current UART-enabled artifact.
+Its 447-byte physical UART capture closes `T-BSP-001` as `PASS`.

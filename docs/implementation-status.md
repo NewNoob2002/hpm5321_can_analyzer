@@ -41,15 +41,18 @@ snapshotting, and libc allocation counters frozen before scheduler start.
 
 Target tests prove voter stall/missing/recovery, all three direct fault-hook
 paths, zero post-freeze allocations and a clean 30-second heartbeat run with a
-447-word health-task stack watermark. See
+447-word health-task stack watermark. UART0 startup logging now reports the
+firmware version, SDK revision, board revision and decoded reset cause; the
+UART-enabled image is target-running, and a 447-byte physical capture closes
+`T-BSP-001` as `PASS`. See
 `docs/evidence/phase2/P2-RTOS-baseline-2026-08-09.md` and
-`docs/evidence/phase2/P2-RTOS-followup-2026-08-09.md`.
+`docs/evidence/phase2/P2-RTOS-followup-2026-08-09.md` plus
+`docs/evidence/phase2/T-BSP-001-uart-banner-2026-08-09.md`.
 
 P2 remains open for the actual 24-hour heartbeat qualification, an API-calling
-product peripheral ISR target test, UART version/SDK/board/reset-cause logging,
-and remaining operator LED evidence. The generation voter does not configure
-or feed hardware WDG. USB and MCAN product owner tasks must not start before
-the required P2 contracts close.
+product peripheral ISR target test, and remaining operator LED evidence. The
+generation voter does not configure or feed hardware WDG. USB and MCAN product
+owner tasks must not start before the required P2 contracts close.
 
 ## Reproducibility boundary
 
