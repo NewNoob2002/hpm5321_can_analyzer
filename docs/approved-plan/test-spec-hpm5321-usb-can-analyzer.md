@@ -1,12 +1,13 @@
 # HPM5321 USB-CAN Analyzer — Test Specification
 
 > 对应 PRD：`docs/approved-plan/prd-hpm5321-usb-can-analyzer.md`  
-> 状态：Planner 草案；硬件阈值在 Phase 0 后冻结
+> 状态：Approved baseline；P0S measured profile remains blocked  
+> SPI2 SD/LED addendum：`spi2-sd-led-2026-08-09`
 
 ## 0. Priority, applicability, and release semantics
 
 - **P0**：产品安全、数据完整性或核心 MVP；任何 required P0 失败立即 stop。
-- **P1**：可靠性、三平台发布或选中 feature 的产品质量；进入相应 Beta/1.0 前必须通过。
+- **P1**：可靠性、当前跨平台发布范围或选中 feature 的产品质量；进入相应 Beta/1.0 前必须通过。
 - **P2**：增强/诊断；允许带 owner、期限和已知问题的 deferred。
 - **required**：当前 release scope 必须运行并通过；
 - **required(MVP+)**：MVP、Beta、1.0 均必需；
@@ -28,10 +29,13 @@
 | T-DEV-006 | P1 | required(MVP+) |
 | T-BSP-001..003,T-RTOS-001..003,T-RTOS-005..008 | P0 | required(MVP+) |
 | T-RTOS-004 | P1 | required(MVP+) |
-| T-USB-001,T-USB-001A,T-USB-001B,T-USB-002..010 | P0 | required(MVP+) |
+| T-USB-001,T-USB-001A,T-USB-001B,T-USB-002..003,T-USB-005..010 | P0 | required(MVP+) |
+| T-USB-004 | P2 | deferred(current Linux/Windows CLI scope) |
 | T-CAN-001,T-CAN-003..004,T-CAN-006..008,T-CAN-011..015 | P0 | required(MVP+) |
 | T-CAN-002,T-CAN-005,T-CAN-009 | P0 | required(Beta+)；002/005 may run advisory in MVP |
 | T-CAN-010 | P0 | conditional(Beta+,CAN_FD) |
+| T-LED-001..003,T-LED-006 | P0 | required(MVP+) |
+| T-LED-004..005 | P0 | required(Beta+)；004 may run advisory in MVP |
 | T-PROTO-001..012 | P0 | required(MVP+) |
 | T-E2E-001..004,T-E2E-006..009 | P0 | required(MVP+) |
 | T-E2E-005 | P0 | required(Beta+) |
@@ -40,11 +44,23 @@
 | T-FW-004..007,T-FW-009..010,T-FW-012..013 | P0 | required(MVP+) |
 | T-FW-011 | P0 | required(Beta+) |
 | T-FW-008 | P1 | required(Beta+) |
-| T-HOST-001..004 | P0 | required(MVP+) |
+| T-HOST-001..002,T-HOST-004 | P0 | required(MVP+) |
+| T-HOST-003 | P2 | deferred(current Linux/Windows CLI scope) |
 | T-HOST-005 | P1 | required(Beta+) |
 | T-GUI-001..006 | P1 | required(1.0)；Beta recommended/non-blocking |
 | T-UPD-001..005 | P1 | conditional(1.0,UPDATE) |
 | T-REL-001..004 | P0 | required(MVP+) |
+
+### Unique LED gate registry
+
+| Test | Gate | Priority and applicability |
+|---|---|---|
+| T-LED-001 | B | P0 required(MVP+) |
+| T-LED-002 | B | P0 required(MVP+) |
+| T-LED-003 | D | P0 required(MVP+) |
+| T-LED-004 | B | P0 required(Beta+), MVP advisory |
+| T-LED-005 | D | P0 required(Beta+) |
+| T-LED-006 | H | P0 required(MVP+) |
 
 ## 1. Test levels
 
@@ -56,6 +72,27 @@
 | Target peripheral | clock、UART、USB loop、MCAN loop、SPI/SD | 完整端到端 |
 | HIL | USB + CAN adapter + board + UART/probe | 所有客户 PC/线束 |
 | Soak/fault | 长时、拔插、bus-off、backpressure、断电 | 未覆盖的环境/EMC |
+
+### SPI2 SD/LED pin oracle
+
+产品通道名固定为 `CAN1 = MCAN0`、`CAN2 = MCAN2`。以下 table 必须与 PRD、
+Phase 0 manifest、addendum 和 BSP source 一致：
+
+| Signal | Pin | Test use |
+|---|---|---|
+| SPI2 SCLK | PB11 | clock/mode trace |
+| SPI2 MISO | PB12 | data routing |
+| SPI2 MOSI | PB13 | data routing |
+| SD CS | PB10 | default inactive and transfer framing |
+| SD detect | PY00 | polarity/pull/debounce/removal |
+| CAN1 TX LED | PY01 | MCAN0 completion activity |
+| CAN1 RX LED | PY02 | MCAN0 accepted RX activity |
+| CAN2 TX LED | PY03 | MCAN2 completion activity |
+| CAN2 RX LED | PA09 | MCAN2 accepted RX activity |
+| STATUS LED | PA31 | health patterns |
+
+Only `1.0 + STORAGE` may run STORAGE as a release claim, through the exact
+`P0S -> P3C1 -> P3C2 -> P5S` chain. MVP/Beta do not claim STORAGE.
 
 ## 2. Evidence contract
 
@@ -82,9 +119,11 @@
 - `T-DEV-003` compile_commands 可被 clangd/C++ 扩展读取；
 - `T-DEV-004` ELF/BIN/MAP/size/checksum 生成；
 - `T-DEV-005` GDB stop-at-main、breakpoint、step、reset；
-- `T-DEV-006` 三平台 setup 文档 dry run。
+- `T-DEV-006` Linux/Windows setup 文档 dry run；macOS deferred。
 
-**Pass**：全部必需测试通过；任何绝对个人路径进入共享配置则失败。
+**Pass**：全部必需测试通过；任何绝对个人路径进入共享配置则失败。J-Link 是
+selected adapter；OpenOCD non-selected/non-gating。Phase 1B closure manifest
+必须为 PASS。
 
 ### Gate B — Board/RTOS
 
@@ -99,6 +138,12 @@
 - `T-RTOS-006` runtime allocation freeze（启动完成后 allocation count 不变）；
 - `T-RTOS-007` 32-bit timer rollover / torn-read 64-bit timestamp；
 - `T-RTOS-008` 逐 task watchdog voter stall 与缺失 voter 诊断。
+- `T-LED-001` schematic + target prove STATUS and CAN1 pins, polarity/drive,
+  default-off and one-by-one routing；
+- `T-LED-002` STATUS heartbeat/fault timing is measured and static/runtime
+  writer audit finds only `health_task` after BSP init；
+- `T-LED-004` schematic + target prove CAN2 pins, polarity/drive, default-off
+  and routing；它是 Beta required、MVP advisory。
 
 **Pass**：0 unexpected reset/assert，task stack 余量达门槛；IRQ/ISR API、
 runtime allocation freeze、timestamp rollover/torn-read、watchdog voter stall
@@ -124,7 +169,8 @@ runtime allocation freeze、timestamp rollover/torn-read、watchdog voter stall
 - `T-USB-009` malformed messages；
 - `T-USB-010` endpoint stall/reset。
 
-**Pass**：内容错误=0、deadlock=0、unbounded allocation=0，所有 loss 可计数。
+**Pass**：当前 Linux/Windows scope 内容错误=0、deadlock=0、unbounded
+allocation=0，所有 loss 可计数。T-USB-004 保持 deferred，不被写成 PASS。
 
 ### Gate D — CAN
 
@@ -146,6 +192,9 @@ runtime allocation freeze、timestamp rollover/torn-read、watchdog voter stall
   若未来 capability-gated v1.1 schedule 存在则同时取消，v1.0 无周期 TX；
 - `T-CAN-014` firmware 拒绝越界 ID/DLC/flags/rate/bus-load；
 - `T-CAN-015` bus-off 只执行人工或有界恢复，不无限自动 TX。
+- `T-LED-003` CAN1 TX 只在 MCAN0 successful completion 后亮，RX 只在 valid
+  accepted MCAN0 frame 后亮，且 diagnostics 可对账；
+- `T-LED-005` CAN2 TX/RX 对 MCAN2 执行相同语义并证明没有 MCAN1 mapping 歧义。
 
 **Pass**：外部分析仪与设备记录一致；无 silent drop；错误计数和状态转换一致。
 
@@ -186,18 +235,27 @@ runtime allocation freeze、timestamp rollover/torn-read、watchdog voter stall
 
 ### Gate G — Storage
 
-- `T-SD-001` init/card detect；
-- `T-SD-002` sustained throughput ≥ target stream × 2；
+- `T-SD-001` PB10-PB13 pinmux、CS default inactive、mode-0、init <=400 kHz、
+  data <=20 MHz、PY00 polarity/pull/debounce，并覆盖批准的 SD v2 SDHC
+  4/8/16/32 GB multi-vendor FAT32/512-byte matrix；
+- `T-SD-002` aligned/cache-correct DMA、multi-block preallocated append，
+  sustained committed payload ≥ frozen encoded stream ×2，并记录 p99 stall、
+  CPU/queue watermark、CAN/USB p95/drop regression；
 - `T-SD-003` full card；
-- `T-SD-004` remove during write；
-- `T-SD-005` power loss at every commit phase；
-- `T-SD-006` scan/recover committed blocks；
+- `T-SD-004` idle/data/metadata/sync/mount 各阶段移除，验证 generation
+  invalidation、bounded abort/recovery 和 no stale-handle reuse；
+- `T-SD-005` real power loss at every frozen commit phase；software reset 不替代 power cut；
+- `T-SD-006` scan/recover committed blocks，并以独立 host tooling 验证 logical
+  sector count、last LBA、erase-block sectors、formatted capacity 和 truthful sync；
 - `T-SD-007` storage disabled does not affect CAN/USB。
 - `T-SD-008` STORAGE protocol addendum golden vectors + host codec；
 - `T-SD-009` host start/stop/list/read/delete E2E and idempotency；
 - `T-SD-010` power-loss recovery 后 host readback 与 CRC/sequence 对账。
 
-**Pass**：最多损失一个未提交 block，已提交 block CRC/sequence 可恢复。
+**Pass**：已提交 block 的 generation/CRC/sequence 可恢复，CAN/USB 继续运行。
+只有 preallocation、commit ordering、truthful sync 和真实断电矩阵全部通过后，
+才可增加“最多损失一个未提交 block”的较宽声明。P3C1 开始前必须运行
+`scripts/validate_planning_contract.py --require-storage-frozen`。
 
 ### Gate H — Full firmware reliability
 
@@ -214,6 +272,9 @@ runtime allocation freeze、timestamp rollover/torn-read、watchdog voter stall
 - `T-FW-011` 双通道 timestamp/order 与 event sequence gap；
 - `T-FW-012` power cycle/config CRC failure 回到安全态；
 - `T-FW-013` HIL cleanup 证明 listen-only、TX queue/schedule 为零。
+- `T-LED-006` 在当前 release 的正常 workload 下 activity saturation 只合并
+  pulse、不增加 CAN/USB drop；MVP 用 BP-CAN-MVP-v1，Beta/1.0 用
+  BP-CAN-BETA-v1，STORAGE 仅在 claim 时启用。
 
 **Pass**：0 unexplained reset/deadlock/silent loss；资源耗尽均有稳定错误和计数。
 
@@ -231,7 +292,8 @@ runtime allocation freeze、timestamp rollover/torn-read、watchdog voter stall
 - `T-GUI-005` import/export round trip；
 - `T-GUI-006` corrupted workspace recovery。
 
-**Pass**：三平台相同 protocol suite；无持续线性内存增长；UI 和 capture loss 分离。
+**Pass**：Linux/Windows 相同 protocol suite；无持续线性内存增长；UI 和
+capture loss 分离。T-HOST-003 macOS 保持 deferred。
 
 ### Gate J — Update/release
 

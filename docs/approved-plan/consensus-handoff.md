@@ -47,3 +47,26 @@ ralplan_consensus_gate:
 建议 `executor` 负责实现，`test-engineer` 负责 host/target/HIL 证据，
 `verifier` 负责阶段 gate。Team 应按 PRD phase/DAG 分配互不冲突的 ownership，
 并在每个 checkpoint 汇总 targeted tests、build、静态分析和硬件证据。
+
+## SPI2 SD/LED Addendum - 2026-08-09
+
+```yaml
+planning_addenda:
+  spi2-sd-led-2026-08-09:
+    path: docs/approved-plan/scope-addendum-spi2-sd-led.md
+    stable_id: spi2-sd-led-2026-08-09
+    Architect approval: docs/approved-plan/architect-approval.md
+    Architect heading: SPI2 SD/LED Addendum - 2026-08-09
+    Architect sequence: 1
+    Critic approval: docs/approved-plan/critic-approval.md
+    Critic heading: SPI2 SD/LED Addendum - 2026-08-09
+    Critic sequence: 2
+    approved_order: Architect -> Critic
+    complete: true
+    execution_authorized: true
+```
+
+The user authorized execution on 2026-08-09. Planning normalization persists
+the hardware/ownership/test/release contract; it does not mark P0S, P3C1,
+P3C2 or P5S complete. P3C1 remains blocked until `BP-STORAGE-v1` is frozen and
+`scripts/validate_planning_contract.py --require-storage-frozen` passes.

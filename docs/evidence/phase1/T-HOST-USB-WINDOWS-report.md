@@ -1,6 +1,7 @@
 # T-HOST-USB-WINDOWS — WinUSB Host Evidence
 
-Status: `PARTIAL` (functional/HIL PASS; environment and artifact hashes pending)
+Phase 1B lane: `PASS`  
+Product PnP/package evidence: `PARTIAL`
 
 Date: 2026-08-03  
 Device: HPMicro `VID_34B7&PID_1236`, vendor interface 0  
@@ -46,5 +47,9 @@ PASS platform=windows vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.34
 - The approximately 2.9 MiB/s figure is the synchronous 2 KiB stop-and-wait echo
   profile, not the USB physical link rate. Earlier descriptor/topology evidence
   establishes High-Speed operation; this profile is not a throughput gate.
-- Windows build version, Rust/MSVC versions, executable SHA-256 values and
-  `Cargo.lock` SHA-256 remain required before changing this report to `PASS`.
+- Windows-native clean build/test/clippy, OS and Rust/MSVC target evidence is
+  archived separately in `T-HOST-WINDOWS-CI-report.md`; `host/Cargo.lock`
+  SHA-256 is `4c12ca3aa919f02d6496f4dcdcb3d90efbc77f02d2a63cd435e9f31326b8c7af`.
+- The exact native HIL EXE SHA-256 and PnP binding output were not captured in
+  the original session. They remain required for P3A/P6 product evidence, but
+  do not reopen the completed Phase 1B build/stack/functional lane.

@@ -8,9 +8,39 @@ Status values: `PASS`, `PARTIAL`, `BLOCKED`, `NOT_TESTED`, `NOT_APPLICABLE`.
 |---|---|---:|---|
 | MCU | Build/debug target is HPM5321xCFx; physical marking not archived | NOT_TESTED | Record package marking/photo |
 | Board | `hpm5321_custom`; PCB revision `Gerber_PCB1_2026-07-23`; serial `20260723` | PASS | Add marking/photo to the release evidence archive |
-| SDK | Desired official v1.12.1 commit is `12bd9249...`; historical probes used fork `b9c7eb0e...`; current ABI-v5 probe uses clean fork commit `88b01b43...` and records its generated BUILD_VERSION | BLOCKED | Complete clean builds with the official locked commit |
+| SDK | Official v1.12.1 commit `12bd9249...` completed all three clean presets; historical hardware probes remain tied to their recorded fork revisions | PASS | Preserve `docs/evidence/phase1/T-DEV-001-003-official-sdk-clean-build-report.md`; hardware evidence remains artifact-specific |
 | Board overlay integrity | All 9 members pass `sha256sum -c`; `SHA256SUMS` digest `84e8b800aaef899fb26c7be919ea57b1d35725742df7a9051f822821d2c66006` | PASS | Recompute whenever reviewed overlay sources change |
 | Probe | SEGGER J-Link, S/N 607000454; JTAG 4 MHz; VTref 3.32 V | PASS | Preserve probe/tool version in test evidence |
+
+## SPI2 SD and indicator contract
+
+Planning addendum: `spi2-sd-led-2026-08-09`. Product aliases are
+`CAN1 = MCAN0` and `CAN2 = MCAN2`; CAN2 does not map to MCAN1.
+
+| Signal | Pin | Current evidence |
+|---|---|---|
+| SPI2 SCLK | PB11 | Board pinmux selects SPI2 SCLK with loopback |
+| SPI2 MISO | PB12 | Board pinmux selects SPI2 MISO |
+| SPI2 MOSI | PB13 | Board pinmux selects SPI2 MOSI |
+| SD CS | PB10 | Board pinmux/header select GPIO CS; active-low is not yet electrically proven |
+| SD detect | PY00 | Board pinmux/header select GPIO input; polarity/pull/debounce not yet proven |
+| CAN1 TX LED | PY01 | Board pinmux/header select GPIO; active-low assumption |
+| CAN1 RX LED | PY02 | Board pinmux/header select GPIO; active-low assumption |
+| CAN2 TX LED | PY03 | Board pinmux/header select GPIO; active-low assumption |
+| CAN2 RX LED | PA09 | Board pinmux/header select GPIO; active-low assumption |
+| STATUS LED | PA31 | Existing board GPIO; active-low assumption |
+
+| Contract item | Status | Required closure |
+|---|---:|---|
+| Source pin mapping | PASS | `scripts/validate_planning_contract.py` remains green |
+| CS/LED polarity, drive, resistor and reset/default state | NOT_TESTED | Schematic review plus target voltage/routing evidence |
+| PY00 present level, pull and debounce | NOT_TESTED | Schematic review plus insertion/removal trace |
+| SD v2 SDHC 4/8/16/32 GB FAT32 matrix | NOT_TESTED | P0S multi-vendor media results |
+| `BP-STORAGE-v1` derived rate/deadline freeze | BLOCKED | Measure encoded rate and queue absorption; run frozen-mode validator |
+
+The source-reviewed table is not electrical proof. Only `1.0 + STORAGE` may
+claim STORAGE, through `P0S -> P3C1 -> P3C2 -> P5S`; MVP/Beta remain
+independent of this conditional branch.
 
 ## USB HS contract
 
