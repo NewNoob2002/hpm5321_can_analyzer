@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "status": "BLOCKED",
+  "workload": {
+    "profile": "BP-CAN-BETA-v1",
+    "status": "BLOCKED",
+    "encoded_capture_bytes_per_s": null
+  },
+  "electrical": {
+    "schematic_or_bom_ref": "",
+    "cs_active_level": null,
+    "detect_present_level": null,
+    "detect_absent_level": null,
+    "detect_pull": "UNKNOWN",
+    "debounce_ms": null,
+    "observations": [
+      {
+        "condition": "initial sample; card state must be operator-confirmed",
+        "jlink_command": "mem32 0xF00D00E0,1",
+        "register_value": "0x0000000E",
+        "py00_level": 0,
+        "timestamp": "2026-08-09"
+      },
+      {
+        "condition": "card removal requested; physical state not independently confirmed",
+        "jlink_command": "mem32 0xF00D00E0,1",
+        "register_value": "0x0000000E",
+        "py00_level": 0,
+        "timestamp": "2026-08-09",
+        "result": "UNCHANGED; repeat with operator-confirmed empty slot and verify pull circuit"
+      }
+    ]
+  },
+  "media": []
+}

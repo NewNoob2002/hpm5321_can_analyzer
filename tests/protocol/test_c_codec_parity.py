@@ -1,3 +1,4 @@
+import os
 import shutil
 import subprocess
 import tempfile
@@ -14,16 +15,41 @@ SESSION_HARNESS = ROOT / "tests" / "protocol" / "ucan_session_test.c"
 class CCodecParityTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.gcc = shutil.which("gcc")
-        if cls.gcc is None:
-            raise unittest.SkipTest("gcc not available")
+        cls.cc = shutil.which(os.environ.get("CC", "")) or shutil.which("gcc")
+        if cls.cc is None:
+            raise unittest.SkipTest("C compiler not available")
+        cls.sanitizer_cc = cls._find_sanitizer_compiler()
 
-    def _run_harness(self, extra_flags=()):
+    @classmethod
+    def _find_sanitizer_compiler(cls):
+        candidates = [
+            shutil.which(os.environ.get("SANITIZER_CC", "")),
+            cls.cc,
+            shutil.which("clang"),
+        ]
+        flags = ["-fsanitize=address,undefined", "-fno-omit-frame-pointer"]
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "probe.c"
+            binary = Path(tmp) / "probe"
+            source.write_text("int main(void) { return 0; }\n", encoding="ascii")
+            for compiler in dict.fromkeys(item for item in candidates if item):
+                result = subprocess.run(
+                    [compiler, *flags, str(source), "-o", str(binary)],
+                    capture_output=True,
+                    text=True,
+                )
+                if result.returncode == 0 and subprocess.run(
+                    [str(binary)], capture_output=True, text=True
+                ).returncode == 0:
+                    return compiler
+        raise unittest.SkipTest("no C compiler with working ASan/UBSan runtime")
+
+    def _run_harness(self, extra_flags=(), compiler=None):
         with tempfile.TemporaryDirectory() as tmp:
             binary = Path(tmp) / "ucan_vector_test"
             sources = [str(HARNESS), str(CODECDIR / "ucan_codec.c")]
             cmd = [
-                self.gcc,
+                compiler or self.cc,
                 "-std=c99",
                 "-Wall",
                 "-Wextra",
@@ -58,14 +84,15 @@ class CCodecParityTests(unittest.TestCase):
 
     def test_sanitizer_build_stays_clean(self):
         self._run_harness(
-            ("-fsanitize=address,undefined", "-fno-omit-frame-pointer")
+            ("-fsanitize=address,undefined", "-fno-omit-frame-pointer"),
+            self.sanitizer_cc,
         )
 
-    def _run_session_harness(self, extra_flags=()):
+    def _run_session_harness(self, extra_flags=(), compiler=None):
         with tempfile.TemporaryDirectory() as tmp:
             binary = Path(tmp) / "ucan_session_test"
             cmd = [
-                self.gcc,
+                compiler or self.cc,
                 "-std=c99",
                 "-Wall",
                 "-Wextra",
@@ -101,7 +128,8 @@ class CCodecParityTests(unittest.TestCase):
 
     def test_session_sanitizer_build_stays_clean(self):
         self._run_session_harness(
-            ("-fsanitize=address,undefined", "-fno-omit-frame-pointer")
+            ("-fsanitize=address,undefined", "-fno-omit-frame-pointer"),
+            self.sanitizer_cc,
         )
 
 

@@ -1,7 +1,11 @@
 param(
     [string]$OutputDirectory = "docs/evidence/phase1/windows-current",
     [string]$Vid = "34B7",
-    [string]$Pid = "1236"
+    [string]$Pid = "1236",
+    [switch]$ExerciseDisconnectRecovery,
+    [int]$DisconnectBytes = 1073741824,
+    [int]$RecoveryBytes = 1048576,
+    [int]$ReenumerationTimeoutSeconds = 60
 )
 
 $ErrorActionPreference = "Stop"
@@ -19,8 +23,37 @@ function Record([string]$Title, [scriptblock]$Command) {
     }
 }
 
+function Get-PnpPropertyValue([string]$InstanceId, [string]$KeyName) {
+    $property = Get-PnpDeviceProperty `
+        -InstanceId $InstanceId `
+        -KeyName $KeyName `
+        -ErrorAction SilentlyContinue
+    if ($null -eq $property) { return $null }
+    return $property.Data
+}
+
+function Get-MatchingPnpDevices {
+    return @(
+        Get-PnpDevice -PresentOnly |
+            Where-Object { $_.InstanceId -match "VID_$Vid&PID_$Pid" }
+    )
+}
+
+function Wait-ForDevicePresence([bool]$Present, [int]$TimeoutSeconds) {
+    $deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSeconds)
+    do {
+        $isPresent = (Get-MatchingPnpDevices).Count -gt 0
+        if ($isPresent -eq $Present) { return }
+        Start-Sleep -Milliseconds 250
+    } while ([DateTime]::UtcNow -lt $deadline)
+    $state = if ($Present) { "re-enumeration" } else { "disconnect" }
+    throw "Timed out waiting for device $state"
+}
+
 Set-Content -Path $log -Value "Phase 1B Windows evidence collector"
-Record "Windows" { Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion, OsBuildNumber }
+$computer = Get-ComputerInfo |
+    Select-Object WindowsProductName, WindowsVersion, OsBuildNumber
+Record "Windows" { $computer | Format-List }
 Record "Rust" { rustc +1.97.1 --version --verbose }
 Record "Cargo" { cargo +1.97.1 --version --verbose }
 Record "Visual Studio" {
@@ -28,11 +61,28 @@ Record "Visual Studio" {
     if (-not (Test-Path $vswhere)) { throw "vswhere.exe is missing" }
     & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -format json
 }
-Record "PnP device" {
-    $devices = Get-PnpDevice -PresentOnly |
-        Where-Object { $_.InstanceId -match "VID_$Vid&PID_$Pid" }
-    if (-not $devices) { throw "VID_$Vid&PID_$Pid is not present" }
-    $devices | Format-List Status, Class, FriendlyName, InstanceId
+$devices = Get-MatchingPnpDevices
+if (-not $devices) { throw "VID_$Vid&PID_$Pid is not present" }
+$interfaceZero = @($devices | Where-Object { $_.InstanceId -match "&MI_00" })
+$bindingCandidates = if ($interfaceZero.Count -gt 0) { $interfaceZero } else { $devices }
+$bindings = @(
+    foreach ($device in $bindingCandidates) {
+        [PSCustomObject]@{
+            Status = $device.Status
+            Class = $device.Class
+            FriendlyName = $device.FriendlyName
+            InstanceId = $device.InstanceId
+            Service = Get-PnpPropertyValue $device.InstanceId "DEVPKEY_Device_Service"
+            DriverProvider = Get-PnpPropertyValue $device.InstanceId "DEVPKEY_Device_DriverProvider"
+            DriverVersion = Get-PnpPropertyValue $device.InstanceId "DEVPKEY_Device_DriverVersion"
+            DriverInfPath = Get-PnpPropertyValue $device.InstanceId "DEVPKEY_Device_DriverInfPath"
+        }
+    }
+)
+Record "PnP WinUSB binding" { $bindings | ConvertTo-Json -Depth 4 }
+$winUsbBindings = @($bindings | Where-Object { $_.Service -ieq "WinUSB" })
+if ($winUsbBindings.Count -eq 0) {
+    throw "Vendor interface 0 is not bound to the WinUSB service"
 }
 Record "Format" { cargo +1.97.1 fmt --manifest-path "$root/host/Cargo.toml" --all --check }
 Record "Build" { cargo +1.97.1 build --manifest-path "$root/host/Cargo.toml" --workspace --release --locked }
@@ -41,7 +91,70 @@ Record "Clippy" { cargo +1.97.1 clippy --manifest-path "$root/host/Cargo.toml" -
 
 $exe = Join-Path $root "host/target/release/hpm-usb-smoke.exe"
 $lock = Join-Path $root "host/Cargo.lock"
-Record "Hashes" { Get-FileHash -Algorithm SHA256 $exe, $lock | Format-Table -AutoSize }
+if (-not (Test-Path $exe)) { throw "Expected executable is missing: $exe" }
+$hashes = Get-FileHash -Algorithm SHA256 $exe, $lock
+Record "Hashes" { $hashes | Format-Table -AutoSize }
 Record "64 MiB HIL" { & $exe --bytes 67108864 }
 
+if ($ExerciseDisconnectRecovery) {
+    $disconnectOut = Join-Path $output "disconnect-stdout.txt"
+    $disconnectErr = Join-Path $output "disconnect-stderr.txt"
+    Record "Physical disconnect failure" {
+        "Unplug the device cable now; reconnect it after the failure is reported."
+        $process = Start-Process `
+            -FilePath $exe `
+            -ArgumentList "--bytes", "$DisconnectBytes" `
+            -RedirectStandardOutput $disconnectOut `
+            -RedirectStandardError $disconnectErr `
+            -PassThru
+        Wait-ForDevicePresence $false $ReenumerationTimeoutSeconds
+        if (-not $process.WaitForExit(10000)) {
+            $process.Kill()
+            throw "USB transfer did not fail within 10 seconds of disconnect"
+        }
+        Get-Content $disconnectOut, $disconnectErr -ErrorAction SilentlyContinue
+        "exit=$($process.ExitCode)"
+        if ($process.ExitCode -eq 0) {
+            throw "Disconnect transfer unexpectedly returned success"
+        }
+    }
+    Record "Re-enumeration and recovery" {
+        "Reconnect the physical device cable now."
+        Wait-ForDevicePresence $true $ReenumerationTimeoutSeconds
+        & $exe --bytes $RecoveryBytes
+    }
+}
+
+$manifest = [PSCustomObject]@{
+    SchemaVersion = 1
+    Status = "PASS"
+    CollectedAtUtc = [DateTime]::UtcNow.ToString("o")
+    Computer = $computer
+    Vid = $Vid
+    Pid = $Pid
+    WinUsbBindings = $winUsbBindings
+    Hashes = @(
+        foreach ($hash in $hashes) {
+            [PSCustomObject]@{
+                Path = $hash.Path
+                Algorithm = $hash.Algorithm
+                Hash = $hash.Hash
+            }
+        }
+    )
+    ExactEchoBytes = 67108864
+    DisconnectRecoveryExercised = [bool]$ExerciseDisconnectRecovery
+}
+$manifestPath = Join-Path $output "manifest.json"
+$manifest | ConvertTo-Json -Depth 6 | Set-Content -Encoding UTF8 $manifestPath
+
 "PASS collector completed" | Tee-Object -FilePath $log -Append
+
+$archive = "$output.zip"
+if (Test-Path $archive) { Remove-Item -Force $archive }
+Compress-Archive -Path (Join-Path $output "*") -DestinationPath $archive
+$archiveHash = Get-FileHash -Algorithm SHA256 $archive
+"$($archiveHash.Hash)  $([IO.Path]::GetFileName($archive))" |
+    Set-Content -Encoding ASCII "$archive.sha256"
+"Evidence archive: $archive"
+"Evidence SHA-256: $($archiveHash.Hash)"
