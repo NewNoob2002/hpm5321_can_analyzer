@@ -1,0 +1,117 @@
+import importlib.util
+from pathlib import Path
+import unittest
+
+
+ROOT = Path(__file__).resolve().parents[2]
+MODULE_PATH = ROOT / "scripts/phase2/collect_heartbeat.py"
+SPEC = importlib.util.spec_from_file_location("collect_heartbeat", MODULE_PATH)
+assert SPEC and SPEC.loader
+MODULE = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(MODULE)
+
+
+class HeartbeatCollectorTests(unittest.TestCase):
+    def test_clamps_sleep_to_zero_after_slow_first_sample(self):
+        self.assertEqual(MODULE._bounded_sleep_seconds(5.0, -0.25), 0.0)
+        self.assertEqual(MODULE._bounded_sleep_seconds(5.0, 2.0), 2.0)
+        self.assertEqual(MODULE._bounded_sleep_seconds(5.0, 8.0), 5.0)
+
+    def test_parses_machine_readable_gdb_sample(self):
+        sample = MODULE.parse_sample(
+            "noise\nP2_SAMPLE boot=424f4f54 boot_tick=317000 "
+            "reset=00000010 heartbeat=42 "
+            "drops=0 stack=447 tick=504000000 fault_magic=00000000 "
+            "fault_reason=0 evaluations=42 healthy=42 missing=00000000 "
+            "stall=00000000 alloc_frozen=1 allocations=0 "
+            "post_freeze_allocations=0\n"
+        )
+
+        self.assertEqual(sample["boot"], 0x424F4F54)
+        self.assertEqual(sample["boot_tick"], 317000)
+        self.assertEqual(sample["reset"], 0x10)
+        self.assertEqual(sample["heartbeat"], 42)
+        self.assertEqual(sample["tick"], 504000000)
+
+    def test_accepts_monotonic_healthy_samples(self):
+        first = {
+            "boot": 0x424F4F54,
+            "boot_tick": 317000,
+            "reset": 0x10,
+            "heartbeat": 10,
+            "drops": 0,
+            "stack": 447,
+            "tick": 120000000,
+            "fault_magic": 0,
+            "fault_reason": 0,
+            "evaluations": 10,
+            "healthy": 10,
+            "missing": 0,
+            "stall": 0,
+            "alloc_frozen": 1,
+            "allocations": 0,
+            "post_freeze_allocations": 0,
+        }
+        second = {
+            **first,
+            "heartbeat": 20,
+            "tick": 240000000,
+            "evaluations": 20,
+            "healthy": 20,
+        }
+
+        MODULE.validate_sample(first, None, 128)
+        MODULE.validate_sample(second, first, 128)
+
+    def test_rejects_reset_fault_drop_stack_and_voter_failures(self):
+        healthy = {
+            "boot": 0x424F4F54,
+            "boot_tick": 317000,
+            "reset": 0x10,
+            "heartbeat": 10,
+            "drops": 0,
+            "stack": 447,
+            "tick": 120000000,
+            "fault_magic": 0,
+            "fault_reason": 0,
+            "evaluations": 10,
+            "healthy": 10,
+            "missing": 0,
+            "stall": 0,
+            "alloc_frozen": 1,
+            "allocations": 0,
+            "post_freeze_allocations": 0,
+        }
+        failures = (
+            {**healthy, "boot": 0},
+            {**healthy, "fault_magic": 0x4641554C},
+            {**healthy, "drops": 1},
+            {**healthy, "stack": 127},
+            {**healthy, "missing": 2},
+            {**healthy, "stall": 2},
+            {**healthy, "healthy": 9},
+            {**healthy, "alloc_frozen": 0},
+            {**healthy, "post_freeze_allocations": 1},
+        )
+        for sample in failures:
+            with self.subTest(sample=sample):
+                with self.assertRaises(RuntimeError):
+                    MODULE.validate_sample(sample, None, 128)
+
+        with self.assertRaisesRegex(RuntimeError, "heartbeat did not advance"):
+            MODULE.validate_sample(healthy, healthy, 128)
+
+        reset = {
+            **healthy,
+            "boot_tick": healthy["boot_tick"] + 1,
+            "heartbeat": healthy["heartbeat"] + 1,
+            "tick": healthy["tick"] + 1,
+            "evaluations": healthy["evaluations"] + 1,
+            "healthy": healthy["healthy"] + 1,
+        }
+        with self.assertRaisesRegex(RuntimeError, "target reset detected"):
+            MODULE.validate_sample(reset, healthy, 128)
+
+
+if __name__ == "__main__":
+    unittest.main()
