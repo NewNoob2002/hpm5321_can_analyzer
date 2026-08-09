@@ -18,6 +18,7 @@ from typing import Any, Callable
 
 ROOT = Path(__file__).resolve().parents[2]
 QUALIFICATION_SECONDS = 24 * 60 * 60
+SHA256_PATTERN = re.compile(r"[0-9a-fA-F]{64}")
 SAMPLE_PATTERN = re.compile(
     r"P2_SAMPLE "
     r"boot=(?P<boot>[0-9a-fA-F]+) "
@@ -81,6 +82,17 @@ def _write_evidence(path: Path, evidence: dict[str, Any]) -> None:
 
 def _bounded_sleep_seconds(interval: float, remaining: float) -> float:
     return max(0.0, min(interval, remaining))
+
+
+def validate_expected_sha256(actual: str, expected: str | None) -> None:
+    if expected is None:
+        return
+    if SHA256_PATTERN.fullmatch(expected) is None:
+        raise RuntimeError("expected ELF SHA-256 is not a 64-digit hexadecimal value")
+    if actual != expected.lower():
+        raise RuntimeError(
+            f"ELF SHA-256 mismatch: expected {expected.lower()}, got {actual}"
+        )
 
 
 def parse_sample(output: str) -> dict[str, int]:
@@ -260,14 +272,21 @@ def collect(
         "minimum_stack_words": args.minimum_stack_words,
         "elf": str(elf.relative_to(ROOT) if elf.is_relative_to(ROOT) else elf),
         "elf_sha256": "",
+        "expected_elf_sha256": (
+            args.expected_elf_sha256.lower() if args.expected_elf_sha256 else ""
+        ),
         "samples": [],
     }
     server: subprocess.Popen[bytes] | None = None
+    started: float | None = None
 
     try:
         if not elf.is_file():
             raise RuntimeError(f"ELF does not exist: {elf}")
         evidence["elf_sha256"] = _sha256(elf)
+        validate_expected_sha256(
+            evidence["elf_sha256"], args.expected_elf_sha256
+        )
         server_command = [
             str(args.gdb_server),
             "-select",
@@ -329,9 +348,23 @@ def collect(
         _write_evidence(output, evidence)
         print(
             f"PASS collector qualification={evidence['qualification_status']} "
+            f"duration={evidence['actual_duration_seconds']} "
+            f"samples={len(evidence['samples'])} "
+            f"elf_sha256={evidence['elf_sha256']} "
             f"evidence={output}"
         )
         return 0
+    except KeyboardInterrupt:
+        evidence["status"] = "ABORTED"
+        evidence["completed_at"] = _now()
+        evidence["abort_reason"] = "operator_interrupt"
+        if started is not None:
+            evidence["actual_duration_seconds"] = round(
+                time.monotonic() - started, 3
+            )
+        _write_evidence(output, evidence)
+        print(f"ABORTED evidence={output}", file=sys.stderr)
+        return 130
     except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
         evidence["status"] = "FAIL"
         evidence["completed_at"] = _now()
@@ -366,6 +399,7 @@ def main() -> int:
         type=Path,
         default=ROOT / "docs/evidence/phase2/T-RTOS-003-current.json",
     )
+    parser.add_argument("--expected-elf-sha256")
     parser.add_argument("--duration-seconds", type=float, default=QUALIFICATION_SECONDS)
     parser.add_argument("--interval-seconds", type=float, default=60.0)
     parser.add_argument("--minimum-stack-words", type=int, default=128)
