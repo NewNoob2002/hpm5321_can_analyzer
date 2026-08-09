@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "freeze_status": "FROZEN",
+  "frozen_at": "2026-08-09T11:09:20Z",
+  "firmware_source_revision": "980a38c9196dfe5971ff3b624c235edb33625e6d",
+  "source_dirty_at_build": false,
+  "sdk_commit": "88b01b43900d8c30844a1e5cdd3f3b7aff6db40e",
+  "compiler": "riscv32-unknown-elf-gcc (gc891d8dc23e) 13.2.0",
+  "presets": [
+    {
+      "preset": "hpm5321-flash-debug",
+      "elf": "build/hpm5321-flash-debug/output/demo.elf",
+      "elf_size": 545508,
+      "elf_sha256": "c3feef5d36867d021e26a95548b4bd055150ca2e4be54cf907d847c8afee70d2",
+      "manifest": "docs/evidence/phase2/P2-final-hpm5321-flash-debug-build-manifest.json",
+      "manifest_sha256": "89684899a3d9aad3add59eaea05fbf0700a1b04dbd3441a379db4cd22f195cb6",
+      "clean_build_log": "docs/evidence/phase2/P2-final-hpm5321-flash-debug-clean-build.txt",
+      "clean_build_log_sha256": "f25eb86ff8e6c6f8dc53812d494a2773644813215269aa7b2233d7bc1d2c22aa"
+    },
+    {
+      "preset": "hpm5321-flash-release",
+      "elf": "build/hpm5321-flash-release/output/demo.elf",
+      "elf_size": 219004,
+      "elf_sha256": "b16c962e9a63248eced53a21ee9b3917022fd0fa0c97b4f40151e1e5c9220306",
+      "manifest": "docs/evidence/phase2/P2-final-hpm5321-flash-release-build-manifest.json",
+      "manifest_sha256": "f226cd6182194061fa8c4f746376b4e338aa017d0bb02f74ecdaf1524758f2bc",
+      "clean_build_log": "docs/evidence/phase2/P2-final-hpm5321-flash-release-clean-build.txt",
+      "clean_build_log_sha256": "66ab281c5afb79c45fe9052ec084f67b927ce611527e95a8c24d81eb5d6dcca3"
+    },
+    {
+      "preset": "hpm5321-ram-debug",
+      "elf": "build/hpm5321-ram-debug/output/demo.elf",
+      "elf_size": 535012,
+      "elf_sha256": "0b45e14303f07a886e2e4871a6d8a2efee7853aaa135a748e641ea7d25b0c9eb",
+      "manifest": "docs/evidence/phase2/P2-final-hpm5321-ram-debug-build-manifest.json",
+      "manifest_sha256": "be2cc22e0e7818e81f8c7ae0c99d5532ce948768e0a7b40c7638ecb1123e1185",
+      "clean_build_log": "docs/evidence/phase2/P2-final-hpm5321-ram-debug-clean-build.txt",
+      "clean_build_log_sha256": "90d4d30a89abedc19f7ca9b18534d92dba892220e20862aee91242828917e9df"
+    }
+  ],
+  "deployed_artifact": {
+    "preset": "hpm5321-flash-debug",
+    "elf_sha256": "c3feef5d36867d021e26a95548b4bd055150ca2e4be54cf907d847c8afee70d2",
+    "flash_result": "PASS",
+    "flash_verify": "contents_already_match",
+    "evidence": "docs/evidence/phase2/P2-final-flash-jlink-2026-08-09.txt",
+    "evidence_sha256": "38dfef84452a2e0f5e3127bf4a8f0000dbb4e8955d294f732590d5ec00c1ebad"
+  },
+  "qualification": {
+    "t_rtos_005": {
+      "status": "PASS",
+      "evidence": "docs/evidence/phase2/T-RTOS-005-2026-08-09.json",
+      "evidence_sha256": "49ec4f81c2609f12e17dc731eace27715f72d07c29e5852a23e58db1c8279b77"
+    },
+    "short_health": {
+      "status": "PASS",
+      "qualification_status": "PARTIAL",
+      "reason": "short preflight only; the 86400-second T-RTOS-003 run remains required",
+      "evidence": "docs/evidence/phase2/P2-final-short-health-2026-08-09.json",
+      "evidence_sha256": "68e4ded3e87a7ca94bd7a3f84972ea1be21ca9173ae5bec76463dace5089402b"
+    }
+  },
+  "runtime_boundary": {
+    "production_usb_owner_task_started": false,
+    "production_mcan_owner_task_started": false,
+    "mcan_pads_connected_by_test": false,
+    "post_freeze_allowed_changes": "evidence and closure documents only",
+    "invalidation_rule": "Any firmware, build configuration, SDK or toolchain change requires rebuild, reflash, short qualification and a new 86400-second run."
+  },
+  "remaining_gate": "T-RTOS-003 86400-second heartbeat qualification"
+}
