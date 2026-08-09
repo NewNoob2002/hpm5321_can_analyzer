@@ -201,6 +201,10 @@ class RtosAdvancedContractTests(unittest.TestCase):
         self.assertIn('--expected-elf-sha256 "${FROZEN_ELF_SHA256}"', runner)
         self.assertIn('DURATION_SECONDS="${1:-86400}"', runner)
         self.assertIn('--interval-seconds "${INTERVAL_SECONDS:-60}"', runner)
+        self.assertIn('GNURISCV_TOOLCHAIN_PATH', runner)
+        self.assertIn('command -v JLinkGDBServerCLExe', runner)
+        self.assertIn('--gdb "${GDB}"', runner)
+        self.assertIn('--gdb-server "${GDB_SERVER}"', runner)
 
     def test_timer_votes_and_health_independently_evaluates(self):
         source = (USER / "src/app_health.c").read_text()
