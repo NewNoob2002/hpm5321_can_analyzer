@@ -85,6 +85,18 @@ class UsbOwnerContractTests(unittest.TestCase):
             "app_watchdog_vote(APP_WATCHDOG_VOTER_USB_OWNER)", source
         )
 
+    def test_gdb_snapshot_covers_usb_runtime_contract(self):
+        snapshot = (
+            ROOT / "scripts/phase3/usb_owner_snapshot.gdb"
+        ).read_text()
+
+        self.assertIn("g_app_usb_owner_state.irq_priority", snapshot)
+        self.assertIn("g_app_usb_owner_state.queue_drops", snapshot)
+        self.assertIn("g_app_usb_owner_state.rx_bytes", snapshot)
+        self.assertIn("g_app_usb_owner_state.tx_bytes", snapshot)
+        self.assertIn("g_app_usb_owner_state.transfer_errors", snapshot)
+        self.assertIn("g_app_usb_owner_state.stack_high_watermark", snapshot)
+
 
 if __name__ == "__main__":
     unittest.main()
