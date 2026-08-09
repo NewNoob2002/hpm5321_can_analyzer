@@ -1,0 +1,598 @@
+{
+  "completed_at": "2026-08-09T03:01:24.958427+00:00",
+  "completed_cycles": 11,
+  "cycles": [
+    {
+      "cycle": 1,
+      "device_node": "/dev/bus/usb/007/005",
+      "device_node_readable": true,
+      "device_node_writable": true,
+      "disconnect_ms": 3348.303,
+      "disconnected_at": "2026-08-09T03:00:10.397884+00:00",
+      "reconnected_at": "2026-08-09T03:00:14.074127+00:00",
+      "recovery_smoke": {
+        "attempt_count": 1,
+        "attempts": [
+          {
+            "exit_code": 0,
+            "stderr": "",
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+          }
+        ],
+        "exit_code": 0,
+        "recovery_ms": 327.77,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+      },
+      "topology_path": "7-1.4"
+    },
+    {
+      "cycle": 2,
+      "device_node": "/dev/bus/usb/007/006",
+      "device_node_readable": true,
+      "device_node_writable": true,
+      "disconnect_ms": 304.182,
+      "disconnected_at": "2026-08-09T03:00:17.317559+00:00",
+      "reconnected_at": "2026-08-09T03:00:17.950486+00:00",
+      "recovery_smoke": {
+        "attempt_count": 1,
+        "attempts": [
+          {
+            "exit_code": 0,
+            "stderr": "",
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+          }
+        ],
+        "exit_code": 0,
+        "recovery_ms": 328.342,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+      },
+      "topology_path": "7-1.4"
+    },
+    {
+      "cycle": 3,
+      "device_node": "/dev/bus/usb/007/007",
+      "device_node_readable": true,
+      "device_node_writable": true,
+      "disconnect_ms": 303.473,
+      "disconnected_at": "2026-08-09T03:00:18.357193+00:00",
+      "reconnected_at": "2026-08-09T03:00:18.990179+00:00",
+      "recovery_smoke": {
+        "attempt_count": 1,
+        "attempts": [
+          {
+            "exit_code": 0,
+            "stderr": "",
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.326 throughput_MiB_s=3.066"
+          }
+        ],
+        "exit_code": 0,
+        "recovery_ms": 329.375,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.326 throughput_MiB_s=3.066"
+      },
+      "topology_path": "7-1.4"
+    },
+    {
+      "cycle": 4,
+      "device_node": "/dev/bus/usb/007/009",
+      "device_node_readable": true,
+      "device_node_writable": true,
+      "disconnect_ms": 3642.477,
+      "disconnected_at": "2026-08-09T03:00:19.091403+00:00",
+      "reconnected_at": "2026-08-09T03:00:23.062325+00:00",
+      "recovery_smoke": {
+        "attempt_count": 1,
+        "attempts": [
+          {
+            "exit_code": 0,
+            "stderr": "",
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.326 throughput_MiB_s=3.064"
+          }
+        ],
+        "exit_code": 0,
+        "recovery_ms": 328.246,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.326 throughput_MiB_s=3.064"
+      },
+      "topology_path": "7-1.4"
+    },
+    {
+      "cycle": 5,
+      "device_node": "/dev/bus/usb/007/012",
+      "device_node_readable": true,
+      "device_node_writable": true,
+      "disconnect_ms": 3748.641,
+      "disconnected_at": "2026-08-09T03:00:24.178751+00:00",
+      "reconnected_at": "2026-08-09T03:00:28.255641+00:00",
+      "recovery_smoke": {
+        "attempt_count": 1,
+        "attempts": [
+          {
+            "exit_code": 0,
+            "stderr": "",
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+          }
+        ],
+        "exit_code": 0,
+        "recovery_ms": 328.041,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+      },
+      "topology_path": "7-1.4"
+    },
+    {
+      "cycle": 6,
+      "device_node": "/dev/bus/usb/007/014",
+      "device_node_readable": true,
+      "device_node_writable": true,
+      "disconnect_ms": 4966.155,
+      "disconnected_at": "2026-08-09T03:00:32.109599+00:00",
+      "reconnected_at": "2026-08-09T03:00:37.404021+00:00",
+      "recovery_smoke": {
+        "attempt_count": 1,
+        "attempts": [
+          {
+            "exit_code": 0,
+            "stderr": "",
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.081"
+          }
+        ],
+        "exit_code": 0,
+        "recovery_ms": 327.967,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.081"
+      },
+      "topology_path": "7-1.4"
+    },
+    {
+      "cycle": 7,
+      "device_node": "/dev/bus/usb/007/015",
+      "device_node_readable": true,
+      "device_node_writable": true,
+      "disconnect_ms": 303.902,
+      "disconnected_at": "2026-08-09T03:00:38.216661+00:00",
+      "reconnected_at": "2026-08-09T03:00:38.847960+00:00",
+      "recovery_smoke": {
+        "attempt_count": 1,
+        "attempts": [
+          {
+            "exit_code": 0,
+            "stderr": "",
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.324 throughput_MiB_s=3.088"
+          }
+        ],
+        "exit_code": 0,
+        "recovery_ms": 327.198,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.324 throughput_MiB_s=3.088"
+      },
+      "topology_path": "7-1.4"
+    },
+    {
+      "cycle": 8,
+      "device_node": "/dev/bus/usb/007/018",
+      "device_node_readable": true,
+      "device_node_writable": true,
+      "disconnect_ms": 4263.615,
+      "disconnected_at": "2026-08-09T03:00:39.964419+00:00",
+      "reconnected_at": "2026-08-09T03:00:45.073906+00:00",
+      "recovery_smoke": {
+        "attempt_count": 6,
+        "attempts": [
+          {
+            "exit_code": 2,
+            "stderr": "FAIL bulk OUT after 0 bytes: Input/Output Error",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL bulk OUT after 0 bytes: Input/Output Error",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 0,
+            "stderr": "",
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+          }
+        ],
+        "exit_code": 0,
+        "recovery_ms": 845.594,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+      },
+      "topology_path": "7-1.4"
+    },
+    {
+      "cycle": 9,
+      "device_node": "/dev/bus/usb/007/024",
+      "device_node_readable": true,
+      "device_node_writable": true,
+      "disconnect_ms": 8209.426,
+      "disconnected_at": "2026-08-09T03:00:45.480884+00:00",
+      "reconnected_at": "2026-08-09T03:00:54.018536+00:00",
+      "recovery_smoke": {
+        "attempt_count": 1,
+        "attempts": [
+          {
+            "exit_code": 0,
+            "stderr": "",
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.073"
+          }
+        ],
+        "exit_code": 0,
+        "recovery_ms": 327.982,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.073"
+      },
+      "topology_path": "7-1.4"
+    },
+    {
+      "cycle": 10,
+      "device_node": "/dev/bus/usb/007/026",
+      "device_node_readable": true,
+      "device_node_writable": true,
+      "disconnect_ms": 3952.173,
+      "disconnected_at": "2026-08-09T03:01:10.657153+00:00",
+      "reconnected_at": "2026-08-09T03:01:14.936633+00:00",
+      "recovery_smoke": {
+        "attempt_count": 1,
+        "attempts": [
+          {
+            "exit_code": 0,
+            "stderr": "",
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.324 throughput_MiB_s=3.083"
+          }
+        ],
+        "exit_code": 0,
+        "recovery_ms": 327.082,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.324 throughput_MiB_s=3.083"
+      },
+      "topology_path": "7-1.4"
+    },
+    {
+      "cycle": 11,
+      "device_node": "/dev/bus/usb/007/028",
+      "device_node_readable": true,
+      "device_node_writable": true,
+      "disconnect_ms": 303.926,
+      "disconnected_at": "2026-08-09T03:01:17.066787+00:00",
+      "reconnected_at": "2026-08-09T03:01:17.699351+00:00",
+      "recovery_smoke": {
+        "attempt_count": 1,
+        "attempts": [
+          {
+            "exit_code": 0,
+            "stderr": "",
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.074"
+          }
+        ],
+        "exit_code": 0,
+        "recovery_ms": 328.375,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.074"
+      },
+      "topology_path": "7-1.4"
+    },
+    {
+      "cycle": 12,
+      "device_node": null,
+      "device_node_readable": false,
+      "device_node_writable": false,
+      "disconnect_ms": 810.05,
+      "disconnected_at": "2026-08-09T03:01:19.116580+00:00",
+      "reconnected_at": "2026-08-09T03:01:24.958409+00:00",
+      "recovery_smoke": {
+        "attempt_count": 50,
+        "attempts": [
+          {
+            "exit_code": 2,
+            "stderr": "FAIL bulk OUT after 0 bytes: Input/Output Error",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL bulk OUT after 0 bytes: Input/Output Error",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          }
+        ],
+        "exit_code": 2,
+        "recovery_ms": 5031.721,
+        "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+        "stdout": ""
+      },
+      "topology_path": "7-1.4"
+    }
+  ],
+  "device_node": "/dev/bus/usb/007/004",
+  "device_node_readable": true,
+  "device_node_writable": true,
+  "disconnect_method": "physical-cable",
+  "failure": "cycle 12 recovery smoke failed",
+  "initial_smoke": {
+    "attempt_count": 1,
+    "attempts": [
+      {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.320 throughput_MiB_s=3.126"
+      }
+    ],
+    "exit_code": 0,
+    "recovery_ms": 322.203,
+    "stderr": "",
+    "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.320 throughput_MiB_s=3.126"
+  },
+  "minimum_disconnect_ms": 250,
+  "operator": "gtc",
+  "pid": "1236",
+  "recovery_timeout_seconds": 5.0,
+  "required_cycles": 100,
+  "schema_version": 1,
+  "smoke_bytes": 1048576,
+  "smoke_executable": "host/target/release/hpm-usb-smoke",
+  "smoke_retry_ms": 100,
+  "smoke_sha256": "e11427c2804ebe1442c2973469d875b0c2242289d71d0cc56bf7ff748a2c8c47",
+  "started_at": "2026-08-09T02:59:02.329810+00:00",
+  "status": "FAIL",
+  "test_id": "T-USB-007",
+  "topology_path": "7-1.4",
+  "vid": "34b7"
+}

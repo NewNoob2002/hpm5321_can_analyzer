@@ -86,6 +86,29 @@ def _run_smoke(executable: Path, byte_count: int) -> dict[str, Any]:
     }
 
 
+def _run_smoke_with_retry(
+    executable: Path,
+    byte_count: int,
+    timeout_seconds: float,
+    retry_ms: int,
+) -> dict[str, Any]:
+    started = time.monotonic()
+    deadline = started + timeout_seconds
+    attempts: list[dict[str, Any]] = []
+    while True:
+        smoke = _run_smoke(executable, byte_count)
+        attempts.append(smoke)
+        now = time.monotonic()
+        if smoke["exit_code"] == 0 or now >= deadline:
+            return {
+                **smoke,
+                "attempt_count": len(attempts),
+                "attempts": attempts,
+                "recovery_ms": round((now - started) * 1000.0, 3),
+            }
+        time.sleep(retry_ms / 1000.0)
+
+
 def collect(args: argparse.Namespace) -> int:
     root = args.root.resolve()
     executable = args.smoke_executable
@@ -109,6 +132,8 @@ def collect(args: argparse.Namespace) -> int:
         "required_cycles": args.cycles,
         "completed_cycles": 0,
         "minimum_disconnect_ms": args.minimum_disconnect_ms,
+        "recovery_timeout_seconds": args.recovery_timeout_seconds,
+        "smoke_retry_ms": args.smoke_retry_ms,
         "smoke_bytes": args.smoke_bytes,
         "smoke_executable": _display_path(executable, root),
         "smoke_sha256": "",
@@ -152,7 +177,12 @@ def collect(args: argparse.Namespace) -> int:
                     f"USB device node is not readable/writable: {device_node}; "
                     "install config/udev/99-hpm5321-can-analyzer.rules and reconnect"
                 )
-        evidence["initial_smoke"] = _run_smoke(executable, args.smoke_bytes)
+        evidence["initial_smoke"] = _run_smoke_with_retry(
+            executable,
+            args.smoke_bytes,
+            args.recovery_timeout_seconds,
+            args.smoke_retry_ms,
+        )
         if evidence["initial_smoke"]["exit_code"] != 0:
             raise RuntimeError("initial recovery smoke failed")
         _write_evidence(output, evidence)
@@ -178,13 +208,32 @@ def collect(args: argparse.Namespace) -> int:
                     raise RuntimeError(
                         f"cycle {cycle_number} disconnect was only {absent_ms:.1f} ms"
                     )
-                smoke = _run_smoke(executable, args.smoke_bytes)
+                reconnected_at = _now()
+                smoke = _run_smoke_with_retry(
+                    executable,
+                    args.smoke_bytes,
+                    args.recovery_timeout_seconds,
+                    args.smoke_retry_ms,
+                )
+                ready_devices = find_usb_devices(args.sysfs_root, args.vid, args.pid)
+                ready_device = ready_devices[0] if len(ready_devices) == 1 else None
+                device_node = usb_device_node(ready_device) if ready_device else None
                 cycle = {
                     "cycle": cycle_number,
                     "disconnected_at": disconnected_wall,
-                    "reconnected_at": _now(),
+                    "reconnected_at": reconnected_at,
+                    "recovery_completed_at": _now(),
                     "disconnect_ms": round(absent_ms, 3),
-                    "topology_path": devices[0].name,
+                    "topology_path": (
+                        ready_device.name if ready_device else devices[0].name
+                    ),
+                    "device_node": str(device_node) if device_node else None,
+                    "device_node_readable": bool(
+                        device_node and os.access(device_node, os.R_OK)
+                    ),
+                    "device_node_writable": bool(
+                        device_node and os.access(device_node, os.W_OK)
+                    ),
                     "recovery_smoke": smoke,
                 }
                 evidence["cycles"].append(cycle)
@@ -225,6 +274,8 @@ def main() -> int:
     parser.add_argument("--poll-ms", type=int, default=100)
     parser.add_argument("--minimum-disconnect-ms", type=int, default=250)
     parser.add_argument("--overall-timeout-seconds", type=int, default=3600)
+    parser.add_argument("--recovery-timeout-seconds", type=float, default=15.0)
+    parser.add_argument("--smoke-retry-ms", type=int, default=100)
     parser.add_argument("--smoke-bytes", type=int, default=1_048_576)
     parser.add_argument(
         "--smoke-executable",
@@ -243,6 +294,8 @@ def main() -> int:
         "poll_ms",
         "minimum_disconnect_ms",
         "overall_timeout_seconds",
+        "recovery_timeout_seconds",
+        "smoke_retry_ms",
         "smoke_bytes",
     ):
         if getattr(args, name) <= 0:

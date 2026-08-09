@@ -26,9 +26,13 @@ unused MCAN1 peripheral.
 | CAN2 RX LED | PA09 | Product CAN2/MCAN2 accepted RX activity |
 | STATUS LED | PA31 | Health/status indication |
 
-The existing active-low CS and LED constants are software assumptions. Phase
-0 must prove schematic polarity, drive topology, resistor, reset state, PY00
-pull/polarity and target voltage behavior before those become hardware claims.
+The active-low CS constant remains a software assumption. All five LED
+active-low levels and PY00 inserted-low/empty-high behavior have target/operator
+confirmation. The BSP now explicitly configures a 100 kOhm PY00 internal
+pull-up and Schmitt input, with a target empty-slot `NMED` result. Phase 0 must
+still prove schematic drive topology, resistor, reset state, the external
+detect network/debounce and target voltage/routing behavior before the
+corresponding LED gates or P0S close.
 
 ## Stack Decision
 

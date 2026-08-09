@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "status": "PARTIAL",
+  "date": "2026-08-09",
+  "scope": "PY00 card-present level and polarity",
+  "target": "HPM5321xCFx",
+  "probe": {
+    "type": "SEGGER J-Link",
+    "serial": "607000454",
+    "interface": "JTAG",
+    "speed_khz": 4000,
+    "vtref_v": 3.303
+  },
+  "register": {
+    "address": "0xF00D00E0",
+    "bit": 0,
+    "jlink_command": "mem32 0xF00D00E0,1"
+  },
+  "observations": [
+    {
+      "physical_state": "card inserted",
+      "register_value": "0x0000000E",
+      "py00_level": 0
+    },
+    {
+      "physical_state": "operator-confirmed empty slot",
+      "register_value": "0x0000000F",
+      "py00_level": 1
+    },
+    {
+      "physical_state": "operator-confirmed empty slot after board initialization",
+      "register_value": "0x0000000F",
+      "py00_level": 1,
+      "ioc_pad_ctl": "0x01060000",
+      "pioc_pad_ctl": "0x01060000",
+      "configured_pull": "internal pull-up 100 kOhm with Schmitt trigger",
+      "probe_magic": "0x4E4D4544",
+      "probe_result": "PASS_NMED"
+    }
+  ],
+  "polarity_result": "PASS_ACTIVE_LOW",
+  "remaining": [
+    "schematic/BOM external pull network",
+    "measured insertion/removal contact-bounce trace",
+    "frozen debounce interval"
+  ]
+}

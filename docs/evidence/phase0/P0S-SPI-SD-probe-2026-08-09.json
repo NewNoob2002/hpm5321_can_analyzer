@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "status": "PARTIAL",
+  "date": "2026-08-09",
+  "target": "HPM5321xCFx",
+  "probe": {
+    "type": "SEGGER J-Link",
+    "serial": "607000454",
+    "interface": "JTAG",
+    "speed_khz": 4000,
+    "vtref_v": 3.309
+  },
+  "firmware": {
+    "elf": "build/phase0-spi-sd-probe/output/demo.elf",
+    "sha256": "9b86828897bee0f39a741ac28564c601ca0db068d37805885755f7ac83cecb85",
+    "result_address": "0x000805E8",
+    "result_words": 23,
+    "diagnostics_address": "0x000805C8",
+    "diagnostics_words": 8,
+    "read_only": true,
+    "spi_mode": 0,
+    "spi_init_hz": 400000,
+    "spi_data_max_hz": 20000000
+  },
+  "pre_fix_diagnostic": {
+    "elf_sha256": "4edac6914777523980026cd856efa0cf70e4354f005caaa1742abb8fbdecf6be",
+    "physical_state": "operator-confirmed empty slot",
+    "magic": "0x50305344",
+    "magic_text": "P0SD/RUNNING",
+    "card_present": 1,
+    "py00_input_register": "0x0000000E",
+    "pioc_py00_pad_ctl": "0x01030026",
+    "diagnosis": "PIOC reset/default pull-down caused a false present level"
+  },
+  "empty_slot": {
+    "physical_state": "operator-confirmed empty slot",
+    "magic": "0x4E4D4544",
+    "magic_text": "NMED",
+    "card_present": 0,
+    "py00_input_register": "0x0000000F",
+    "ioc_py00_pad_ctl": "0x01060000",
+    "pioc_py00_pad_ctl": "0x01060000",
+    "configured_pull": "internal pull-up 100 kOhm with Schmitt trigger",
+    "spi_initialization_attempted": false,
+    "result": "PASS"
+  },
+  "sdk_cmd8_diagnostic": {
+    "sdk_version": "HPM SDK 1.12.1",
+    "upstream_crc_argument": "0x86",
+    "required_wire_crc": "0x87",
+    "pre_fix_last_command": "0x48/CMD8",
+    "pre_fix_last_argument": "0x000001AA",
+    "pre_fix_r1_response": "0x0B",
+    "pre_fix_interpretation": "idle + illegal-command + CRC-error bits",
+    "probe_local_fix": "correct only the local CMD8 transmit copy from 0x86 to 0x87",
+    "post_fix_result": "PASS"
+  },
+  "media_runs": [
+    {
+      "operator_label_vendor": "aigo (爱国者)",
+      "marketed_capacity_gb": 16,
+      "test_mode": "read-only",
+      "magic": "0x50415353",
+      "magic_text": "PASS",
+      "card_present": 1,
+      "init_status": 0,
+      "info_status": 0,
+      "sector0_read_status": 0,
+      "fatfs_mount_result": 0,
+      "fatfs_type": 3,
+      "filesystem": "FAT32",
+      "card_type": 4,
+      "card_type_text": "SD v2 high capacity (SDHC)",
+      "logical_sector_bytes": 512,
+      "logical_sector_count": 30535680,
+      "capacity_bytes": 15634268160,
+      "capacity_gb_decimal": 15.63426816,
+      "capacity_gib_binary": 14.560546875,
+      "cid_words": [
+        "0x7C0185EA",
+        "0x20000000",
+        "0x53440000",
+        "0xFE343200"
+      ],
+      "csd_device_size": 29819,
+      "csd_erase_sector_size": 127,
+      "sector0_fnv1a32": "0x4B28F86D",
+      "sector0_signature": "0xAA55",
+      "spi_init_hz": 400000,
+      "spi_data_hz": 20000000,
+      "bus_diagnostics": {
+        "command_count": 23,
+        "last_command": "0x4C",
+        "last_argument": "0x00000000",
+        "byte_exchange_count": 341,
+        "last_tx": "0xFF",
+        "last_rx": "0xFF",
+        "non_ff_rx_count": 75,
+        "last_non_ff_rx": "0x70"
+      },
+      "raw_result_words": [
+        "0x50415353", "0x00000001", "0x00000001", "0x00000000",
+        "0x00000000", "0x00000000", "0x00000000", "0x00000003",
+        "0x00000004", "0x00000200", "0x01D1F000", "0xA3E00000",
+        "0x00000003", "0x7C0185EA", "0x20000000", "0x53440000",
+        "0xFE343200", "0x0000747B", "0x0000007F", "0x4B28F86D",
+        "0x0000AA55", "0x00061A80", "0x01312D00"
+      ],
+      "firmware_sha256": "9b86828897bee0f39a741ac28564c601ca0db068d37805885755f7ac83cecb85",
+      "result": "PASS"
+    }
+  ],
+  "remaining": [
+    "read-only CID/CSD/geometry/sector-0/FAT32 runs for the remaining media cards",
+    "a second vendor at 16 GB and two vendors at each of 4/8/32 GB",
+    "schematic/BOM external detect and CS network",
+    "measured insertion/removal contact bounce and frozen debounce interval"
+  ]
+}

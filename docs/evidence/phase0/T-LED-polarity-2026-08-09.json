@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "status": "PARTIAL",
+  "date": "2026-08-09",
+  "evidence_source": "operator hardware confirmation",
+  "results": [
+    {"test_id": "T-LED-001", "signal": "STATUS LED", "pin": "PA31", "active_level": 0, "polarity": "PASS"},
+    {"test_id": "T-LED-001", "signal": "CAN1 TX LED", "pin": "PY01", "active_level": 0, "polarity": "PASS"},
+    {"test_id": "T-LED-001", "signal": "CAN1 RX LED", "pin": "PY02", "active_level": 0, "polarity": "PASS"},
+    {"test_id": "T-LED-004", "signal": "CAN2 TX LED", "pin": "PY03", "active_level": 0, "polarity": "PASS"},
+    {"test_id": "T-LED-004", "signal": "CAN2 RX LED", "pin": "PA09", "active_level": 0, "polarity": "PASS"}
+  ],
+  "remaining": [
+    "schematic drive topology and resistor values",
+    "reset/default-off voltage evidence",
+    "one-by-one pin routing observation",
+    "health-task and CAN completion/acceptance semantics"
+  ]
+}
