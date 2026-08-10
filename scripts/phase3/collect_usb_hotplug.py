@@ -14,8 +14,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 DEFAULT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_MANIFEST = DEFAULT_ROOT / "build/hpm5321-flash-release/build-manifest.json"
+sys.path.insert(0, str(DEFAULT_ROOT))
+
+from scripts.phase3.firmware_provenance import (  # noqa: E402
+    verified_firmware_manifest,
+)
 
 
 def _read_text(path: Path) -> str:
@@ -36,13 +41,15 @@ def find_usb_devices(sysfs_root: Path, vid: str, pid: str) -> list[Path]:
     return sorted(matches)
 
 
-def usb_device_node(device: Path) -> Path | None:
+def usb_device_node(
+    device: Path, devfs_root: Path = Path("/dev/bus/usb")
+) -> Path | None:
     try:
         bus = int(_read_text(device / "busnum"))
         number = int(_read_text(device / "devnum"))
     except ValueError:
         return None
-    return Path("/dev/bus/usb") / f"{bus:03d}" / f"{number:03d}"
+    return devfs_root / f"{bus:03d}" / f"{number:03d}"
 
 
 def _sha256(path: Path) -> str:
@@ -51,6 +58,13 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _git_value(root: Path, *args: str) -> str:
+    result = subprocess.run(
+        ["git", *args], cwd=root, capture_output=True, text=True, check=False
+    )
+    return result.stdout.strip() if result.returncode == 0 else ""
 
 
 def _display_path(path: Path, root: Path) -> str:
@@ -119,10 +133,20 @@ def collect(args: argparse.Namespace) -> int:
     if not output.is_absolute():
         output = root / output
     output = output.resolve()
+    manifest_path = args.firmware_manifest
+    if not manifest_path.is_absolute():
+        manifest_path = root / manifest_path
+    manifest_path = manifest_path.resolve()
 
     evidence: dict[str, Any] = {
         "schema_version": 1,
         "test_id": "T-USB-007",
+        "evidence_boundary": {
+            "verdict": "PENDING",
+            "covered": "100 physical disconnect/reconnect cycles, udev node access, and an exact 1 MiB recovery echo after every cycle",
+            "not_covered": "Windows PnP, FS fallback, endpoint HALT, protocol/session, or CAN data-plane behavior",
+        },
+        "status_semantics": "PASS qualifies T-USB-007 for the recorded physical-cable cycles and recovery echo only",
         "status": "RUNNING",
         "started_at": _now(),
         "operator": args.operator,
@@ -145,6 +169,13 @@ def collect(args: argparse.Namespace) -> int:
         if not executable.is_file() or not os.access(executable, os.X_OK):
             raise RuntimeError(f"smoke executable is missing or not executable: {executable}")
         evidence["smoke_sha256"] = _sha256(executable)
+        evidence["repository"] = {
+            "head": _git_value(root, "rev-parse", "HEAD"),
+            "dirty": bool(_git_value(root, "status", "--short")),
+        }
+        evidence["firmware_manifest"] = verified_firmware_manifest(
+            manifest_path, root
+        )
 
         deadline = time.monotonic() + args.overall_timeout_seconds
         print(
@@ -164,19 +195,21 @@ def collect(args: argparse.Namespace) -> int:
             raise RuntimeError("timed out waiting for the initial USB connection")
 
         evidence["topology_path"] = devices[0].name
-        device_node = usb_device_node(devices[0])
-        if device_node is not None:
-            evidence["device_node"] = str(device_node)
-            evidence["device_node_readable"] = os.access(device_node, os.R_OK)
-            evidence["device_node_writable"] = os.access(device_node, os.W_OK)
-            if not (
-                evidence["device_node_readable"]
-                and evidence["device_node_writable"]
-            ):
-                raise RuntimeError(
-                    f"USB device node is not readable/writable: {device_node}; "
-                    "install config/udev/99-hpm5321-can-analyzer.rules and reconnect"
-                )
+        device_node = usb_device_node(devices[0], args.devfs_root)
+        evidence["device_node"] = str(device_node) if device_node else None
+        evidence["device_node_readable"] = bool(
+            device_node and os.access(device_node, os.R_OK)
+        )
+        evidence["device_node_writable"] = bool(
+            device_node and os.access(device_node, os.W_OK)
+        )
+        if not (
+            evidence["device_node_readable"] and evidence["device_node_writable"]
+        ):
+            raise RuntimeError(
+                f"USB device node is not readable/writable: {device_node}; "
+                "install config/udev/99-hpm5321-can-analyzer.rules and reconnect"
+            )
         evidence["initial_smoke"] = _run_smoke_with_retry(
             executable,
             args.smoke_bytes,
@@ -217,7 +250,11 @@ def collect(args: argparse.Namespace) -> int:
                 )
                 ready_devices = find_usb_devices(args.sysfs_root, args.vid, args.pid)
                 ready_device = ready_devices[0] if len(ready_devices) == 1 else None
-                device_node = usb_device_node(ready_device) if ready_device else None
+                device_node = (
+                    usb_device_node(ready_device, args.devfs_root)
+                    if ready_device
+                    else None
+                )
                 cycle = {
                     "cycle": cycle_number,
                     "disconnected_at": disconnected_wall,
@@ -237,6 +274,14 @@ def collect(args: argparse.Namespace) -> int:
                     "recovery_smoke": smoke,
                 }
                 evidence["cycles"].append(cycle)
+                if not (
+                    cycle["device_node_readable"]
+                    and cycle["device_node_writable"]
+                ):
+                    raise RuntimeError(
+                        f"cycle {cycle_number} USB device node is not readable/writable: "
+                        f"{device_node}"
+                    )
                 if smoke["exit_code"] != 0:
                     raise RuntimeError(f"cycle {cycle_number} recovery smoke failed")
                 evidence["completed_cycles"] = cycle_number
@@ -251,12 +296,14 @@ def collect(args: argparse.Namespace) -> int:
         if cycle_number <= args.cycles:
             raise RuntimeError("overall timeout expired before all cycles completed")
         evidence["status"] = "PASS"
+        evidence["evidence_boundary"]["verdict"] = "PASS"
         evidence["completed_at"] = _now()
         _write_evidence(output, evidence)
         print(f"PASS T-USB-007 evidence={output}")
         return 0
     except (OSError, RuntimeError) as exc:
         evidence["status"] = "FAIL"
+        evidence["evidence_boundary"]["verdict"] = "NOT_QUALIFIED"
         evidence["completed_at"] = _now()
         evidence["failure"] = str(exc)
         _write_evidence(output, evidence)
@@ -268,6 +315,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
     parser.add_argument("--sysfs-root", type=Path, default=Path("/sys/bus/usb/devices"))
+    parser.add_argument("--devfs-root", type=Path, default=Path("/dev/bus/usb"))
     parser.add_argument("--vid", default="34b7")
     parser.add_argument("--pid", default="1236")
     parser.add_argument("--cycles", type=int, default=100)
@@ -282,6 +330,7 @@ def main() -> int:
         type=Path,
         default=Path("host/target/release/hpm-usb-smoke"),
     )
+    parser.add_argument("--firmware-manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument(
         "--output",
         type=Path,

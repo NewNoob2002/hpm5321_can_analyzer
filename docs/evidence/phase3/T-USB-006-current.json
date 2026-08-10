@@ -1,0 +1,473 @@
+{
+  "at": "2026-08-09T15:17:36.910285+00:00",
+  "byte_threshold_met": true,
+  "chunk_bytes": 2048,
+  "completed_at": "2026-08-09T15:18:36.902795+00:00",
+  "content_errors": 0,
+  "device": {
+    "busnum": "7",
+    "devnum": "16",
+    "manufacturer": "HPMicro",
+    "product": "HPM5321 USB-CAN Analyzer",
+    "serial": "HPM5321-P3A-001",
+    "speed_mbps": "480",
+    "topology_path": "7-1.4"
+  },
+  "duration_threshold_met": true,
+  "elapsed_seconds": 3600.0,
+  "firmware_manifest": {
+    "bin_sha256": "f6f8b97aed7f0173c010f506ef7e1eedd01801a270d2b50246cc8edaec3059eb",
+    "elf_sha256": "7db3d88a276612270a3dbfec3c00e50e2b3c6c573e7327d5559859a9215f5116",
+    "path": "build/hpm5321-flash-release/build-manifest.json",
+    "preset": "hpm5321-flash-release",
+    "source_dirty": false,
+    "source_revision": "e1fa77f80de5917054844f2539483172685238fb",
+    "sha256": "41048c12cf22b8805fe8f5c17c0fe08d28662ceeb0822fa694c7735eb1de0438",
+    "sdk_commit": "88b01b43900d8c30844a1e5cdd3f3b7aff6db40e",
+    "compiler": "riscv32-unknown-elf-gcc (gc891d8dc23e) 13.2.0",
+    "association_method": "operator-selected host build manifest",
+    "device_attested": false,
+    "boundary": "the raw echo firmware does not expose an on-device build identifier"
+  },
+  "host": {
+    "platform": "Linux-7.1.7-200.fc44.x86_64-x86_64-with-glibc2.43",
+    "python": "3.14.6"
+  },
+  "payload_sha256": "818623aa531f93af33879f2827a53d337eee262c24bfe9933720aa0e72ee54ce",
+  "progress": [
+    {
+      "at": "2026-08-09T14:19:36.902482+00:00",
+      "elapsed_seconds": 60.0,
+      "throughput_mib_s": 6.384,
+      "verified_bytes": 401670144,
+      "verified_transfers": 196128
+    },
+    {
+      "at": "2026-08-09T14:20:36.902669+00:00",
+      "elapsed_seconds": 120.0,
+      "throughput_mib_s": 6.368,
+      "verified_bytes": 801261568,
+      "verified_transfers": 391241
+    },
+    {
+      "at": "2026-08-09T14:21:36.902963+00:00",
+      "elapsed_seconds": 180.0,
+      "throughput_mib_s": 6.376,
+      "verified_bytes": 1203384320,
+      "verified_transfers": 587590
+    },
+    {
+      "at": "2026-08-09T14:22:36.903222+00:00",
+      "elapsed_seconds": 240.001,
+      "throughput_mib_s": 6.378,
+      "verified_bytes": 1605163008,
+      "verified_transfers": 783771
+    },
+    {
+      "at": "2026-08-09T14:23:36.903349+00:00",
+      "elapsed_seconds": 300.001,
+      "throughput_mib_s": 6.386,
+      "verified_bytes": 2008911872,
+      "verified_transfers": 980914
+    },
+    {
+      "at": "2026-08-09T14:24:36.903638+00:00",
+      "elapsed_seconds": 360.001,
+      "throughput_mib_s": 6.39,
+      "verified_bytes": 2412324864,
+      "verified_transfers": 1177893
+    },
+    {
+      "at": "2026-08-09T14:25:36.903637+00:00",
+      "elapsed_seconds": 420.001,
+      "throughput_mib_s": 6.397,
+      "verified_bytes": 2817224704,
+      "verified_transfers": 1375598
+    },
+    {
+      "at": "2026-08-09T14:26:36.903657+00:00",
+      "elapsed_seconds": 480.001,
+      "throughput_mib_s": 6.391,
+      "verified_bytes": 3216668672,
+      "verified_transfers": 1570639
+    },
+    {
+      "at": "2026-08-09T14:27:36.903683+00:00",
+      "elapsed_seconds": 540.001,
+      "throughput_mib_s": 6.392,
+      "verified_bytes": 3619373056,
+      "verified_transfers": 1767272
+    },
+    {
+      "at": "2026-08-09T14:28:36.903742+00:00",
+      "elapsed_seconds": 600.001,
+      "throughput_mib_s": 6.393,
+      "verified_bytes": 4022233088,
+      "verified_transfers": 1963981
+    },
+    {
+      "at": "2026-08-09T14:29:36.903840+00:00",
+      "elapsed_seconds": 660.001,
+      "throughput_mib_s": 6.399,
+      "verified_bytes": 4428390400,
+      "verified_transfers": 2162300
+    },
+    {
+      "at": "2026-08-09T14:30:36.903989+00:00",
+      "elapsed_seconds": 720.002,
+      "throughput_mib_s": 6.401,
+      "verified_bytes": 4832868352,
+      "verified_transfers": 2359799
+    },
+    {
+      "at": "2026-08-09T14:31:36.904094+00:00",
+      "elapsed_seconds": 780.002,
+      "throughput_mib_s": 6.403,
+      "verified_bytes": 5237053440,
+      "verified_transfers": 2557155
+    },
+    {
+      "at": "2026-08-09T14:32:36.904270+00:00",
+      "elapsed_seconds": 840.002,
+      "throughput_mib_s": 6.403,
+      "verified_bytes": 5639524352,
+      "verified_transfers": 2753674
+    },
+    {
+      "at": "2026-08-09T14:33:36.904535+00:00",
+      "elapsed_seconds": 900.002,
+      "throughput_mib_s": 6.405,
+      "verified_bytes": 6044616704,
+      "verified_transfers": 2951473
+    },
+    {
+      "at": "2026-08-09T14:34:36.904646+00:00",
+      "elapsed_seconds": 960.002,
+      "throughput_mib_s": 6.404,
+      "verified_bytes": 6446393344,
+      "verified_transfers": 3147653
+    },
+    {
+      "at": "2026-08-09T14:35:36.904903+00:00",
+      "elapsed_seconds": 1020.002,
+      "throughput_mib_s": 6.4,
+      "verified_bytes": 6845425664,
+      "verified_transfers": 3342493
+    },
+    {
+      "at": "2026-08-09T14:36:36.904897+00:00",
+      "elapsed_seconds": 1080.002,
+      "throughput_mib_s": 6.399,
+      "verified_bytes": 7246647296,
+      "verified_transfers": 3538402
+    },
+    {
+      "at": "2026-08-09T14:37:36.905116+00:00",
+      "elapsed_seconds": 1140.003,
+      "throughput_mib_s": 6.398,
+      "verified_bytes": 7647496192,
+      "verified_transfers": 3734129
+    },
+    {
+      "at": "2026-08-09T14:38:36.905135+00:00",
+      "elapsed_seconds": 1200.003,
+      "throughput_mib_s": 6.399,
+      "verified_bytes": 8052125696,
+      "verified_transfers": 3931702
+    },
+    {
+      "at": "2026-08-09T14:39:36.905228+00:00",
+      "elapsed_seconds": 1260.003,
+      "throughput_mib_s": 6.402,
+      "verified_bytes": 8458373120,
+      "verified_transfers": 4130065
+    },
+    {
+      "at": "2026-08-09T14:40:36.905369+00:00",
+      "elapsed_seconds": 1320.003,
+      "throughput_mib_s": 6.403,
+      "verified_bytes": 8862310400,
+      "verified_transfers": 4327300
+    },
+    {
+      "at": "2026-08-09T14:41:36.905375+00:00",
+      "elapsed_seconds": 1380.003,
+      "throughput_mib_s": 6.404,
+      "verified_bytes": 9267419136,
+      "verified_transfers": 4525107
+    },
+    {
+      "at": "2026-08-09T14:42:36.905398+00:00",
+      "elapsed_seconds": 1440.003,
+      "throughput_mib_s": 6.405,
+      "verified_bytes": 9671614464,
+      "verified_transfers": 4722468
+    },
+    {
+      "at": "2026-08-09T14:43:36.905472+00:00",
+      "elapsed_seconds": 1500.003,
+      "throughput_mib_s": 6.407,
+      "verified_bytes": 10077122560,
+      "verified_transfers": 4920470
+    },
+    {
+      "at": "2026-08-09T14:44:36.905560+00:00",
+      "elapsed_seconds": 1560.003,
+      "throughput_mib_s": 6.406,
+      "verified_bytes": 10479200256,
+      "verified_transfers": 5116797
+    },
+    {
+      "at": "2026-08-09T14:45:36.905748+00:00",
+      "elapsed_seconds": 1620.003,
+      "throughput_mib_s": 6.405,
+      "verified_bytes": 10879987712,
+      "verified_transfers": 5312494
+    },
+    {
+      "at": "2026-08-09T14:46:36.906166+00:00",
+      "elapsed_seconds": 1680.004,
+      "throughput_mib_s": 6.404,
+      "verified_bytes": 11281573888,
+      "verified_transfers": 5508581
+    },
+    {
+      "at": "2026-08-09T14:47:36.906324+00:00",
+      "elapsed_seconds": 1740.004,
+      "throughput_mib_s": 6.404,
+      "verified_bytes": 11685144576,
+      "verified_transfers": 5705637
+    },
+    {
+      "at": "2026-08-09T14:48:36.906450+00:00",
+      "elapsed_seconds": 1800.004,
+      "throughput_mib_s": 6.404,
+      "verified_bytes": 12087998464,
+      "verified_transfers": 5902343
+    },
+    {
+      "at": "2026-08-09T14:49:36.906527+00:00",
+      "elapsed_seconds": 1860.004,
+      "throughput_mib_s": 6.403,
+      "verified_bytes": 12488890368,
+      "verified_transfers": 6098091
+    },
+    {
+      "at": "2026-08-09T14:50:36.906792+00:00",
+      "elapsed_seconds": 1920.004,
+      "throughput_mib_s": 6.402,
+      "verified_bytes": 12889333760,
+      "verified_transfers": 6293620
+    },
+    {
+      "at": "2026-08-09T14:51:36.906908+00:00",
+      "elapsed_seconds": 1980.004,
+      "throughput_mib_s": 6.401,
+      "verified_bytes": 13290301440,
+      "verified_transfers": 6489405
+    },
+    {
+      "at": "2026-08-09T14:52:36.907069+00:00",
+      "elapsed_seconds": 2040.005,
+      "throughput_mib_s": 6.401,
+      "verified_bytes": 13692536832,
+      "verified_transfers": 6685809
+    },
+    {
+      "at": "2026-08-09T14:53:36.907320+00:00",
+      "elapsed_seconds": 2100.005,
+      "throughput_mib_s": 6.402,
+      "verified_bytes": 14097489920,
+      "verified_transfers": 6883540
+    },
+    {
+      "at": "2026-08-09T14:54:36.907498+00:00",
+      "elapsed_seconds": 2160.005,
+      "throughput_mib_s": 6.403,
+      "verified_bytes": 14502936576,
+      "verified_transfers": 7081512
+    },
+    {
+      "at": "2026-08-09T14:55:36.907770+00:00",
+      "elapsed_seconds": 2220.005,
+      "throughput_mib_s": 6.402,
+      "verified_bytes": 14903302144,
+      "verified_transfers": 7277003
+    },
+    {
+      "at": "2026-08-09T14:56:36.907805+00:00",
+      "elapsed_seconds": 2280.005,
+      "throughput_mib_s": 6.402,
+      "verified_bytes": 15305549824,
+      "verified_transfers": 7473413
+    },
+    {
+      "at": "2026-08-09T14:57:36.907978+00:00",
+      "elapsed_seconds": 2340.006,
+      "throughput_mib_s": 6.402,
+      "verified_bytes": 15707580416,
+      "verified_transfers": 7669717
+    },
+    {
+      "at": "2026-08-09T14:58:36.908094+00:00",
+      "elapsed_seconds": 2400.006,
+      "throughput_mib_s": 6.402,
+      "verified_bytes": 16112187392,
+      "verified_transfers": 7867279
+    },
+    {
+      "at": "2026-08-09T14:59:36.908177+00:00",
+      "elapsed_seconds": 2460.006,
+      "throughput_mib_s": 6.403,
+      "verified_bytes": 16516052992,
+      "verified_transfers": 8064479
+    },
+    {
+      "at": "2026-08-09T15:00:36.908381+00:00",
+      "elapsed_seconds": 2520.006,
+      "throughput_mib_s": 6.403,
+      "verified_bytes": 16919197696,
+      "verified_transfers": 8261327
+    },
+    {
+      "at": "2026-08-09T15:01:36.908517+00:00",
+      "elapsed_seconds": 2580.006,
+      "throughput_mib_s": 6.403,
+      "verified_bytes": 17322631168,
+      "verified_transfers": 8458316
+    },
+    {
+      "at": "2026-08-09T15:02:36.908535+00:00",
+      "elapsed_seconds": 2640.006,
+      "throughput_mib_s": 6.403,
+      "verified_bytes": 17724577792,
+      "verified_transfers": 8654579
+    },
+    {
+      "at": "2026-08-09T15:03:36.908728+00:00",
+      "elapsed_seconds": 2700.006,
+      "throughput_mib_s": 6.402,
+      "verified_bytes": 18125621248,
+      "verified_transfers": 8850401
+    },
+    {
+      "at": "2026-08-09T15:04:36.909010+00:00",
+      "elapsed_seconds": 2760.007,
+      "throughput_mib_s": 6.402,
+      "verified_bytes": 18527873024,
+      "verified_transfers": 9046813
+    },
+    {
+      "at": "2026-08-09T15:05:36.909166+00:00",
+      "elapsed_seconds": 2820.007,
+      "throughput_mib_s": 6.401,
+      "verified_bytes": 18928836608,
+      "verified_transfers": 9242596
+    },
+    {
+      "at": "2026-08-09T15:06:36.909379+00:00",
+      "elapsed_seconds": 2880.007,
+      "throughput_mib_s": 6.401,
+      "verified_bytes": 19330031616,
+      "verified_transfers": 9438492
+    },
+    {
+      "at": "2026-08-09T15:07:36.909415+00:00",
+      "elapsed_seconds": 2940.007,
+      "throughput_mib_s": 6.402,
+      "verified_bytes": 19735447552,
+      "verified_transfers": 9636449
+    },
+    {
+      "at": "2026-08-09T15:08:36.909435+00:00",
+      "elapsed_seconds": 3000.007,
+      "throughput_mib_s": 6.403,
+      "verified_bytes": 20140851200,
+      "verified_transfers": 9834400
+    },
+    {
+      "at": "2026-08-09T15:09:36.909562+00:00",
+      "elapsed_seconds": 3060.007,
+      "throughput_mib_s": 6.402,
+      "verified_bytes": 20542394368,
+      "verified_transfers": 10030466
+    },
+    {
+      "at": "2026-08-09T15:10:36.909613+00:00",
+      "elapsed_seconds": 3120.007,
+      "throughput_mib_s": 6.402,
+      "verified_bytes": 20944994304,
+      "verified_transfers": 10227048
+    },
+    {
+      "at": "2026-08-09T15:11:36.909756+00:00",
+      "elapsed_seconds": 3180.007,
+      "throughput_mib_s": 6.402,
+      "verified_bytes": 21348589568,
+      "verified_transfers": 10424116
+    },
+    {
+      "at": "2026-08-09T15:12:36.909804+00:00",
+      "elapsed_seconds": 3240.007,
+      "throughput_mib_s": 6.403,
+      "verified_bytes": 21752256512,
+      "verified_transfers": 10621219
+    },
+    {
+      "at": "2026-08-09T15:13:36.910040+00:00",
+      "elapsed_seconds": 3300.008,
+      "throughput_mib_s": 6.402,
+      "verified_bytes": 22152249344,
+      "verified_transfers": 10816528
+    },
+    {
+      "at": "2026-08-09T15:14:36.910065+00:00",
+      "elapsed_seconds": 3360.008,
+      "throughput_mib_s": 6.402,
+      "verified_bytes": 22554966016,
+      "verified_transfers": 11013167
+    },
+    {
+      "at": "2026-08-09T15:15:36.910171+00:00",
+      "elapsed_seconds": 3420.008,
+      "throughput_mib_s": 6.402,
+      "verified_bytes": 22959450112,
+      "verified_transfers": 11210669
+    },
+    {
+      "at": "2026-08-09T15:16:36.910243+00:00",
+      "elapsed_seconds": 3480.008,
+      "throughput_mib_s": 6.402,
+      "verified_bytes": 23361742848,
+      "verified_transfers": 11407101
+    },
+    {
+      "at": "2026-08-09T15:17:36.910285+00:00",
+      "elapsed_seconds": 3540.008,
+      "throughput_mib_s": 6.401,
+      "verified_bytes": 23761782784,
+      "verified_transfers": 11602433
+    }
+  ],
+  "repository": {
+    "dirty": true,
+    "head": "f3ae4264b14d759b309cee9c787d0c9d8ddce73d"
+  },
+  "required_bytes": 10737418240,
+  "required_seconds": 3600.0,
+  "schema_version": 1,
+  "seed": 21281,
+  "started_at": "2026-08-09T14:18:36.893330+00:00",
+  "status": "PASS",
+  "test_id": "T-USB-006",
+  "throughput_mib_s": 6.401,
+  "timeout_ms": 3000,
+  "verified_bytes": 24163749888,
+  "verified_transfers": 11798706,
+  "status_semantics": "PASS qualifies T-USB-006 only for the recorded raw pseudo-random echo workload",
+  "evidence_boundary": {
+    "verdict": "PASS",
+    "covered": "at least 10 GiB and at least one hour of seeded raw vendor-bulk echo with byte-exact verification",
+    "not_covered": "protocol/session, CAN data-plane, FS, Windows, hotplug, or endpoint HALT behavior"
+  }
+}
