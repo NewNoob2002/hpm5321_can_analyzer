@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 FROZEN_ELF_SHA256="c3feef5d36867d021e26a95548b4bd055150ca2e4be54cf907d847c8afee70d2"
 P2_FROZEN_ELF="${P2_FROZEN_ELF:-${ROOT}/build/p2-frozen-980a38c/demo.elf}"
+P2_PROBE_SERIAL="${P2_PROBE_SERIAL:-607000454}"
 DURATION_SECONDS="${1:-86400}"
 RUN_DATE="$(date +%F)"
 OUTPUT="${2:-${ROOT}/docs/evidence/phase2/T-RTOS-003-${DURATION_SECONDS}-${RUN_DATE}.json}"
@@ -19,6 +20,7 @@ else
     GDB="$(command -v riscv32-unknown-elf-gdb || true)"
 fi
 GDB_SERVER="$(command -v JLinkGDBServerCLExe || true)"
+LOCK_FILE="${XDG_RUNTIME_DIR:-/tmp}/hpm5321-p2-heartbeat-${P2_PROBE_SERIAL}.lock"
 
 if [[ ! -x "${GDB}" ]]; then
     printf 'riscv32-unknown-elf-gdb not found; set GNURISCV_TOOLCHAIN_PATH or PATH\n' >&2
@@ -26,6 +28,15 @@ if [[ ! -x "${GDB}" ]]; then
 fi
 if [[ -z "${GDB_SERVER}" ]]; then
     printf 'JLinkGDBServerCLExe not found in PATH\n' >&2
+    exit 2
+fi
+if ! command -v flock >/dev/null 2>&1; then
+    printf 'flock not found; cannot enforce the P2 runner exclusivity lock\n' >&2
+    exit 2
+fi
+exec 9>"${LOCK_FILE}"
+if ! flock -n 9; then
+    printf 'another P2 heartbeat runner owns lock: %s\n' "${LOCK_FILE}" >&2
     exit 2
 fi
 
@@ -36,5 +47,6 @@ exec python3 "${ROOT}/scripts/phase2/collect_heartbeat.py" \
     --output "${OUTPUT}" \
     --duration-seconds "${DURATION_SECONDS}" \
     --interval-seconds "${INTERVAL_SECONDS:-60}" \
+    --probe-serial "${P2_PROBE_SERIAL}" \
     --gdb "${GDB}" \
     --gdb-server "${GDB_SERVER}"

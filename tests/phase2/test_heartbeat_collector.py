@@ -12,6 +12,28 @@ SPEC.loader.exec_module(MODULE)
 
 
 class HeartbeatCollectorTests(unittest.TestCase):
+    def test_frozen_runner_locks_probe_and_flashes_only_frozen_elf(self):
+        runner = (ROOT / "scripts/phase2/run_frozen_heartbeat.sh").read_text()
+        flash = (ROOT / "scripts/phase2/flash_p2.jlink").read_text()
+
+        self.assertIn("build/p2-frozen-980a38c/demo.elf", runner)
+        self.assertIn("c3feef5d36867d021e26a95548b4bd055", runner)
+        self.assertIn('P2_PROBE_SERIAL="${P2_PROBE_SERIAL:-607000454}"', runner)
+        self.assertIn("flock -n 9", runner)
+        self.assertIn('--probe-serial "${P2_PROBE_SERIAL}"', runner)
+        self.assertIn("loadfile build/p2-frozen-980a38c/demo.elf", flash)
+
+    def test_collector_records_probe_and_target_identity(self):
+        source = MODULE_PATH.read_text()
+
+        for token in (
+            '"probe_serial": args.probe_serial',
+            '"target_device": args.device',
+            '"target_interface": "JTAG"',
+            '"jtag_khz": args.jtag_khz',
+        ):
+            self.assertIn(token, source)
+
     def test_validates_frozen_elf_hash(self):
         digest = "c3feef5d36867d021e26a95548b4bd055150ca2e4be54cf907d847c8afee70d2"
 
