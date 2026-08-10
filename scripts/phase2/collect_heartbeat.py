@@ -270,6 +270,10 @@ def collect(
         ),
         "interval_seconds": args.interval_seconds,
         "minimum_stack_words": args.minimum_stack_words,
+        "probe_serial": args.probe_serial,
+        "target_device": args.device,
+        "target_interface": "JTAG",
+        "jtag_khz": args.jtag_khz,
         "elf": str(elf.relative_to(ROOT) if elf.is_relative_to(ROOT) else elf),
         "elf_sha256": "",
         "expected_elf_sha256": (

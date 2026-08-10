@@ -57,6 +57,13 @@ generation voter does not configure or feed hardware WDG. The preserved P2 ELF
 and fail-closed 86,400-second collector are ready; the run cannot share a board
 with timing-sensitive USB HIL because each sample halts the CPU.
 
+The 2026-08-10 parallel start attempt is recorded in
+`docs/evidence/phase2/P2-24h-schedule-2026-08-10.md`. It did not start the
+collector: the connected J-Link was S/N `20781318`, not the frozen
+qualification probe `607000454`, and could not identify the target over JTAG.
+The runner now enforces a per-probe exclusivity lock and records probe/target
+identity when the correct hardware returns.
+
 ## Phase 3A
 
 The five current Linux USB HIL paths are reconciled in

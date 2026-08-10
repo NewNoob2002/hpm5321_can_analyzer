@@ -4,7 +4,7 @@ speed 4000
 jtagconf -1,-1
 connect
 r
-loadfile build/hpm5321-flash-debug/output/demo.elf
+loadfile build/p2-frozen-980a38c/demo.elf
 r
 g
 exit
