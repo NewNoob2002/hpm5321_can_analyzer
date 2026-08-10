@@ -9,7 +9,12 @@ import unittest
 from scripts.phase3.firmware_provenance import verified_firmware_manifest
 
 
-def write_manifest(root: Path, elf: bytes = b"elf", binary: bytes = b"bin") -> Path:
+def write_manifest(
+    root: Path,
+    elf: bytes = b"elf",
+    binary: bytes = b"bin",
+    build_options: object = None,
+) -> Path:
     build = root / "build"
     output = build / "output"
     output.mkdir(parents=True)
@@ -31,6 +36,11 @@ def write_manifest(root: Path, elf: bytes = b"elf", binary: bytes = b"bin") -> P
                 "source_dirty": False,
                 "sdk_commit": "b" * 40,
                 "compiler": "test-gcc",
+                "build_options": (
+                    {"APP_USB_FORCE_FULL_SPEED": False}
+                    if build_options is None
+                    else build_options
+                ),
                 "artifacts": artifacts,
             }
         ),
@@ -70,6 +80,17 @@ class FirmwareProvenanceTests(unittest.TestCase):
 
             with self.assertRaisesRegex(RuntimeError, "does not match manifest"):
                 verified_firmware_manifest(manifest, root)
+
+    def test_requires_forced_full_speed_build_option_provenance(self) -> None:
+        for options in ({}, {"APP_USB_FORCE_FULL_SPEED": "OFF"}):
+            with self.subTest(options=options), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                manifest = write_manifest(root, build_options=options)
+
+                with self.assertRaisesRegex(
+                    RuntimeError, "APP_USB_FORCE_FULL_SPEED is missing"
+                ):
+                    verified_firmware_manifest(manifest, root)
 
 
 if __name__ == "__main__":

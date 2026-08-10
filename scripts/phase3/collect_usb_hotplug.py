@@ -52,6 +52,16 @@ def usb_device_node(
     return devfs_root / f"{bus:03d}" / f"{number:03d}"
 
 
+def usb_identity(device: Path) -> dict[str, str]:
+    return {
+        "topology_path": device.name,
+        "manufacturer": _read_text(device / "manufacturer"),
+        "product": _read_text(device / "product"),
+        "serial": _read_text(device / "serial"),
+        "speed_mbps": _read_text(device / "speed"),
+    }
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -194,7 +204,11 @@ def collect(args: argparse.Namespace) -> int:
         if len(devices) != 1:
             raise RuntimeError("timed out waiting for the initial USB connection")
 
-        evidence["topology_path"] = devices[0].name
+        identity = usb_identity(devices[0])
+        if not identity["serial"]:
+            raise RuntimeError("USB serial is missing; device identity is not qualifiable")
+        evidence["device"] = identity
+        evidence["topology_path"] = identity["topology_path"]
         device_node = usb_device_node(devices[0], args.devfs_root)
         evidence["device_node"] = str(device_node) if device_node else None
         evidence["device_node_readable"] = bool(
@@ -250,6 +264,7 @@ def collect(args: argparse.Namespace) -> int:
                 )
                 ready_devices = find_usb_devices(args.sysfs_root, args.vid, args.pid)
                 ready_device = ready_devices[0] if len(ready_devices) == 1 else None
+                ready_identity = usb_identity(ready_device) if ready_device else None
                 device_node = (
                     usb_device_node(ready_device, args.devfs_root)
                     if ready_device
@@ -264,6 +279,7 @@ def collect(args: argparse.Namespace) -> int:
                     "topology_path": (
                         ready_device.name if ready_device else devices[0].name
                     ),
+                    "device": ready_identity,
                     "device_node": str(device_node) if device_node else None,
                     "device_node_readable": bool(
                         device_node and os.access(device_node, os.R_OK)
@@ -274,6 +290,10 @@ def collect(args: argparse.Namespace) -> int:
                     "recovery_smoke": smoke,
                 }
                 evidence["cycles"].append(cycle)
+                if ready_identity != identity:
+                    raise RuntimeError(
+                        f"cycle {cycle_number} USB identity changed after reconnect"
+                    )
                 if not (
                     cycle["device_node_readable"]
                     and cycle["device_node_writable"]

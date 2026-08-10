@@ -40,31 +40,53 @@ from scripts.phase3.firmware_provenance import (  # noqa: E402
 
 
 DEFAULT_MANIFEST = ROOT / "build/hpm5321-flash-release/build-manifest.json"
+DEFAULT_FS_MANIFEST = (
+    ROOT / "build/hpm5321-flash-release-fs/build-manifest.json"
+)
 DEFAULT_MATRIX_OUTPUT = ROOT / "docs/evidence/phase3/T-USB-005-008-010-current.json"
 DEFAULT_LOOPBACK_OUTPUT = ROOT / "docs/evidence/phase3/T-USB-006-current.json"
-FRAGMENT_SIZES = (1, 2, 7, 63, 64, 65, 127, 255, 511, 512, 513, 1023, 1024, 1535, 1536, 2047, 2048)
+DEFAULT_FS_OUTPUT = ROOT / "docs/evidence/phase3/T-USB-001A-FS-current.json"
+FRAGMENT_SIZES = (
+    1, 2, 7, 63, 64, 65, 127, 255, 511, 512, 513, 1023, 1024, 1535, 1536,
+    2047, 2048,
+)
 BACKPRESSURE_DELAYS_MS = (100, 1000, 5000, 15000)
 RESET_PENDING_SIZES = (1, 512, 513, 2048)
+LIBUSB_ERROR_PIPE = -9
+USB_REQUEST_GET_STATUS = 0x00
+USB_REQUEST_GET_DESCRIPTOR = 0x06
+USB_REQUEST_CLEAR_FEATURE = 0x01
+USB_REQUEST_SET_FEATURE = 0x03
+USB_FEATURE_ENDPOINT_HALT = 0x0000
+USB_REQUEST_TYPE_ENDPOINT_IN = 0x82
+USB_REQUEST_TYPE_ENDPOINT_OUT = 0x02
+USB_REQUEST_TYPE_DEVICE_IN = 0x80
+USB_DESCRIPTOR_TYPE_CONFIGURATION = 0x02
+USB_DESCRIPTOR_TYPE_ENDPOINT = 0x05
+USB_DESCRIPTOR_TYPE_DEVICE_QUALIFIER = 0x06
+USB_DESCRIPTOR_TYPE_OTHER_SPEED = 0x07
 
 
 def matrix_evidence_boundaries(
-    verdict: str = "PARTIAL",
+    execution_verdict: str | None = None,
 ) -> dict[str, dict[str, Any]]:
+    partial = execution_verdict or "PARTIAL"
+    halt = execution_verdict or "PASS"
     return {
         "T-USB-005": {
-            "verdict": verdict,
+            "verdict": partial,
             "covered": "raw vendor-bulk transfer sizes across USB packet and owner-buffer boundaries",
             "not_covered": "protocol-frame fragmentation and coalescing across USB transfers",
         },
         "T-USB-008": {
-            "verdict": verdict,
+            "verdict": partial,
             "covered": "single-buffer host-read pauses of 100, 1000, 5000, and 15000 ms with recovery probes",
             "not_covered": "sustained protocol workload, queue/drop reconciliation, and overload signaling",
         },
         "T-USB-010": {
-            "verdict": verdict,
-            "covered": "USB device reset and reopen with idle and pending raw echo data",
-            "not_covered": "a real endpoint HALT/STALL condition and firmware recovery from CLEAR_FEATURE(ENDPOINT_HALT)",
+            "verdict": halt,
+            "covered": "USB device reset plus real IN/OUT endpoint HALT, observed PIPE, CLEAR_FEATURE, and recovery echo",
+            "not_covered": "protocol/session and CAN data-plane behavior",
         },
     }
 
@@ -150,6 +172,17 @@ class UsbSession:
         self.lib.libusb_reset_device.restype = ctypes.c_int
         self.lib.libusb_clear_halt.argtypes = [ctypes.c_void_p, ctypes.c_ubyte]
         self.lib.libusb_clear_halt.restype = ctypes.c_int
+        self.lib.libusb_control_transfer.argtypes = [
+            ctypes.c_void_p,
+            ctypes.c_uint8,
+            ctypes.c_uint8,
+            ctypes.c_uint16,
+            ctypes.c_uint16,
+            ctypes.POINTER(ctypes.c_ubyte),
+            ctypes.c_uint16,
+            ctypes.c_uint,
+        ]
+        self.lib.libusb_control_transfer.restype = ctypes.c_int
         self.context = ctypes.c_void_p()
         self.handle: ctypes.c_void_p | None = None
 
@@ -211,6 +244,103 @@ class UsbSession:
             )
             raise RuntimeError(f"content mismatch at payload offset {mismatch}")
 
+    def endpoint_halted(self, endpoint: int) -> bool:
+        if not self.handle:
+            raise RuntimeError("USB handle is closed")
+        status = (ctypes.c_ubyte * 2)()
+        result = self.lib.libusb_control_transfer(
+            self.handle,
+            USB_REQUEST_TYPE_ENDPOINT_IN,
+            USB_REQUEST_GET_STATUS,
+            0,
+            endpoint,
+            status,
+            len(status),
+            self.timeout_ms,
+        )
+        if result != len(status):
+            raise RuntimeError(
+                f"GET_STATUS endpoint 0x{endpoint:02x}: "
+                f"{error_name(self.lib, result) if result < 0 else f'short response {result}/2'}"
+            )
+        return bool(status[0] & 0x01)
+
+    def read_descriptor(self, descriptor_type: int, length: int = 512) -> bytes:
+        if not self.handle:
+            raise RuntimeError("USB handle is closed")
+        buffer = (ctypes.c_ubyte * length)()
+        result = self.lib.libusb_control_transfer(
+            self.handle,
+            USB_REQUEST_TYPE_DEVICE_IN,
+            USB_REQUEST_GET_DESCRIPTOR,
+            descriptor_type << 8,
+            0,
+            buffer,
+            length,
+            self.timeout_ms,
+        )
+        if result < 0:
+            raise RuntimeError(
+                f"GET_DESCRIPTOR type 0x{descriptor_type:02x}: "
+                f"{error_name(self.lib, result)}"
+            )
+        return bytes(buffer[:result])
+
+    def set_endpoint_halt(self, endpoint: int) -> None:
+        if not self.handle:
+            raise RuntimeError("USB handle is closed")
+        result = self.lib.libusb_control_transfer(
+            self.handle,
+            USB_REQUEST_TYPE_ENDPOINT_OUT,
+            USB_REQUEST_SET_FEATURE,
+            USB_FEATURE_ENDPOINT_HALT,
+            endpoint,
+            None,
+            0,
+            self.timeout_ms,
+        )
+        if result != LIBUSB_SUCCESS:
+            raise RuntimeError(
+                f"SET_FEATURE(HALT) endpoint 0x{endpoint:02x}: "
+                f"{error_name(self.lib, result)}"
+            )
+
+    def expect_endpoint_stall(self, endpoint: int) -> dict[str, Any]:
+        if not self.handle:
+            raise RuntimeError("USB handle is closed")
+        buffer = (ctypes.c_ubyte * 1)()
+        if endpoint == EP_OUT:
+            buffer[0] = 0xA5
+        transferred = ctypes.c_int()
+        result = self.lib.libusb_bulk_transfer(
+            self.handle,
+            endpoint,
+            buffer,
+            len(buffer),
+            ctypes.byref(transferred),
+            self.timeout_ms,
+        )
+        if result != LIBUSB_ERROR_PIPE:
+            raise RuntimeError(
+                f"endpoint 0x{endpoint:02x} did not return PIPE while halted: "
+                f"{error_name(self.lib, result)} transferred={transferred.value}"
+            )
+        return {
+            "bulk_result": result,
+            "bulk_result_name": error_name(self.lib, result),
+            "transferred_bytes": transferred.value,
+        }
+
+    def clear_endpoint_halt(self, endpoint: int) -> None:
+        if not self.handle:
+            raise RuntimeError("USB handle is closed")
+        result = self.lib.libusb_clear_halt(self.handle, endpoint)
+        if result != LIBUSB_SUCCESS:
+            raise RuntimeError(
+                f"CLEAR_FEATURE(HALT) endpoint 0x{endpoint:02x}: "
+                f"{error_name(self.lib, result)}"
+            )
+
     def reset_and_reopen(self) -> dict[str, Any]:
         if not self.handle:
             raise RuntimeError("USB handle is closed")
@@ -243,6 +373,79 @@ class MatrixCase:
 
 def payload_bytes(rng: random.Random, size: int) -> bytes:
     return rng.randbytes(size)
+
+
+def _descriptor_endpoints(descriptor: bytes, expected_type: int) -> dict[int, int]:
+    if len(descriptor) < 9 or descriptor[0] != 9 or descriptor[1] != expected_type:
+        raise RuntimeError(
+            f"descriptor type 0x{expected_type:02x} has an invalid header"
+        )
+    total_length = int.from_bytes(descriptor[2:4], "little")
+    if total_length != len(descriptor):
+        raise RuntimeError(
+            f"descriptor type 0x{expected_type:02x} length "
+            f"{len(descriptor)} != wTotalLength {total_length}"
+        )
+    endpoints: dict[int, int] = {}
+    offset = 0
+    while offset < len(descriptor):
+        if offset + 2 > len(descriptor):
+            raise RuntimeError("truncated USB descriptor header")
+        item_length = descriptor[offset]
+        if item_length < 2 or offset + item_length > len(descriptor):
+            raise RuntimeError("invalid nested USB descriptor length")
+        if descriptor[offset + 1] == USB_DESCRIPTOR_TYPE_ENDPOINT:
+            if item_length < 7:
+                raise RuntimeError("truncated endpoint descriptor")
+            endpoint = descriptor[offset + 2]
+            attributes = descriptor[offset + 3] & 0x03
+            if attributes != 0x02:
+                raise RuntimeError(f"endpoint 0x{endpoint:02x} is not Bulk")
+            endpoints[endpoint] = int.from_bytes(
+                descriptor[offset + 4 : offset + 6], "little"
+            )
+        offset += item_length
+    return endpoints
+
+
+def validate_fs_descriptor_set(session: Any) -> dict[str, Any]:
+    qualifier = session.read_descriptor(USB_DESCRIPTOR_TYPE_DEVICE_QUALIFIER, 10)
+    if (
+        len(qualifier) != 10
+        or qualifier[0] != 10
+        or qualifier[1] != USB_DESCRIPTOR_TYPE_DEVICE_QUALIFIER
+        or qualifier[8] != 1
+        or qualifier[9] != 0
+    ):
+        raise RuntimeError("device qualifier descriptor is invalid")
+
+    current = session.read_descriptor(USB_DESCRIPTOR_TYPE_CONFIGURATION)
+    other = session.read_descriptor(USB_DESCRIPTOR_TYPE_OTHER_SPEED)
+    current_endpoints = _descriptor_endpoints(
+        current, USB_DESCRIPTOR_TYPE_CONFIGURATION
+    )
+    other_endpoints = _descriptor_endpoints(other, USB_DESCRIPTOR_TYPE_OTHER_SPEED)
+    expected_current = {EP_OUT: 64, EP_IN: 64}
+    expected_other = {EP_OUT: 512, EP_IN: 512}
+    if current_endpoints != expected_current:
+        raise RuntimeError(
+            f"Full-Speed endpoint packet sizes are invalid: {current_endpoints}"
+        )
+    if other_endpoints != expected_other:
+        raise RuntimeError(
+            f"other-speed endpoint packet sizes are invalid: {other_endpoints}"
+        )
+    return {
+        "device_qualifier_hex": qualifier.hex(),
+        "configuration_sha256": hashlib.sha256(current).hexdigest(),
+        "other_speed_sha256": hashlib.sha256(other).hexdigest(),
+        "current_endpoint_mps": {
+            f"0x{endpoint:02x}": size for endpoint, size in current_endpoints.items()
+        },
+        "other_speed_endpoint_mps": {
+            f"0x{endpoint:02x}": size for endpoint, size in other_endpoints.items()
+        },
+    }
 
 
 def build_matrix_cases(
@@ -297,6 +500,33 @@ def build_matrix_cases(
 
         cases.append(MatrixCase(f"reset-pending-{size:04d}", "reset", pending_reset))
 
+    for endpoint in (EP_OUT, EP_IN):
+        def endpoint_halt(session: Any, endpoint: int = endpoint) -> dict[str, Any]:
+            if session.endpoint_halted(endpoint):
+                raise RuntimeError(f"endpoint 0x{endpoint:02x} was halted before test")
+            session.set_endpoint_halt(endpoint)
+            if not session.endpoint_halted(endpoint):
+                raise RuntimeError(f"endpoint 0x{endpoint:02x} did not report HALT")
+            stalled_transfer = session.expect_endpoint_stall(endpoint)
+            session.clear_endpoint_halt(endpoint)
+            if session.endpoint_halted(endpoint):
+                raise RuntimeError(f"endpoint 0x{endpoint:02x} remained halted")
+            session.echo(payload_bytes(rng, 2048))
+            return {
+                "endpoint": f"0x{endpoint:02x}",
+                "halt_status_before": False,
+                "halt_status_set": True,
+                "halt_status_cleared": True,
+                "post_clear_probe_bytes": 2048,
+                **stalled_transfer,
+            }
+
+        cases.append(
+            MatrixCase(
+                f"endpoint-halt-{endpoint:02x}", "endpoint_halt", endpoint_halt
+            )
+        )
+
     return cases
 
 
@@ -307,7 +537,7 @@ def run_matrix(args: argparse.Namespace) -> int:
         "test_references": ["T-USB-005", "T-USB-008", "T-USB-010"],
         "evidence_boundaries": matrix_evidence_boundaries("PENDING"),
         "status_semantics": "PASS records completion of the raw preflight runner; referenced qualification verdicts are separate",
-        "scope": "raw vendor-bulk boundary-size transfers, host-read pauses, and USB device reset recovery preflights",
+        "scope": "raw vendor-bulk boundary-size transfers, host-read pauses, USB device reset, and real endpoint HALT recovery",
         "status": "RUNNING",
         "started_at": now(),
         "seed": args.seed,
@@ -465,6 +695,80 @@ def run_loopback(args: argparse.Namespace) -> int:
         return 1
 
 
+def run_fs_fallback(args: argparse.Namespace) -> int:
+    output = args.output.resolve()
+    evidence: dict[str, Any] = {
+        "schema_version": 1,
+        "test_references": ["T-USB-001A"],
+        "subcase_id": "T-USB-001A-FORCED-FS",
+        "status": "RUNNING",
+        "started_at": now(),
+        "required_speed_mbps": "12",
+        "required_echo_bytes": args.bytes,
+        "verified_echo_bytes": 0,
+        "evidence_boundary": {
+            "verdict": "PENDING",
+            "covered": "physical Full-Speed enumeration, dual-speed descriptor consistency, and exact raw echo on the forced-FS qualification build",
+            "not_covered": "normal-build HS enumeration, natural fallback through an external FS-only hub, or Windows PnP behavior",
+        },
+        "status_semantics": (
+            "PASS completes the forced-FS subcase; T-USB-001A requires the "
+            "separate normal-build HS evidence as well"
+        ),
+    }
+    try:
+        metadata = run_metadata(
+            args.firmware_manifest.resolve(), args.sysfs_root
+        )
+        evidence.update(metadata)
+        if not metadata["firmware_manifest"]["build_options"][
+            "APP_USB_FORCE_FULL_SPEED"
+        ]:
+            raise RuntimeError(
+                "firmware manifest is not a forced Full-Speed qualification build"
+            )
+        if metadata["device"]["speed_mbps"] != "12":
+            raise RuntimeError(
+                f"expected physical Full-Speed 12 Mbps, got "
+                f"{metadata['device']['speed_mbps'] or 'unknown'} Mbps"
+            )
+        write_evidence(output, evidence)
+        rng = random.Random(args.seed)
+        completed = 0
+        with UsbSession(args.timeout_ms, args.recovery_timeout_seconds) as session:
+            evidence["descriptor_validation"] = validate_fs_descriptor_set(session)
+            write_evidence(output, evidence)
+            while completed < args.bytes:
+                size = min(DEVICE_OUT_WINDOW, args.bytes - completed)
+                session.echo(payload_bytes(rng, size))
+                completed += size
+                evidence["verified_echo_bytes"] = completed
+                write_evidence(output, evidence)
+        evidence.update(
+            {
+                "status": "PASS",
+                "completed_at": now(),
+                "speed_verified": True,
+                "echo_verified": completed == args.bytes,
+                "evidence_boundary": {
+                    **evidence["evidence_boundary"],
+                    "verdict": "PARTIAL",
+                },
+            }
+        )
+        write_evidence(output, evidence)
+        print(f"PASS T-USB-001A forced-FS subcase evidence={output}")
+        return 0
+    except (OSError, RuntimeError, json.JSONDecodeError) as exc:
+        evidence["status"] = "FAIL"
+        evidence["completed_at"] = now()
+        evidence["evidence_boundary"]["verdict"] = "NOT_QUALIFIED"
+        evidence["failure"] = str(exc)
+        write_evidence(output, evidence)
+        print(f"FAIL T-USB-001A FS fallback: {exc}", file=sys.stderr)
+        return 1
+
+
 def common_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--timeout-ms", type=int, default=3000)
     parser.add_argument("--recovery-timeout-seconds", type=float, default=15.0)
@@ -473,7 +777,7 @@ def common_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--firmware-manifest", type=Path, default=DEFAULT_MANIFEST)
 
 
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -491,6 +795,19 @@ def main() -> int:
     loopback.add_argument("--report-seconds", type=float, default=60.0)
     loopback.set_defaults(run=run_loopback)
 
+    fs_fallback = subparsers.add_parser("fs-fallback")
+    common_arguments(fs_fallback)
+    fs_fallback.set_defaults(firmware_manifest=DEFAULT_FS_MANIFEST)
+    fs_fallback.add_argument("--output", type=Path, default=DEFAULT_FS_OUTPUT)
+    fs_fallback.add_argument("--bytes", type=int, default=1024 * 1024)
+    fs_fallback.set_defaults(run=run_fs_fallback)
+
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
+
     args = parser.parse_args()
     for name in ("timeout_ms", "recovery_timeout_seconds"):
         if getattr(args, name) <= 0:
@@ -499,6 +816,8 @@ def main() -> int:
         for name in ("min_bytes", "min_seconds", "report_seconds"):
             if getattr(args, name) <= 0:
                 parser.error(f"--{name.replace('_', '-')} must be positive")
+    if args.command == "fs-fallback" and args.bytes <= 0:
+        parser.error("--bytes must be positive")
     return args.run(args)
 
 

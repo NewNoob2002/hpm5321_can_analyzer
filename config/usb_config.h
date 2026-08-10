@@ -7,6 +7,7 @@
 #define CONFIG_USB_PRINTF(...) ((void)0)
 #define CONFIG_USB_DBG_LEVEL   (-1)
 
+/* Keep dual-speed descriptor handling enabled even in the forced-FS HIL build. */
 #define CONFIG_USB_HS
 #define CONFIG_USB_ALIGN_SIZE            (4U)
 #define USB_NOCACHE_RAM_SECTION          __attribute__((section(".noncacheable.non_init")))

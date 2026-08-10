@@ -9,6 +9,10 @@ set(CONFIG_CHERRYUSB 1)
 set(CONFIG_CHERRYUSB_DEVICE 1)
 set(CONFIG_USB_DEVICE 1)
 
+option(APP_USB_FORCE_FULL_SPEED
+    "Force the USB device controller to enumerate at Full Speed for P3A qualification"
+    OFF)
+
 set(APP_FIRMWARE_VERSION "0.1.0-dev" CACHE STRING
     "Firmware semantic version reported by the P2 UART boot banner")
 if(NOT APP_FIRMWARE_VERSION MATCHES "^[0-9]+[.][0-9]+[.][0-9]+(-[0-9A-Za-z.-]+)?$")
@@ -30,6 +34,10 @@ endif()
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(hpm5321_can_analyzer)
+
+if(APP_USB_FORCE_FULL_SPEED)
+    sdk_compile_definitions(-DCONFIG_USB_DEVICE_FORCE_FULL_SPEED)
+endif()
 
 # The SDK adds CherryUSB's dynamic FreeRTOS OSAL and OTG translation units
 # unconditionally. This device-only slice uses neither surface and removes both

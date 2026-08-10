@@ -17,6 +17,14 @@ class DevelopmentContractTests(unittest.TestCase):
         }
         self.assertTrue(required <= configure.keys())
         self.assertTrue(required <= build)
+        self.assertIn("hpm5321-flash-release-fs", configure)
+        self.assertIn("hpm5321-flash-release-fs", build)
+        self.assertEqual(
+            configure["hpm5321-flash-release-fs"]["cacheVariables"][
+                "APP_USB_FORCE_FULL_SPEED"
+            ],
+            "ON",
+        )
         self.assertEqual(
             configure["hpm5321-base"]["cacheVariables"]["CMAKE_EXPORT_COMPILE_COMMANDS"],
             "ON",
@@ -52,6 +60,12 @@ class DevelopmentContractTests(unittest.TestCase):
             "DEVPKEY_Device_DriverProvider",
             "DEVPKEY_Device_DriverVersion",
             '$_.Service -ieq "WinUSB"',
+            "Read-FirmwareProvenance",
+            '$manifest.source_dirty -isnot [bool]',
+            "Firmware manifest must record source_dirty=false",
+            'foreach ($name in @("demo.elf", "demo.bin"))',
+            "Firmware artifact does not match manifest",
+            "DeviceAttested = $false",
             "Get-FileHash -Algorithm SHA256 $exe, $lock",
             "--bytes 67108864",
             "$ExerciseDisconnectRecovery",
