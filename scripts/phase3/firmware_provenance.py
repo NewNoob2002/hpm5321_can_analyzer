@@ -60,6 +60,13 @@ def verified_firmware_manifest(manifest_path: Path, root: Path) -> dict[str, Any
         raise RuntimeError("firmware manifest field source_dirty must be boolean")
     sdk_commit = _required_hex(manifest, "sdk_commit", HEX_40)
     compiler = _required_string(manifest, "compiler")
+    build_options = manifest.get("build_options")
+    if not isinstance(build_options, dict) or not isinstance(
+        build_options.get("APP_USB_FORCE_FULL_SPEED"), bool
+    ):
+        raise RuntimeError(
+            "firmware manifest build option APP_USB_FORCE_FULL_SPEED is missing"
+        )
 
     artifacts = manifest.get("artifacts")
     if not isinstance(artifacts, dict):
@@ -100,6 +107,7 @@ def verified_firmware_manifest(manifest_path: Path, root: Path) -> dict[str, Any
         "source_dirty": source_dirty,
         "sdk_commit": sdk_commit,
         "compiler": compiler,
+        "build_options": build_options,
         "elf_sha256": verified_artifacts["demo.elf"]["sha256"],
         "bin_sha256": verified_artifacts["demo.bin"]["sha256"],
         "verified_artifacts": verified_artifacts,

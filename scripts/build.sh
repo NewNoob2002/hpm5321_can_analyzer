@@ -4,7 +4,7 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 preset=${1:-hpm5321-flash-debug}
 case "$preset" in
-    hpm5321-flash-debug|hpm5321-flash-release|hpm5321-ram-debug) ;;
+    hpm5321-flash-debug|hpm5321-flash-release|hpm5321-flash-release-fs|hpm5321-ram-debug) ;;
     *) echo "unsupported preset: $preset" >&2; exit 2 ;;
 esac
 

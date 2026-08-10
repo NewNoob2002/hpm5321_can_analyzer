@@ -1,5 +1,6 @@
 param(
     [string]$OutputDirectory = "docs/evidence/phase1/windows-current",
+    [string]$FirmwareManifest = "build/hpm5321-flash-release/build-manifest.json",
     [string]$Vid = "34B7",
     [string]$Pid = "1236",
     [switch]$ExerciseDisconnectRecovery,
@@ -13,6 +14,70 @@ $root = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
 $output = Join-Path $root $OutputDirectory
 New-Item -ItemType Directory -Force -Path $output | Out-Null
 $log = Join-Path $output "phase1b-windows-collector.txt"
+
+function Resolve-RepoFile([string]$Path, [string]$Description) {
+    $candidate = if ([IO.Path]::IsPathRooted($Path)) {
+        $Path
+    } else {
+        Join-Path $root $Path
+    }
+    if (-not (Test-Path -PathType Leaf $candidate)) {
+        throw "$Description is missing: $candidate"
+    }
+    return (Resolve-Path $candidate).Path
+}
+
+function Assert-HexDigest([string]$Value, [int]$Digits, [string]$Description) {
+    if ($Value -notmatch "^[0-9a-fA-F]{$Digits}$") {
+        throw "$Description is not a $Digits-digit hexadecimal digest"
+    }
+}
+
+function Read-FirmwareProvenance([string]$ManifestArgument) {
+    $manifestPath = Resolve-RepoFile $ManifestArgument "Firmware manifest"
+    $manifest = Get-Content -Raw $manifestPath | ConvertFrom-Json
+    if ($manifest.schema -ne 1) { throw "Firmware manifest schema must be 1" }
+    Assert-HexDigest $manifest.source_revision 40 "Firmware source revision"
+    Assert-HexDigest $manifest.sdk_commit 40 "Firmware SDK commit"
+    if ($manifest.source_dirty -isnot [bool] -or $manifest.source_dirty) {
+        throw "Firmware manifest must record source_dirty=false"
+    }
+    $artifactDirectory = Join-Path (Split-Path $manifestPath) "output"
+    $artifacts = @()
+    foreach ($name in @("demo.elf", "demo.bin")) {
+        $entry = $manifest.artifacts.$name
+        if ($null -eq $entry) { throw "Firmware manifest artifact is missing: $name" }
+        Assert-HexDigest $entry.sha256 64 "Firmware artifact $name SHA-256"
+        $artifactPath = Resolve-RepoFile (Join-Path $artifactDirectory $name) "Firmware artifact $name"
+        $measuredHash = (Get-FileHash -Algorithm SHA256 $artifactPath).Hash.ToLowerInvariant()
+        $measuredSize = (Get-Item $artifactPath).Length
+        if ($measuredHash -ne $entry.sha256.ToLowerInvariant() -or
+            $measuredSize -ne [long]$entry.size) {
+            throw "Firmware artifact does not match manifest: $name"
+        }
+        $artifacts += [PSCustomObject]@{
+            Name = $name
+            Path = $artifactPath
+            Size = $measuredSize
+            Sha256 = $measuredHash
+            Verified = $true
+        }
+    }
+    return [PSCustomObject]@{
+        Path = $manifestPath
+        Sha256 = (Get-FileHash -Algorithm SHA256 $manifestPath).Hash.ToLowerInvariant()
+        Preset = $manifest.preset
+        SourceRevision = $manifest.source_revision.ToLowerInvariant()
+        SourceDirty = [bool]$manifest.source_dirty
+        SdkCommit = $manifest.sdk_commit.ToLowerInvariant()
+        Compiler = $manifest.compiler
+        BuildOptions = $manifest.build_options
+        Artifacts = $artifacts
+        AssociationMethod = "operator-selected manifest with verified host build artifacts"
+        DeviceAttested = $false
+        Boundary = "the device does not expose an on-device build identifier"
+    }
+}
 
 function Record([string]$Title, [scriptblock]$Command) {
     "`n## $Title" | Tee-Object -FilePath $log -Append
@@ -51,9 +116,11 @@ function Wait-ForDevicePresence([bool]$Present, [int]$TimeoutSeconds) {
 }
 
 Set-Content -Path $log -Value "Phase 1B Windows evidence collector"
+$firmware = Read-FirmwareProvenance $FirmwareManifest
 $computer = Get-ComputerInfo |
     Select-Object WindowsProductName, WindowsVersion, OsBuildNumber
 Record "Windows" { $computer | Format-List }
+Record "Firmware provenance" { $firmware | ConvertTo-Json -Depth 8 }
 Record "Rust" { rustc +1.97.1 --version --verbose }
 Record "Cargo" { cargo +1.97.1 --version --verbose }
 Record "Visual Studio" {
@@ -133,6 +200,7 @@ $manifest = [PSCustomObject]@{
     Vid = $Vid
     Pid = $Pid
     WinUsbBindings = $winUsbBindings
+    Firmware = $firmware
     Hashes = @(
         foreach ($hash in $hashes) {
             [PSCustomObject]@{
@@ -144,6 +212,10 @@ $manifest = [PSCustomObject]@{
     )
     ExactEchoBytes = 67108864
     DisconnectRecoveryExercised = [bool]$ExerciseDisconnectRecovery
+    EvidenceBoundary = [PSCustomObject]@{
+        Covered = "native Windows interface-0 WinUSB binding, exact echo, host executable provenance, and associated firmware artifacts"
+        NotCovered = "on-device firmware attestation, FS behavior, CAN data plane, installer, or signing"
+    }
 }
 $manifestPath = Join-Path $output "manifest.json"
 $manifest | ConvertTo-Json -Depth 6 | Set-Content -Encoding UTF8 $manifestPath

@@ -36,6 +36,16 @@
             }
         },
         {
+            "name": "hpm5321-flash-release-fs",
+            "inherits": "hpm5321-base",
+            "displayName": "HPM5321 Custom - Flash Release (Forced Full Speed)",
+            "binaryDir": "${sourceDir}/build/hpm5321-flash-release-fs",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "APP_USB_FORCE_FULL_SPEED": "ON"
+            }
+        },
+        {
             "name": "hpm5321-ram-debug",
             "inherits": "hpm5321-base",
             "displayName": "HPM5321 Custom - RAM Debug",
@@ -57,6 +67,12 @@
             "name": "hpm5321-flash-release",
             "displayName": "Build HPM5321 Flash Release",
             "configurePreset": "hpm5321-flash-release",
+            "jobs": 8
+        },
+        {
+            "name": "hpm5321-flash-release-fs",
+            "displayName": "Build HPM5321 Flash Release (Forced Full Speed)",
+            "configurePreset": "hpm5321-flash-release-fs",
             "jobs": 8
         },
         {

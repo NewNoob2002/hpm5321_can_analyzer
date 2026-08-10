@@ -62,12 +62,13 @@ with timing-sensitive USB HIL because each sample halts the CPU.
 The five current Linux USB HIL paths are reconciled in
 `docs/evidence/phase3/P3A-USB-HIL-status-2026-08-10.md`. `T-USB-006` is `PASS`
 within its explicit raw-echo boundary. `T-USB-005`, `T-USB-007`, `T-USB-008`
-and `T-USB-010` are `PARTIAL`: `T-USB-007` has a 100/100 behavioral runner
-PASS but no recorded firmware identity; the other partial verdicts do not yet
-close protocol/drop reconciliation or a real endpoint HALT. The remaining P3A
-hardware gates are provenance-complete hotplug, FS fallback, current Windows
-native WinUSB/PnP evidence, real endpoint HALT recovery, and a joint post-HIL
-RTOS/USB health snapshot.
+and `T-USB-010` remain `PARTIAL` based on recorded evidence: `T-USB-007` has a
+100/100 behavioral runner PASS but no recorded firmware identity. Forced-FS,
+real IN/OUT endpoint HALT, manifest-bound native Windows collection, and a
+single-halt post-HIL RTOS/USB snapshot now have fail-closed runners and tests.
+They have not been promoted because the target USB was absent during the
+2026-08-10 software verification and no current Windows evidence bundle was
+available. Protocol/drop reconciliation remains P4E work.
 
 ## Reproducibility boundary
 
