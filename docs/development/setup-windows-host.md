@@ -71,14 +71,19 @@ Archive all of the following under `docs/evidence/phase1/`:
 Run `scripts/phase1/collect_windows_phase1b.ps1` from PowerShell to collect the
 current environment, PnP record, clean build/tests, hashes and a 64 MiB HIL
 result. The collector rejects a vendor interface that is not bound to the
-`WinUSB` service and records driver provider/version/INF properties in
-`manifest.json`.
+`WinUSB` service. It also requires a clean firmware build manifest, re-hashes
+the retained ELF/BIN artifacts, and records driver provider/version/INF
+properties in `manifest.json`. This is a host-side association, not on-device
+firmware attestation.
 
 For the physical failure/recovery evidence, run:
 
 ```powershell
 .\scripts\phase1\collect_windows_phase1b.ps1 -ExerciseDisconnectRecovery
 ```
+
+Use `-FirmwareManifest` when the qualified firmware manifest is not at the
+default `build/hpm5321-flash-release/build-manifest.json` path.
 
 Unplug the device cable when prompted and reconnect it after the interrupted
 long transfer reports failure. The collector then requires re-enumeration and a

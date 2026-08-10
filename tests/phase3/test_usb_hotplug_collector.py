@@ -86,10 +86,17 @@ class UsbHotplugCollectorTests(unittest.TestCase):
 
             def connect():
                 device.mkdir()
-                (device / "idVendor").write_text("34b7", encoding="ascii")
-                (device / "idProduct").write_text("1236", encoding="ascii")
-                (device / "busnum").write_text("7", encoding="ascii")
-                (device / "devnum").write_text("1", encoding="ascii")
+                for name, value in (
+                    ("idVendor", "34b7"),
+                    ("idProduct", "1236"),
+                    ("busnum", "7"),
+                    ("devnum", "1"),
+                    ("manufacturer", "HPMicro"),
+                    ("product", "HPM5321 USB-CAN Analyzer"),
+                    ("serial", "HPM5321-P3A-001"),
+                    ("speed", "480"),
+                ):
+                    (device / name).write_text(value, encoding="ascii")
 
             connect()
             smoke = root / "smoke.sh"
@@ -111,6 +118,7 @@ class UsbHotplugCollectorTests(unittest.TestCase):
                         "source_dirty": False,
                         "sdk_commit": "b" * 40,
                         "compiler": "test-gcc",
+                        "build_options": {"APP_USB_FORCE_FULL_SPEED": False},
                         "artifacts": {
                             "demo.elf": {
                                 "size": elf.stat().st_size,
@@ -161,7 +169,14 @@ class UsbHotplugCollectorTests(unittest.TestCase):
             self.assertEqual(evidence["evidence_boundary"]["verdict"], "PASS")
             self.assertIn("Windows PnP", evidence["evidence_boundary"]["not_covered"])
             self.assertEqual(evidence["completed_cycles"], 2)
+            self.assertEqual(evidence["device"]["serial"], "HPM5321-P3A-001")
             self.assertEqual(len(evidence["cycles"]), 2)
+            self.assertTrue(
+                all(
+                    item["device"] == evidence["device"]
+                    for item in evidence["cycles"]
+                )
+            )
             self.assertTrue(
                 all(item["recovery_smoke"]["exit_code"] == 0 for item in evidence["cycles"])
             )
@@ -184,6 +199,10 @@ class UsbHotplugCollectorTests(unittest.TestCase):
                 ("idProduct", "1236"),
                 ("busnum", "7"),
                 ("devnum", "1"),
+                ("manufacturer", "HPMicro"),
+                ("product", "HPM5321 USB-CAN Analyzer"),
+                ("serial", "HPM5321-P3A-001"),
+                ("speed", "480"),
             ):
                 (device / name).write_text(value, encoding="ascii")
             smoke = root / "smoke.sh"
@@ -231,6 +250,10 @@ class UsbHotplugCollectorTests(unittest.TestCase):
                 ("idProduct", "1236"),
                 ("busnum", "7"),
                 ("devnum", "1"),
+                ("manufacturer", "HPMicro"),
+                ("product", "HPM5321 USB-CAN Analyzer"),
+                ("serial", "HPM5321-P3A-001"),
+                ("speed", "480"),
             ):
                 (device / name).write_text(value, encoding="ascii")
             devfs = root / "devfs"

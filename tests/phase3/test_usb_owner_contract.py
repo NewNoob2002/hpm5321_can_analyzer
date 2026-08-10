@@ -40,6 +40,7 @@ class UsbOwnerContractTests(unittest.TestCase):
         self.assertNotIn("pvPortMalloc", source)
 
     def test_vendor_bulk_descriptor_contract(self):
+        cmake = (ROOT / "CMakeLists.txt").read_text()
         config = (ROOT / "config/usb_config.h").read_text()
         source = (USER / "src/app_usb_owner.c").read_text()
         header = (USER / "inc/app_usb_owner.h").read_text()
@@ -47,6 +48,8 @@ class UsbOwnerContractTests(unittest.TestCase):
         self.assertRegex(config, r"USBD_VID\s+\(0x34B7U\)")
         self.assertRegex(config, r"USBD_PID\s+\(0x1236U\)")
         self.assertIn("CONFIG_USB_HS", config)
+        self.assertIn("APP_USB_FORCE_FULL_SPEED", cmake)
+        self.assertIn("CONFIG_USB_DEVICE_FORCE_FULL_SPEED", cmake)
         self.assertRegex(header, r"APP_USB_OWNER_OUT_EP\s+\(0x01U\)")
         self.assertRegex(header, r"APP_USB_OWNER_IN_EP\s+\(0x81U\)")
         self.assertRegex(

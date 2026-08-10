@@ -27,6 +27,17 @@ if not compile_db.is_file():
 
 sdk = Path(os.environ["HPM_SDK_BASE"]).resolve()
 cache = (build / "CMakeCache.txt").read_text().splitlines()
+
+
+def cache_value(name: str) -> str:
+    prefix = f"{name}:"
+    return next(
+        line.split("=", 1)[1]
+        for line in cache
+        if line.startswith(prefix) and "=" in line
+    )
+
+
 compiler_path = next(
     line.split("=", 1)[1]
     for line in cache
@@ -48,6 +59,9 @@ data = {
         [compiler_path, "--version"],
         text=True,
     ).splitlines()[0],
+    "build_options": {
+        "APP_USB_FORCE_FULL_SPEED": cache_value("APP_USB_FORCE_FULL_SPEED") == "ON",
+    },
     "compile_commands_sha256": hashlib.sha256(compile_db.read_bytes()).hexdigest(),
     "artifacts": artifacts,
 }

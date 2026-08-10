@@ -62,3 +62,36 @@ run with the updated collector.
 The remaining Phase 3A hardware gates are provenance-complete physical hotplug,
 physical FS fallback, current Windows native WinUSB/PnP capture, real endpoint
 HALT recovery, and a joint post-HIL RTOS/USB health snapshot.
+
+## Qualification tooling added after the recorded run
+
+The repository now contains fail-closed tooling for every remaining P3A path:
+
+- `hpm5321-flash-release-fs` clean-builds a dedicated qualification image with
+  `CONFIG_USB_DEVICE_FORCE_FULL_SPEED`; its manifest records
+  `APP_USB_FORCE_FULL_SPEED=true`.
+- `scripts/phase3/run_usb_hil.py fs-fallback` requires that forced-FS manifest,
+  physical sysfs speed `12`, a readable device qualifier, FS endpoints at 64
+  bytes, other-speed endpoints at 512 bytes, and an exact 1 MiB echo. Its raw
+  PASS remains a `PARTIAL` verdict for `T-USB-001A` until combined with the
+  separate normal-build HS evidence; it does not claim natural negotiation
+  through every FS-only hub.
+- `scripts/phase3/run_usb_hil.py matrix` now performs standard endpoint
+  `SET_FEATURE(HALT)`, verifies `GET_STATUS`, requires libusb `PIPE` on both
+  `0x01` and `0x81`, clears HALT, rechecks status, and requires recovery echo.
+- `scripts/phase1/collect_windows_phase1b.ps1` now verifies a clean firmware
+  manifest and retained ELF/BIN hashes in addition to native interface-0
+  WinUSB/PnP evidence. It explicitly records that this is not device
+  attestation.
+- `scripts/phase3/collect_post_hil_health.py` accepts only supported USB HIL
+  identities completed within a five-minute window, binds them to the same ELF
+  and current serial/topology, and collects USB-owner plus
+  RTOS/fault/watchdog/allocation state in one debugger halt. This remains a
+  host-side association rather than a cryptographic on-device run nonce.
+
+All four firmware presets clean-build on 2026-08-10 and the forced-FS compile
+database contains `CONFIG_USB_DEVICE_FORCE_FULL_SPEED`. No new physical verdict
+is recorded here: the target `34b7:1236` was not enumerated on the Linux host,
+and no Windows machine/evidence bundle was available. The five verdicts in the
+table above therefore remain the current evidence truth until fresh runs are
+archived.
