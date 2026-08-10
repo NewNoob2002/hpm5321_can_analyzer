@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "profile_id": "BP-LATENCY-v1",
+  "status": "FROZEN",
+  "inherits_workload": "BP-CAN-MVP-v1",
+  "latency_path": {
+    "start": "MCAN0 RX FIFO acceptance timestamp",
+    "stop": "host CLI frame ingest immediately after protocol decode",
+    "display_and_file_formatting_excluded": true
+  },
+  "measurement": {
+    "warmup_seconds": 60,
+    "minimum_samples": 1000000,
+    "ping_samples_before": 32,
+    "ping_samples_after": 32,
+    "ping_samples_every_60_seconds": 32,
+    "clock_fit": "ordinary least squares over the lowest-RTT quartile: host_time = offset + drift * device_tick",
+    "percentile_algorithm": "nearest-rank over sorted integer nanoseconds, rank=ceil(p*N)",
+    "reported_percentiles": [50, 95, 99],
+    "raw_sample_retention": true
+  },
+  "reference_host": {
+    "cpu": "AMD Ryzen 7 8845H",
+    "os": "Fedora Linux 44 x86_64",
+    "kernel": "7.1.7-200.fc44.x86_64",
+    "usb_controller": "AMD 1022:15c1 xHCI at PCI 67:00.4",
+    "usb_root_bus": 7
+  },
+  "acceptance": {
+    "latency_p95_microseconds_max": 5000,
+    "fit_residual_p95_microseconds_max": 1000,
+    "residual_plus_tick_quantization_microseconds_max": 1000,
+    "device_drop_total": 0,
+    "host_sequence_gaps": 0
+  }
+}
