@@ -1,0 +1,446 @@
+{
+  "cases": [
+    {
+      "category": "fragmentation",
+      "elapsed_seconds": 0.000637,
+      "index": 1,
+      "iterations": 4,
+      "name": "fragment-0001",
+      "payload_size": 1,
+      "status": "PASS",
+      "verified_bytes": 4
+    },
+    {
+      "category": "fragmentation",
+      "elapsed_seconds": 0.000601,
+      "index": 2,
+      "iterations": 4,
+      "name": "fragment-0002",
+      "payload_size": 2,
+      "status": "PASS",
+      "verified_bytes": 8
+    },
+    {
+      "category": "fragmentation",
+      "elapsed_seconds": 0.000589,
+      "index": 3,
+      "iterations": 4,
+      "name": "fragment-0007",
+      "payload_size": 7,
+      "status": "PASS",
+      "verified_bytes": 28
+    },
+    {
+      "category": "fragmentation",
+      "elapsed_seconds": 0.000596,
+      "index": 4,
+      "iterations": 4,
+      "name": "fragment-0063",
+      "payload_size": 63,
+      "status": "PASS",
+      "verified_bytes": 252
+    },
+    {
+      "category": "fragmentation",
+      "elapsed_seconds": 0.000622,
+      "index": 5,
+      "iterations": 4,
+      "name": "fragment-0064",
+      "payload_size": 64,
+      "status": "PASS",
+      "verified_bytes": 256
+    },
+    {
+      "category": "fragmentation",
+      "elapsed_seconds": 0.000604,
+      "index": 6,
+      "iterations": 4,
+      "name": "fragment-0065",
+      "payload_size": 65,
+      "status": "PASS",
+      "verified_bytes": 260
+    },
+    {
+      "category": "fragmentation",
+      "elapsed_seconds": 0.000618,
+      "index": 7,
+      "iterations": 4,
+      "name": "fragment-0127",
+      "payload_size": 127,
+      "status": "PASS",
+      "verified_bytes": 508
+    },
+    {
+      "category": "fragmentation",
+      "elapsed_seconds": 0.000703,
+      "index": 8,
+      "iterations": 4,
+      "name": "fragment-0255",
+      "payload_size": 255,
+      "status": "PASS",
+      "verified_bytes": 1020
+    },
+    {
+      "category": "fragmentation",
+      "elapsed_seconds": 0.000644,
+      "index": 9,
+      "iterations": 4,
+      "name": "fragment-0511",
+      "payload_size": 511,
+      "status": "PASS",
+      "verified_bytes": 2044
+    },
+    {
+      "category": "fragmentation",
+      "elapsed_seconds": 0.000665,
+      "index": 10,
+      "iterations": 4,
+      "name": "fragment-0512",
+      "payload_size": 512,
+      "status": "PASS",
+      "verified_bytes": 2048
+    },
+    {
+      "category": "fragmentation",
+      "elapsed_seconds": 0.000628,
+      "index": 11,
+      "iterations": 4,
+      "name": "fragment-0513",
+      "payload_size": 513,
+      "status": "PASS",
+      "verified_bytes": 2052
+    },
+    {
+      "category": "fragmentation",
+      "elapsed_seconds": 0.000682,
+      "index": 12,
+      "iterations": 4,
+      "name": "fragment-1023",
+      "payload_size": 1023,
+      "status": "PASS",
+      "verified_bytes": 4092
+    },
+    {
+      "category": "fragmentation",
+      "elapsed_seconds": 0.000774,
+      "index": 13,
+      "iterations": 4,
+      "name": "fragment-1024",
+      "payload_size": 1024,
+      "status": "PASS",
+      "verified_bytes": 4096
+    },
+    {
+      "category": "fragmentation",
+      "elapsed_seconds": 0.001007,
+      "index": 14,
+      "iterations": 4,
+      "name": "fragment-1535",
+      "payload_size": 1535,
+      "status": "PASS",
+      "verified_bytes": 6140
+    },
+    {
+      "category": "fragmentation",
+      "elapsed_seconds": 0.001018,
+      "index": 15,
+      "iterations": 4,
+      "name": "fragment-1536",
+      "payload_size": 1536,
+      "status": "PASS",
+      "verified_bytes": 6144
+    },
+    {
+      "category": "fragmentation",
+      "elapsed_seconds": 0.001219,
+      "index": 16,
+      "iterations": 4,
+      "name": "fragment-2047",
+      "payload_size": 2047,
+      "status": "PASS",
+      "verified_bytes": 8188
+    },
+    {
+      "category": "fragmentation",
+      "elapsed_seconds": 0.001186,
+      "index": 17,
+      "iterations": 4,
+      "name": "fragment-2048",
+      "payload_size": 2048,
+      "status": "PASS",
+      "verified_bytes": 8192
+    },
+    {
+      "category": "backpressure",
+      "elapsed_seconds": 0.10092,
+      "host_read_pause_ms": 100,
+      "index": 18,
+      "name": "backpressure-00100ms",
+      "post_resume_probe_bytes": 513,
+      "status": "PASS",
+      "verified_bytes": 2561
+    },
+    {
+      "category": "backpressure",
+      "elapsed_seconds": 1.000997,
+      "host_read_pause_ms": 1000,
+      "index": 19,
+      "name": "backpressure-01000ms",
+      "post_resume_probe_bytes": 513,
+      "status": "PASS",
+      "verified_bytes": 2561
+    },
+    {
+      "category": "backpressure",
+      "elapsed_seconds": 5.000959,
+      "host_read_pause_ms": 5000,
+      "index": 20,
+      "name": "backpressure-05000ms",
+      "post_resume_probe_bytes": 513,
+      "status": "PASS",
+      "verified_bytes": 2561
+    },
+    {
+      "category": "backpressure",
+      "elapsed_seconds": 15.001207,
+      "host_read_pause_ms": 15000,
+      "index": 21,
+      "name": "backpressure-15000ms",
+      "post_resume_probe_bytes": 513,
+      "status": "PASS",
+      "verified_bytes": 2561
+    },
+    {
+      "category": "reset",
+      "elapsed_seconds": 0.193577,
+      "index": 22,
+      "libusb_result": 0,
+      "libusb_result_name": "LIBUSB_SUCCESS / LIBUSB_TRANSFER_COMPLETED",
+      "name": "reset-idle-01",
+      "post_reset_probe_bytes": 2048,
+      "reopen_ms": 193.123,
+      "reset_cycle": 1,
+      "status": "PASS"
+    },
+    {
+      "category": "reset",
+      "elapsed_seconds": 0.201621,
+      "index": 23,
+      "libusb_result": 0,
+      "libusb_result_name": "LIBUSB_SUCCESS / LIBUSB_TRANSFER_COMPLETED",
+      "name": "reset-idle-02",
+      "post_reset_probe_bytes": 2048,
+      "reopen_ms": 200.962,
+      "reset_cycle": 2,
+      "status": "PASS"
+    },
+    {
+      "category": "reset",
+      "elapsed_seconds": 0.201684,
+      "index": 24,
+      "libusb_result": 0,
+      "libusb_result_name": "LIBUSB_SUCCESS / LIBUSB_TRANSFER_COMPLETED",
+      "name": "reset-idle-03",
+      "post_reset_probe_bytes": 2048,
+      "reopen_ms": 201.263,
+      "reset_cycle": 3,
+      "status": "PASS"
+    },
+    {
+      "category": "reset",
+      "elapsed_seconds": 0.202479,
+      "index": 25,
+      "libusb_result": 0,
+      "libusb_result_name": "LIBUSB_SUCCESS / LIBUSB_TRANSFER_COMPLETED",
+      "name": "reset-idle-04",
+      "post_reset_probe_bytes": 2048,
+      "reopen_ms": 201.935,
+      "reset_cycle": 4,
+      "status": "PASS"
+    },
+    {
+      "category": "reset",
+      "elapsed_seconds": 0.202032,
+      "index": 26,
+      "libusb_result": 0,
+      "libusb_result_name": "LIBUSB_SUCCESS / LIBUSB_TRANSFER_COMPLETED",
+      "name": "reset-idle-05",
+      "post_reset_probe_bytes": 2048,
+      "reopen_ms": 201.611,
+      "reset_cycle": 5,
+      "status": "PASS"
+    },
+    {
+      "category": "reset",
+      "elapsed_seconds": 0.214826,
+      "index": 27,
+      "libusb_result": 0,
+      "libusb_result_name": "LIBUSB_SUCCESS / LIBUSB_TRANSFER_COMPLETED",
+      "name": "reset-idle-06",
+      "post_reset_probe_bytes": 2048,
+      "reopen_ms": 214.17,
+      "reset_cycle": 6,
+      "status": "PASS"
+    },
+    {
+      "category": "reset",
+      "elapsed_seconds": 0.200823,
+      "index": 28,
+      "libusb_result": 0,
+      "libusb_result_name": "LIBUSB_SUCCESS / LIBUSB_TRANSFER_COMPLETED",
+      "name": "reset-idle-07",
+      "post_reset_probe_bytes": 2048,
+      "reopen_ms": 200.394,
+      "reset_cycle": 7,
+      "status": "PASS"
+    },
+    {
+      "category": "reset",
+      "elapsed_seconds": 0.202389,
+      "index": 29,
+      "libusb_result": 0,
+      "libusb_result_name": "LIBUSB_SUCCESS / LIBUSB_TRANSFER_COMPLETED",
+      "name": "reset-idle-08",
+      "post_reset_probe_bytes": 2048,
+      "reopen_ms": 201.895,
+      "reset_cycle": 8,
+      "status": "PASS"
+    },
+    {
+      "category": "reset",
+      "elapsed_seconds": 0.201426,
+      "index": 30,
+      "libusb_result": 0,
+      "libusb_result_name": "LIBUSB_SUCCESS / LIBUSB_TRANSFER_COMPLETED",
+      "name": "reset-idle-09",
+      "post_reset_probe_bytes": 2048,
+      "reopen_ms": 200.897,
+      "reset_cycle": 9,
+      "status": "PASS"
+    },
+    {
+      "category": "reset",
+      "elapsed_seconds": 0.205029,
+      "index": 31,
+      "libusb_result": 0,
+      "libusb_result_name": "LIBUSB_SUCCESS / LIBUSB_TRANSFER_COMPLETED",
+      "name": "reset-idle-10",
+      "post_reset_probe_bytes": 2048,
+      "reopen_ms": 204.548,
+      "reset_cycle": 10,
+      "status": "PASS"
+    },
+    {
+      "category": "reset",
+      "discarded_pending_echo_bytes": 1,
+      "elapsed_seconds": 0.442457,
+      "index": 32,
+      "libusb_result": 0,
+      "libusb_result_name": "LIBUSB_SUCCESS / LIBUSB_TRANSFER_COMPLETED",
+      "name": "reset-pending-0001",
+      "post_reset_probe_bytes": 2048,
+      "reopen_ms": 191.562,
+      "status": "PASS"
+    },
+    {
+      "category": "reset",
+      "discarded_pending_echo_bytes": 512,
+      "elapsed_seconds": 0.463061,
+      "index": 33,
+      "libusb_result": 0,
+      "libusb_result_name": "LIBUSB_SUCCESS / LIBUSB_TRANSFER_COMPLETED",
+      "name": "reset-pending-0512",
+      "post_reset_probe_bytes": 2048,
+      "reopen_ms": 212.389,
+      "status": "PASS"
+    },
+    {
+      "category": "reset",
+      "discarded_pending_echo_bytes": 513,
+      "elapsed_seconds": 0.46308,
+      "index": 34,
+      "libusb_result": 0,
+      "libusb_result_name": "LIBUSB_SUCCESS / LIBUSB_TRANSFER_COMPLETED",
+      "name": "reset-pending-0513",
+      "post_reset_probe_bytes": 2048,
+      "reopen_ms": 211.841,
+      "status": "PASS"
+    },
+    {
+      "category": "reset",
+      "discarded_pending_echo_bytes": 2048,
+      "elapsed_seconds": 0.443685,
+      "index": 35,
+      "libusb_result": 0,
+      "libusb_result_name": "LIBUSB_SUCCESS / LIBUSB_TRANSFER_COMPLETED",
+      "name": "reset-pending-2048",
+      "post_reset_probe_bytes": 2048,
+      "reopen_ms": 192.571,
+      "status": "PASS"
+    }
+  ],
+  "completed_at": "2026-08-09T14:17:34.966487+00:00",
+  "completed_cases": 35,
+  "device": {
+    "busnum": "7",
+    "devnum": "16",
+    "manufacturer": "HPMicro",
+    "product": "HPM5321 USB-CAN Analyzer",
+    "serial": "HPM5321-P3A-001",
+    "speed_mbps": "480",
+    "topology_path": "7-1.4"
+  },
+  "firmware_manifest": {
+    "bin_sha256": "f6f8b97aed7f0173c010f506ef7e1eedd01801a270d2b50246cc8edaec3059eb",
+    "elf_sha256": "7db3d88a276612270a3dbfec3c00e50e2b3c6c573e7327d5559859a9215f5116",
+    "path": "build/hpm5321-flash-release/build-manifest.json",
+    "preset": "hpm5321-flash-release",
+    "source_dirty": false,
+    "source_revision": "e1fa77f80de5917054844f2539483172685238fb",
+    "sha256": "41048c12cf22b8805fe8f5c17c0fe08d28662ceeb0822fa694c7735eb1de0438",
+    "sdk_commit": "88b01b43900d8c30844a1e5cdd3f3b7aff6db40e",
+    "compiler": "riscv32-unknown-elf-gcc (gc891d8dc23e) 13.2.0",
+    "association_method": "operator-selected host build manifest",
+    "device_attested": false,
+    "boundary": "the raw echo firmware does not expose an on-device build identifier"
+  },
+  "host": {
+    "platform": "Linux-7.1.7-200.fc44.x86_64-x86_64-with-glibc2.43",
+    "python": "3.14.6"
+  },
+  "recovery_timeout_seconds": 15.0,
+  "repository": {
+    "dirty": true,
+    "head": "f3ae4264b14d759b309cee9c787d0c9d8ddce73d"
+  },
+  "required_cases": 35,
+  "schema_version": 1,
+  "scope": "raw vendor-bulk boundary-size transfers, host-read pauses, and USB device reset recovery preflights",
+  "seed": 21281,
+  "started_at": "2026-08-09T14:17:09.972342+00:00",
+  "status": "PASS",
+  "timeout_ms": 3000,
+  "test_references": [
+    "T-USB-005",
+    "T-USB-008",
+    "T-USB-010"
+  ],
+  "status_semantics": "PASS records completion of the raw preflight runner; referenced qualification verdicts are separate",
+  "evidence_boundaries": {
+    "T-USB-005": {
+      "verdict": "PARTIAL",
+      "covered": "raw vendor-bulk transfer sizes across USB packet and owner-buffer boundaries",
+      "not_covered": "protocol-frame fragmentation and coalescing across USB transfers"
+    },
+    "T-USB-008": {
+      "verdict": "PARTIAL",
+      "covered": "single-buffer host-read pauses of 100, 1000, 5000, and 15000 ms with recovery probes",
+      "not_covered": "sustained protocol workload, queue/drop reconciliation, and overload signaling"
+    },
+    "T-USB-010": {
+      "verdict": "PARTIAL",
+      "covered": "USB device reset and reopen with idle and pending raw echo data",
+      "not_covered": "a real endpoint HALT/STALL condition and firmware recovery from CLEAR_FEATURE(ENDPOINT_HALT)"
+    }
+  }
+}

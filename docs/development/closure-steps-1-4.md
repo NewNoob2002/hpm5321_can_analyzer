@@ -7,7 +7,7 @@ Date: 2026-08-09
 | Step | Status | Close condition |
 |---|---:|---|
 | 1. P0S / `BP-STORAGE-v1` | BLOCKED | PY00 polarity/internal pull and one aigo 16 GB read-only SDHC/FAT32 run are PASS; still needs frozen `BP-CAN-BETA-v1`, schematic/BOM CS/external-detect proof, measured debounce, a second 16 GB vendor and two vendors at each of 4/8/32 GB |
-| 2. P3A / `T-USB-007` | PASS | 100/100 physical cable cycles, readable/writable udev nodes and exact 1 MiB recovery echo after every cycle; `T-USB-007-current.json` |
+| 2. P3A / `T-USB-007` | PARTIAL | 100/100 physical cable cycles, recorded readable/writable udev nodes and exact 1 MiB recovery echo after every cycle; the original collector did not bind a manifest/serial/build ID, so a provenance-complete rerun is required |
 | 3. Windows PnP/provenance | PARTIAL | Functional WinUSB HIL proves 64 MiB echo and disconnect recovery; a current native PnP binding record and native EXE hash archive remain P3A, while the product installer lifecycle remains P6 |
 | 4. Local Cargo/sanitizers | PASS | Rust/Cargo, fmt, 55 release tests, clippy, GCC sanitizer probe and four C parity/session tests all pass |
 
@@ -58,12 +58,18 @@ The archived permission preflight failed at cycle 0. After installing the udev
 rule and reconnecting, `/dev/bus/usb/007/111` became `root:dialout 0660` and a
 1 MiB exact echo passed before the formal 100-cycle rerun.
 
-The formal run completed 100/100 cycles with continuous cycle numbering, all
-device nodes readable/writable and every 1 MiB exact echo successful. Maximum
-measured recovery was 432.549 ms. The executable SHA-256 was
+The current formal rerun completed 100/100 cycles with continuous cycle
+numbering, all device nodes recorded readable/writable and every 1 MiB exact
+echo successful. Maximum measured recovery was 196.244 ms. The executable SHA-256 was
 `e11427c2804ebe1442c2973469d875b0c2242289d71d0cc56bf7ff748a2c8c47`;
 the machine-readable record is
 `docs/evidence/phase3/T-USB-007-current.json`.
+
+The hotplug verdict and the other four current USB HIL paths are reconciled in
+`docs/evidence/phase3/P3A-USB-HIL-status-2026-08-10.md`. In particular, the
+original hotplug collector did not record firmware identity, and the
+device-reset cases are only partial evidence for `T-USB-010`; endpoint HALT is
+not yet proven.
 
 ## 3. Windows native evidence
 

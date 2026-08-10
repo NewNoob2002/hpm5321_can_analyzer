@@ -2,11 +2,13 @@
 
 ## Product firmware
 
-The root firmware now contains the first P2 RTOS ownership baseline: a statically
-allocated `health_task`, queue and software timer; a stable high-low-high sampled
-64-bit MCHTMR timebase; fault hooks; clock snapshots; and health-only LED writes.
-It does **not** yet implement the USB-CAN data plane, MCAN owner tasks, protocol
-wiring, hardware-watchdog feeding or product CLI. The Rust protocol,
+The root firmware contains the P2 RTOS ownership baseline plus the first P3A
+USB vertical slice: a statically allocated `health_task`, USB owner task,
+queues and software timer; a stable high-low-high sampled 64-bit MCHTMR
+timebase; fault hooks; clock snapshots; health-only LED writes; and raw vendor
+Bulk echo. It does **not** yet implement the USB-CAN data plane, production
+MCAN owner tasks, protocol wiring, hardware-watchdog feeding or product CLI.
+The Rust protocol,
 device-session model, transport abstraction, fake backend and USB smoke tool
 are implemented and tested, but are not yet a complete analyzer application.
 
@@ -51,8 +53,21 @@ UART-enabled image is target-running, and a 447-byte physical capture closes
 
 P2 remains open for the actual 24-hour heartbeat qualification, an API-calling
 product peripheral ISR target test, and remaining operator LED evidence. The
-generation voter does not configure or feed hardware WDG. USB and MCAN product
-owner tasks must not start before the required P2 contracts close.
+generation voter does not configure or feed hardware WDG. The preserved P2 ELF
+and fail-closed 86,400-second collector are ready; the run cannot share a board
+with timing-sensitive USB HIL because each sample halts the CPU.
+
+## Phase 3A
+
+The five current Linux USB HIL paths are reconciled in
+`docs/evidence/phase3/P3A-USB-HIL-status-2026-08-10.md`. `T-USB-006` is `PASS`
+within its explicit raw-echo boundary. `T-USB-005`, `T-USB-007`, `T-USB-008`
+and `T-USB-010` are `PARTIAL`: `T-USB-007` has a 100/100 behavioral runner
+PASS but no recorded firmware identity; the other partial verdicts do not yet
+close protocol/drop reconciliation or a real endpoint HALT. The remaining P3A
+hardware gates are provenance-complete hotplug, FS fallback, current Windows
+native WinUSB/PnP evidence, real endpoint HALT recovery, and a joint post-HIL
+RTOS/USB health snapshot.
 
 ## Reproducibility boundary
 
@@ -70,13 +85,17 @@ revision and do not inherit the official-build identity.
 Phase 1B is closed as `PASS` by
 `docs/evidence/phase1/phase1b-closure-report.md`: reproducible firmware builds,
 the J-Link GDB contract, the Rust host decision, Linux real USB and Windows
-native CI/functional HIL are complete. Physical cable cycling stays in P3A
-`T-USB-007`; Windows PnP/archive/package provenance stays in P6. OpenOCD was
+native CI/functional HIL are complete. Physical cable cycling has a 100/100
+behavioral run, but P3A `T-USB-007` remains `PARTIAL` until a manifest-bound
+rerun; Windows native WinUSB/PnP capture remains P3A, while release
+archive/package and installer provenance stay in P6. OpenOCD was
 not selected and macOS is deferred by the Linux/Windows CLI scope. These
 downstream items are not represented as completed evidence.
 
 The local Linux host toolchain is also closed: Rust/Cargo 1.97.1, GCC 16
-ASan/UBSan, host tests and clippy pass. The physical P3A hotplug collector and
-the stricter Windows PnP/provenance collector are ready, but their hardware and
-Windows-native runs are not represented as PASS until their evidence bundles
-exist.
+ASan/UBSan, host tests and clippy pass. The physical P3A hotplug collector has a
+100/100 behavioral bundle with an explicit firmware-provenance gap. The updated
+collector is fail-closed on manifest/artifact and node-access checks. The
+stricter Windows PnP/provenance collector is ready,
+but no current native run against the P3A root firmware is represented as
+`PASS` until its evidence bundle exists.
