@@ -651,9 +651,9 @@ Phase 0 必须把下表的 `TBD` 冻结为版本化 profile；未冻结前数值
 | Profile | USB/CAN workload | Batch/host | Measurement contract | Target |
 |---|---|---|---|---|
 | `BP-USB-INTEGRITY-v1` | HS；payload 1–4096 B seeded mix；FS 仅 fallback 枚举 | transfer/queue=`TBD`；named host | warm-up 60 s；10 GiB；CRC/byte count | HS 枚举且 content error=0 |
-| `BP-CAN-MVP-v1` | MCAN0；Classic 1 Mbit/s；std/ext=`TBD`；DLC mix=`TBD`；utilization=`TBD` | batch count/wait=`TBD` | 30 min；device/external analyzer counters reconcile | frozen supported single-channel rate；normal profile drop=0 |
+| `BP-CAN-MVP-v1` | MCAN0；Classic 1 Mbit/s；std/ext=90/10；DLC 0/1/2/4/8=5/5/10/20/60%；80±1% utilization；≥6000 frame/s | max 32 records / 1 ms；HS 2048 B；8 in flight；named Linux/xHCI host | 60 s warm-up + 30 min；≥10.8M frames；device/external/host counters reconcile | `bp-can-mvp-v1.json`；normal profile drop/gap/reset=0 |
 | `BP-CAN-BETA-v1` | MCAN0+MCAN2；Classic/FD capability；channel split/bitrate/utilization=`TBD` | batch count/wait=`TBD` | 72 h；per-channel/aggregate counters reconcile | frozen supported aggregate rate（20k 仅为候选）；normal profile drop=0 |
-| `BP-LATENCY-v1` | BP-CAN-MVP 输入；channel/payload mix=`TBD` | reference host/controller=`TBD` | 60 s warm-up；≥1M samples；测试前后及每 60 s ≥20 PING；线性拟合 offset+drift；报告 p50/p95/p99 | p95 ≤ 5 ms；fit residual p95 ≤ target 的 20% |
+| `BP-LATENCY-v1` | 完整继承 `BP-CAN-MVP-v1` 输入 | 同一 named Linux/xHCI host；32 PING before/after/every 60 s | 60 s warm-up；≥1M samples；lowest-RTT quartile offset+drift fit；nearest-rank p50/p95/p99 | `bp-latency-v1.json`；p95 ≤ 5 ms；residual+quantization ≤1 ms |
 | `BP-BACKPRESSURE-v1` | 当前 release scope 的 BP-CAN-MVP/BETA 输入；host stop windows=`TBD` | fixed ring/pool/batch | 分别验证 normal 与 overload；对账 drop/event/sequence | normal=0 drop；overload=显式、精确可计数 |
 | `BP-GUI-v1` | recorded 20k frame/s | named host；viewport/filter=`TBD` | 5 min warm-up；2 h；frame-time histogram/RSS slope | p95 < 33 ms；后 60 min RSS slope ≤ `TBD` |
 | `BP-STORAGE-v1` | 4 KiB blocks、queue 8、128 MiB segments、frozen BP-CAN-BETA | 8 queued 16 KiB USB reads；20 MHz ceiling | 60 s warm-up；30 min/card；72 h soak | `BLOCKED(P0S)` until numeric rate/absorption/deadline are frozen |

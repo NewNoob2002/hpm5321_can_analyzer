@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "profile_id": "BP-CAN-MVP-v1",
+  "status": "FROZEN",
+  "scope": "single-channel CLI MVP normal profile",
+  "channel": {
+    "index": 0,
+    "controller": "MCAN0",
+    "frame_format": "CLASSIC",
+    "nominal_bitrate_bps": 1000000,
+    "can_fd": false,
+    "brs": false,
+    "rtr": false
+  },
+  "traffic": {
+    "seed": 21281,
+    "minimum_frame_rate_fps": 6000,
+    "target_bus_utilization_percent": 80.0,
+    "bus_utilization_tolerance_percent": 1.0,
+    "standard_extended_ratio": {
+      "standard": 0.9,
+      "extended": 0.1
+    },
+    "dlc_distribution": {
+      "0": 0.05,
+      "1": 0.05,
+      "2": 0.1,
+      "4": 0.2,
+      "8": 0.6
+    },
+    "standard_id_range": [256, 1791],
+    "extended_id_range": [417988608, 418054143],
+    "payload_pattern": "seeded pseudo-random bytes keyed by global frame sequence"
+  },
+  "usb": {
+    "speed": "HIGH",
+    "endpoint": "0x81",
+    "transfer_bytes": 2048,
+    "host_in_flight_transfers": 8
+  },
+  "batch": {
+    "maximum_records": 32,
+    "maximum_wait_microseconds": 1000,
+    "flush_on_config_generation_change": true
+  },
+  "measurement": {
+    "warmup_seconds": 60,
+    "duration_seconds": 1800,
+    "minimum_frames": 10800000,
+    "counter_sources": [
+      "external CAN analyzer",
+      "device GET_DIAGNOSTICS",
+      "host capture metadata"
+    ]
+  },
+  "reference_host": {
+    "cpu": "AMD Ryzen 7 8845H",
+    "os": "Fedora Linux 44 x86_64",
+    "kernel": "7.1.7-200.fc44.x86_64",
+    "usb_controller": "AMD 1022:15c1 xHCI at PCI 67:00.4",
+    "usb_root_bus": 7
+  },
+  "acceptance": {
+    "minimum_sustained_frame_rate_fps": 6000,
+    "device_drop_total": 0,
+    "host_sequence_gaps": 0,
+    "unexpected_resets": 0,
+    "counter_reconciliation": "external == device_rx + device_hw_reject; device_emitted == host_received"
+  },
+  "overload_excluded": true
+}
