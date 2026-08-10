@@ -78,17 +78,53 @@ class UsbHotplugCollectorTests(unittest.TestCase):
             root = Path(temporary)
             sysfs = root / "sysfs"
             sysfs.mkdir()
+            devfs = root / "devfs"
+            device_node = devfs / "007" / "001"
+            device_node.parent.mkdir(parents=True)
+            device_node.touch()
             device = sysfs / "7-1.4"
 
             def connect():
                 device.mkdir()
                 (device / "idVendor").write_text("34b7", encoding="ascii")
                 (device / "idProduct").write_text("1236", encoding="ascii")
+                (device / "busnum").write_text("7", encoding="ascii")
+                (device / "devnum").write_text("1", encoding="ascii")
 
             connect()
             smoke = root / "smoke.sh"
             smoke.write_text("#!/bin/sh\nexit 0\n", encoding="ascii")
             smoke.chmod(0o755)
+            manifest = root / "build-manifest.json"
+            output = root / "output"
+            output.mkdir()
+            elf = output / "demo.elf"
+            binary = output / "demo.bin"
+            elf.write_bytes(b"elf")
+            binary.write_bytes(b"bin")
+            manifest.write_text(
+                json.dumps(
+                    {
+                        "schema": 1,
+                        "preset": "test",
+                        "source_revision": "a" * 40,
+                        "source_dirty": False,
+                        "sdk_commit": "b" * 40,
+                        "compiler": "test-gcc",
+                        "artifacts": {
+                            "demo.elf": {
+                                "size": elf.stat().st_size,
+                                "sha256": MODULE._sha256(elf),
+                            },
+                            "demo.bin": {
+                                "size": binary.stat().st_size,
+                                "sha256": MODULE._sha256(binary),
+                            },
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
 
             def cycle_device():
                 for _ in range(2):
@@ -103,6 +139,7 @@ class UsbHotplugCollectorTests(unittest.TestCase):
             args = SimpleNamespace(
                 root=root,
                 sysfs_root=sysfs,
+                devfs_root=devfs,
                 vid="34b7",
                 pid="1236",
                 cycles=2,
@@ -113,6 +150,7 @@ class UsbHotplugCollectorTests(unittest.TestCase):
                 smoke_retry_ms=5,
                 smoke_bytes=1024,
                 smoke_executable=smoke,
+                firmware_manifest=manifest,
                 output=output,
                 operator="test",
             )
@@ -120,6 +158,8 @@ class UsbHotplugCollectorTests(unittest.TestCase):
             thread.join()
             evidence = json.loads(output.read_text(encoding="utf-8"))
             self.assertEqual(evidence["status"], "PASS")
+            self.assertEqual(evidence["evidence_boundary"]["verdict"], "PASS")
+            self.assertIn("Windows PnP", evidence["evidence_boundary"]["not_covered"])
             self.assertEqual(evidence["completed_cycles"], 2)
             self.assertEqual(len(evidence["cycles"]), 2)
             self.assertTrue(
@@ -128,6 +168,131 @@ class UsbHotplugCollectorTests(unittest.TestCase):
             self.assertTrue(
                 all(item["recovery_smoke"]["attempt_count"] == 1 for item in evidence["cycles"])
             )
+            self.assertEqual(
+                evidence["firmware_manifest"]["source_revision"], "a" * 40
+            )
+            self.assertFalse(evidence["firmware_manifest"]["device_attested"])
+
+    def test_missing_device_node_fails_before_hil(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            sysfs = root / "sysfs"
+            device = sysfs / "7-1.4"
+            device.mkdir(parents=True)
+            for name, value in (
+                ("idVendor", "34b7"),
+                ("idProduct", "1236"),
+                ("busnum", "7"),
+                ("devnum", "1"),
+            ):
+                (device / name).write_text(value, encoding="ascii")
+            smoke = root / "smoke.sh"
+            smoke.write_text("#!/bin/sh\nexit 0\n", encoding="ascii")
+            smoke.chmod(0o755)
+            output = root / "evidence.json"
+            args = SimpleNamespace(
+                root=root,
+                sysfs_root=sysfs,
+                devfs_root=root / "missing-devfs",
+                vid="34b7",
+                pid="1236",
+                cycles=1,
+                poll_ms=5,
+                minimum_disconnect_ms=10,
+                overall_timeout_seconds=1,
+                recovery_timeout_seconds=0.1,
+                smoke_retry_ms=5,
+                smoke_bytes=1024,
+                smoke_executable=smoke,
+                firmware_manifest=root / "unused.json",
+                output=output,
+                operator="test",
+            )
+
+            with mock.patch.object(
+                MODULE, "verified_firmware_manifest", return_value={}
+            ):
+                self.assertEqual(MODULE.collect(args), 1)
+
+            evidence = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(evidence["status"], "FAIL")
+            self.assertEqual(
+                evidence["evidence_boundary"]["verdict"], "NOT_QUALIFIED"
+            )
+            self.assertIn("not readable/writable", evidence["failure"])
+
+    def test_inaccessible_reconnected_node_fails_cycle(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            device = root / "sysfs" / "7-1.4"
+            device.mkdir(parents=True)
+            for name, value in (
+                ("idVendor", "34b7"),
+                ("idProduct", "1236"),
+                ("busnum", "7"),
+                ("devnum", "1"),
+            ):
+                (device / name).write_text(value, encoding="ascii")
+            devfs = root / "devfs"
+            device_node = devfs / "007" / "001"
+            device_node.parent.mkdir(parents=True)
+            device_node.touch()
+            smoke = root / "smoke.sh"
+            smoke.write_text("#!/bin/sh\nexit 0\n", encoding="ascii")
+            smoke.chmod(0o755)
+            output = root / "evidence.json"
+            args = SimpleNamespace(
+                root=root,
+                sysfs_root=root / "sysfs",
+                devfs_root=devfs,
+                vid="34b7",
+                pid="1236",
+                cycles=1,
+                poll_ms=5,
+                minimum_disconnect_ms=1,
+                overall_timeout_seconds=1,
+                recovery_timeout_seconds=0.1,
+                smoke_retry_ms=5,
+                smoke_bytes=1024,
+                smoke_executable=smoke,
+                firmware_manifest=root / "unused.json",
+                output=output,
+                operator="test",
+            )
+            calls = 0
+
+            def devices(*_args):
+                nonlocal calls
+                calls += 1
+                if calls == 2:
+                    device_node.unlink()
+                    return []
+                return [device]
+
+            passed = {
+                "exit_code": 0,
+                "stdout": "PASS",
+                "stderr": "",
+                "attempt_count": 1,
+                "attempts": [],
+                "recovery_ms": 0.0,
+            }
+            with (
+                mock.patch.object(
+                    MODULE, "verified_firmware_manifest", return_value={}
+                ),
+                mock.patch.object(MODULE, "find_usb_devices", side_effect=devices),
+                mock.patch.object(
+                    MODULE, "_run_smoke_with_retry", return_value=passed
+                ),
+            ):
+                self.assertEqual(MODULE.collect(args), 1)
+
+            evidence = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(evidence["status"], "FAIL")
+            self.assertEqual(len(evidence["cycles"]), 1)
+            self.assertFalse(evidence["cycles"][0]["device_node_readable"])
+            self.assertIn("cycle 1 USB device node", evidence["failure"])
 
 
 if __name__ == "__main__":

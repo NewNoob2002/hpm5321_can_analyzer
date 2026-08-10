@@ -1,2554 +1,2534 @@
 {
-  "completed_at": "2026-08-09T03:19:23.423449+00:00",
+  "completed_at": "2026-08-09T15:36:45.780684+00:00",
   "completed_cycles": 100,
   "cycles": [
     {
       "cycle": 1,
-      "device_node": "/dev/bus/usb/007/037",
+      "device_node": "/dev/bus/usb/007/017",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2534.223,
-      "disconnected_at": "2026-08-09T03:04:02.689331+00:00",
-      "reconnected_at": "2026-08-09T03:04:05.223554+00:00",
-      "recovery_completed_at": "2026-08-09T03:04:05.552958+00:00",
+      "disconnect_ms": 3854.245,
+      "disconnected_at": "2026-08-09T15:21:56.486935+00:00",
+      "reconnected_at": "2026-08-09T15:22:00.341183+00:00",
+      "recovery_completed_at": "2026-08-09T15:22:00.434039+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.074"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.276"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.345,
+        "recovery_ms": 91.757,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.074"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.276"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 2,
-      "device_node": "/dev/bus/usb/007/038",
+      "device_node": "/dev/bus/usb/007/018",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2935.857,
-      "disconnected_at": "2026-08-09T03:04:10.520857+00:00",
-      "reconnected_at": "2026-08-09T03:04:13.456716+00:00",
-      "recovery_completed_at": "2026-08-09T03:04:13.786857+00:00",
+      "disconnect_ms": 2636.46,
+      "disconnected_at": "2026-08-09T15:22:04.598549+00:00",
+      "reconnected_at": "2026-08-09T15:22:07.235008+00:00",
+      "recovery_completed_at": "2026-08-09T15:22:07.329849+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.080"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.181"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.688,
+        "recovery_ms": 92.698,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.080"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.181"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 3,
-      "device_node": "/dev/bus/usb/007/039",
+      "device_node": "/dev/bus/usb/007/019",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3439.79,
-      "disconnected_at": "2026-08-09T03:04:17.029716+00:00",
-      "reconnected_at": "2026-08-09T03:04:20.469507+00:00",
-      "recovery_completed_at": "2026-08-09T03:04:20.799890+00:00",
+      "disconnect_ms": 3854.819,
+      "disconnected_at": "2026-08-09T15:22:13.119763+00:00",
+      "reconnected_at": "2026-08-09T15:22:16.974584+00:00",
+      "recovery_completed_at": "2026-08-09T15:22:17.068346+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.328 throughput_MiB_s=3.053"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.263"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 329.476,
+        "recovery_ms": 92.202,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.328 throughput_MiB_s=3.053"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.263"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 4,
-      "device_node": "/dev/bus/usb/007/040",
+      "device_node": "/dev/bus/usb/007/020",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3443.554,
-      "disconnected_at": "2026-08-09T03:04:24.247821+00:00",
-      "reconnected_at": "2026-08-09T03:04:27.691375+00:00",
-      "recovery_completed_at": "2026-08-09T03:04:28.020672+00:00",
+      "disconnect_ms": 2838.027,
+      "disconnected_at": "2026-08-09T15:22:22.549682+00:00",
+      "reconnected_at": "2026-08-09T15:22:25.387714+00:00",
+      "recovery_completed_at": "2026-08-09T15:22:25.480170+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.080"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.265"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.955,
+        "recovery_ms": 91.0,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.080"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.265"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 5,
-      "device_node": "/dev/bus/usb/007/041",
+      "device_node": "/dev/bus/usb/007/021",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3140.947,
-      "disconnected_at": "2026-08-09T03:04:31.867894+00:00",
-      "reconnected_at": "2026-08-09T03:04:35.008841+00:00",
-      "recovery_completed_at": "2026-08-09T03:04:35.338520+00:00",
+      "disconnect_ms": 4667.523,
+      "disconnected_at": "2026-08-09T15:22:28.933977+00:00",
+      "reconnected_at": "2026-08-09T15:22:33.601504+00:00",
+      "recovery_completed_at": "2026-08-09T15:22:33.695745+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.122"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.446,
+        "recovery_ms": 92.815,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.122"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 6,
-      "device_node": "/dev/bus/usb/007/042",
+      "device_node": "/dev/bus/usb/007/022",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2433.383,
-      "disconnected_at": "2026-08-09T03:04:39.799288+00:00",
-      "reconnected_at": "2026-08-09T03:04:42.232670+00:00",
-      "recovery_completed_at": "2026-08-09T03:04:42.561607+00:00",
+      "disconnect_ms": 2536.131,
+      "disconnected_at": "2026-08-09T15:22:47.697646+00:00",
+      "reconnected_at": "2026-08-09T15:22:50.233778+00:00",
+      "recovery_completed_at": "2026-08-09T15:22:50.325715+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.324 throughput_MiB_s=3.085"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.363"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.631,
+        "recovery_ms": 90.564,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.324 throughput_MiB_s=3.085"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.363"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 7,
-      "device_node": "/dev/bus/usb/007/043",
+      "device_node": "/dev/bus/usb/007/023",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2433.254,
-      "disconnected_at": "2026-08-09T03:05:08.520804+00:00",
-      "reconnected_at": "2026-08-09T03:05:10.954059+00:00",
-      "recovery_completed_at": "2026-08-09T03:05:11.282669+00:00",
+      "disconnect_ms": 2638.61,
+      "disconnected_at": "2026-08-09T15:23:03.007447+00:00",
+      "reconnected_at": "2026-08-09T15:23:05.646057+00:00",
+      "recovery_completed_at": "2026-08-09T15:23:05.738125+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.322"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.887,
+        "recovery_ms": 90.894,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.322"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 8,
-      "device_node": "/dev/bus/usb/007/044",
+      "device_node": "/dev/bus/usb/007/024",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2634.074,
-      "disconnected_at": "2026-08-09T03:05:16.554209+00:00",
-      "reconnected_at": "2026-08-09T03:05:19.188284+00:00",
-      "recovery_completed_at": "2026-08-09T03:05:19.517547+00:00",
+      "disconnect_ms": 2131.485,
+      "disconnected_at": "2026-08-09T15:23:33.432567+00:00",
+      "reconnected_at": "2026-08-09T15:23:35.564053+00:00",
+      "recovery_completed_at": "2026-08-09T15:23:35.656134+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.324 throughput_MiB_s=3.083"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.329"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.596,
+        "recovery_ms": 90.519,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.324 throughput_MiB_s=3.083"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.329"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 9,
-      "device_node": "/dev/bus/usb/007/045",
+      "device_node": "/dev/bus/usb/007/025",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3643.15,
-      "disconnected_at": "2026-08-09T03:05:23.068281+00:00",
-      "reconnected_at": "2026-08-09T03:05:26.711461+00:00",
-      "recovery_completed_at": "2026-08-09T03:05:27.041668+00:00",
+      "disconnect_ms": 3855.235,
+      "disconnected_at": "2026-08-09T15:23:39.917084+00:00",
+      "reconnected_at": "2026-08-09T15:23:43.772321+00:00",
+      "recovery_completed_at": "2026-08-09T15:23:43.864786+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.345"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.666,
+        "recovery_ms": 91.279,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.345"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 10,
-      "device_node": "/dev/bus/usb/007/046",
+      "device_node": "/dev/bus/usb/007/026",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2531.963,
-      "disconnected_at": "2026-08-09T03:05:29.880039+00:00",
-      "reconnected_at": "2026-08-09T03:05:32.412003+00:00",
-      "recovery_completed_at": "2026-08-09T03:05:32.740086+00:00",
+      "disconnect_ms": 3139.421,
+      "disconnected_at": "2026-08-09T15:23:45.994801+00:00",
+      "reconnected_at": "2026-08-09T15:23:49.134222+00:00",
+      "recovery_completed_at": "2026-08-09T15:23:49.227749+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.324 throughput_MiB_s=3.084"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.282"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 326.589,
+        "recovery_ms": 92.043,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.324 throughput_MiB_s=3.084"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.282"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 11,
-      "device_node": "/dev/bus/usb/007/047",
+      "device_node": "/dev/bus/usb/007/028",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3950.298,
-      "disconnected_at": "2026-08-09T03:05:38.523046+00:00",
-      "reconnected_at": "2026-08-09T03:05:42.473345+00:00",
-      "recovery_completed_at": "2026-08-09T03:05:42.802775+00:00",
+      "disconnect_ms": 1929.168,
+      "disconnected_at": "2026-08-09T15:24:22.829928+00:00",
+      "reconnected_at": "2026-08-09T15:24:24.759095+00:00",
+      "recovery_completed_at": "2026-08-09T15:24:24.852750+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.314"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.223,
+        "recovery_ms": 91.933,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.314"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 12,
-      "device_node": "/dev/bus/usb/007/048",
+      "device_node": "/dev/bus/usb/007/029",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2731.75,
-      "disconnected_at": "2026-08-09T03:05:45.436772+00:00",
-      "reconnected_at": "2026-08-09T03:05:48.168523+00:00",
-      "recovery_completed_at": "2026-08-09T03:05:48.496744+00:00",
+      "disconnect_ms": 2433.391,
+      "disconnected_at": "2026-08-09T15:24:26.681301+00:00",
+      "reconnected_at": "2026-08-09T15:24:29.114663+00:00",
+      "recovery_completed_at": "2026-08-09T15:24:29.206522+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.324 throughput_MiB_s=3.083"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.275"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 326.953,
+        "recovery_ms": 91.007,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.324 throughput_MiB_s=3.083"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.275"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 13,
-      "device_node": "/dev/bus/usb/007/049",
+      "device_node": "/dev/bus/usb/007/030",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2129.551,
-      "disconnected_at": "2026-08-09T03:05:52.049286+00:00",
-      "reconnected_at": "2026-08-09T03:05:54.178838+00:00",
-      "recovery_completed_at": "2026-08-09T03:05:54.508171+00:00",
+      "disconnect_ms": 2329.063,
+      "disconnected_at": "2026-08-09T15:24:30.524946+00:00",
+      "reconnected_at": "2026-08-09T15:24:32.854015+00:00",
+      "recovery_completed_at": "2026-08-09T15:24:33.049115+00:00",
       "recovery_smoke": {
-        "attempt_count": 1,
+        "attempt_count": 2,
         "attempts": [
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.316"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.695,
+        "recovery_ms": 193.973,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.316"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 14,
-      "device_node": "/dev/bus/usb/007/050",
+      "device_node": "/dev/bus/usb/007/031",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3247.147,
-      "disconnected_at": "2026-08-09T03:05:59.172993+00:00",
-      "reconnected_at": "2026-08-09T03:06:02.420140+00:00",
-      "recovery_completed_at": "2026-08-09T03:06:02.749200+00:00",
+      "disconnect_ms": 4659.352,
+      "disconnected_at": "2026-08-09T15:24:47.149306+00:00",
+      "reconnected_at": "2026-08-09T15:24:51.808658+00:00",
+      "recovery_completed_at": "2026-08-09T15:24:52.004593+00:00",
       "recovery_smoke": {
-        "attempt_count": 1,
+        "attempt_count": 2,
         "attempts": [
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.080"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.247"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.601,
+        "recovery_ms": 194.373,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.080"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.247"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 15,
-      "device_node": "/dev/bus/usb/007/051",
+      "device_node": "/dev/bus/usb/007/032",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2027.124,
-      "disconnected_at": "2026-08-09T03:06:05.493024+00:00",
-      "reconnected_at": "2026-08-09T03:06:07.520149+00:00",
-      "recovery_completed_at": "2026-08-09T03:06:07.849364+00:00",
+      "disconnect_ms": 1825.815,
+      "disconnected_at": "2026-08-09T15:24:54.845962+00:00",
+      "reconnected_at": "2026-08-09T15:24:56.671774+00:00",
+      "recovery_completed_at": "2026-08-09T15:24:56.764357+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.267"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.999,
+        "recovery_ms": 91.391,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.267"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 16,
-      "device_node": "/dev/bus/usb/007/052",
+      "device_node": "/dev/bus/usb/007/033",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2130.412,
-      "disconnected_at": "2026-08-09T03:06:09.882959+00:00",
-      "reconnected_at": "2026-08-09T03:06:12.013372+00:00",
-      "recovery_completed_at": "2026-08-09T03:06:12.343683+00:00",
+      "disconnect_ms": 2635.996,
+      "disconnected_at": "2026-08-09T15:24:59.501449+00:00",
+      "reconnected_at": "2026-08-09T15:25:02.137447+00:00",
+      "recovery_completed_at": "2026-08-09T15:25:02.231225+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.325"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 329.571,
+        "recovery_ms": 91.846,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.325"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 17,
-      "device_node": "/dev/bus/usb/007/053",
+      "device_node": "/dev/bus/usb/007/034",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2027.815,
-      "disconnected_at": "2026-08-09T03:06:14.372650+00:00",
-      "reconnected_at": "2026-08-09T03:06:16.400466+00:00",
-      "recovery_completed_at": "2026-08-09T03:06:16.832484+00:00",
+      "disconnect_ms": 2846.116,
+      "disconnected_at": "2026-08-09T15:25:11.262027+00:00",
+      "reconnected_at": "2026-08-09T15:25:14.108145+00:00",
+      "recovery_completed_at": "2026-08-09T15:25:14.201378+00:00",
       "recovery_smoke": {
-        "attempt_count": 2,
+        "attempt_count": 1,
         "attempts": [
-          {
-            "exit_code": 2,
-            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
-            "stdout": ""
-          },
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.273"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 430.414,
+        "recovery_ms": 92.102,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.273"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 18,
-      "device_node": "/dev/bus/usb/007/054",
+      "device_node": "/dev/bus/usb/007/035",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2331.056,
-      "disconnected_at": "2026-08-09T03:06:19.169494+00:00",
-      "reconnected_at": "2026-08-09T03:06:21.500557+00:00",
-      "recovery_completed_at": "2026-08-09T03:06:21.826197+00:00",
+      "disconnect_ms": 3856.238,
+      "disconnected_at": "2026-08-09T15:25:24.048265+00:00",
+      "reconnected_at": "2026-08-09T15:25:27.904504+00:00",
+      "recovery_completed_at": "2026-08-09T15:25:28.099734+00:00",
       "recovery_smoke": {
-        "attempt_count": 1,
+        "attempt_count": 2,
         "attempts": [
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.320 throughput_MiB_s=3.122"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.338"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 324.644,
+        "recovery_ms": 193.959,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.320 throughput_MiB_s=3.122"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.338"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 19,
-      "device_node": "/dev/bus/usb/007/055",
+      "device_node": "/dev/bus/usb/007/036",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2332.049,
-      "disconnected_at": "2026-08-09T03:06:52.160840+00:00",
-      "reconnected_at": "2026-08-09T03:06:54.492890+00:00",
-      "recovery_completed_at": "2026-08-09T03:06:54.821463+00:00",
+      "disconnect_ms": 3650.444,
+      "disconnected_at": "2026-08-09T15:25:32.464884+00:00",
+      "reconnected_at": "2026-08-09T15:25:36.115328+00:00",
+      "recovery_completed_at": "2026-08-09T15:25:36.207841+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.337"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.802,
+        "recovery_ms": 91.191,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.337"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 20,
-      "device_node": "/dev/bus/usb/007/056",
+      "device_node": "/dev/bus/usb/007/037",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3648.272,
-      "disconnected_at": "2026-08-09T03:06:58.366037+00:00",
-      "reconnected_at": "2026-08-09T03:07:02.014309+00:00",
-      "recovery_completed_at": "2026-08-09T03:07:02.343147+00:00",
+      "disconnect_ms": 2836.789,
+      "disconnected_at": "2026-08-09T15:25:40.472927+00:00",
+      "reconnected_at": "2026-08-09T15:25:43.309716+00:00",
+      "recovery_completed_at": "2026-08-09T15:25:43.403190+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.230"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.697,
+        "recovery_ms": 92.2,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.230"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 21,
-      "device_node": "/dev/bus/usb/007/057",
+      "device_node": "/dev/bus/usb/007/038",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2331.213,
-      "disconnected_at": "2026-08-09T03:07:06.097563+00:00",
-      "reconnected_at": "2026-08-09T03:07:08.428782+00:00",
-      "recovery_completed_at": "2026-08-09T03:07:08.756641+00:00",
+      "disconnect_ms": 2839.46,
+      "disconnected_at": "2026-08-09T15:25:53.236998+00:00",
+      "reconnected_at": "2026-08-09T15:25:56.076458+00:00",
+      "recovery_completed_at": "2026-08-09T15:25:56.168793+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.305"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.109,
+        "recovery_ms": 90.837,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.305"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 22,
-      "device_node": "/dev/bus/usb/007/058",
+      "device_node": "/dev/bus/usb/007/039",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2429.304,
-      "disconnected_at": "2026-08-09T03:07:11.290409+00:00",
-      "reconnected_at": "2026-08-09T03:07:13.719714+00:00",
-      "recovery_completed_at": "2026-08-09T03:07:14.048933+00:00",
+      "disconnect_ms": 2534.975,
+      "disconnected_at": "2026-08-09T15:26:03.280965+00:00",
+      "reconnected_at": "2026-08-09T15:26:05.815940+00:00",
+      "recovery_completed_at": "2026-08-09T15:26:05.908745+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.300"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.718,
+        "recovery_ms": 91.104,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.300"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 23,
-      "device_node": "/dev/bus/usb/007/059",
+      "device_node": "/dev/bus/usb/007/040",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2129.774,
-      "disconnected_at": "2026-08-09T03:07:16.283393+00:00",
-      "reconnected_at": "2026-08-09T03:07:18.413168+00:00",
-      "recovery_completed_at": "2026-08-09T03:07:18.741149+00:00",
+      "disconnect_ms": 2331.411,
+      "disconnected_at": "2026-08-09T15:27:03.157576+00:00",
+      "reconnected_at": "2026-08-09T15:27:05.488984+00:00",
+      "recovery_completed_at": "2026-08-09T15:27:05.585579+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.080"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 326.894,
+        "recovery_ms": 94.478,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.080"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 24,
-      "device_node": "/dev/bus/usb/007/060",
+      "device_node": "/dev/bus/usb/007/041",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2435.631,
-      "disconnected_at": "2026-08-09T03:07:21.278493+00:00",
-      "reconnected_at": "2026-08-09T03:07:23.714129+00:00",
-      "recovery_completed_at": "2026-08-09T03:07:24.039970+00:00",
+      "disconnect_ms": 1828.031,
+      "disconnected_at": "2026-08-09T15:27:10.860268+00:00",
+      "reconnected_at": "2026-08-09T15:27:12.688304+00:00",
+      "recovery_completed_at": "2026-08-09T15:27:12.781003+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.321 throughput_MiB_s=3.118"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.350"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 324.239,
+        "recovery_ms": 91.099,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.321 throughput_MiB_s=3.118"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.350"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 25,
-      "device_node": "/dev/bus/usb/007/061",
+      "device_node": "/dev/bus/usb/007/042",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2128.298,
-      "disconnected_at": "2026-08-09T03:07:26.375244+00:00",
-      "reconnected_at": "2026-08-09T03:07:28.503543+00:00",
-      "recovery_completed_at": "2026-08-09T03:07:28.833080+00:00",
+      "disconnect_ms": 3046.481,
+      "disconnected_at": "2026-08-09T15:27:15.722705+00:00",
+      "reconnected_at": "2026-08-09T15:27:18.769187+00:00",
+      "recovery_completed_at": "2026-08-09T15:27:18.861177+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.351"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.338,
+        "recovery_ms": 90.61,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.351"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 26,
-      "device_node": "/dev/bus/usb/007/062",
+      "device_node": "/dev/bus/usb/007/043",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2127.109,
-      "disconnected_at": "2026-08-09T03:07:31.574015+00:00",
-      "reconnected_at": "2026-08-09T03:07:33.701126+00:00",
-      "recovery_completed_at": "2026-08-09T03:07:34.029584+00:00",
+      "disconnect_ms": 3350.364,
+      "disconnected_at": "2026-08-09T15:27:20.791856+00:00",
+      "reconnected_at": "2026-08-09T15:27:24.142222+00:00",
+      "recovery_completed_at": "2026-08-09T15:27:24.234739+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.080"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.297"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.174,
+        "recovery_ms": 90.727,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.080"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.297"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 27,
-      "device_node": "/dev/bus/usb/007/063",
+      "device_node": "/dev/bus/usb/007/044",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3446.69,
-      "disconnected_at": "2026-08-09T03:07:41.232294+00:00",
-      "reconnected_at": "2026-08-09T03:07:44.678985+00:00",
-      "recovery_completed_at": "2026-08-09T03:07:45.007454+00:00",
+      "disconnect_ms": 4971.762,
+      "disconnected_at": "2026-08-09T15:27:28.705112+00:00",
+      "reconnected_at": "2026-08-09T15:27:33.676876+00:00",
+      "recovery_completed_at": "2026-08-09T15:27:33.769017+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.345"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.486,
+        "recovery_ms": 90.805,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.345"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 28,
-      "device_node": "/dev/bus/usb/007/064",
+      "device_node": "/dev/bus/usb/007/045",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2636.503,
-      "disconnected_at": "2026-08-09T03:08:11.295475+00:00",
-      "reconnected_at": "2026-08-09T03:08:13.931978+00:00",
-      "recovery_completed_at": "2026-08-09T03:08:14.258197+00:00",
+      "disconnect_ms": 3344.427,
+      "disconnected_at": "2026-08-09T15:27:36.918891+00:00",
+      "reconnected_at": "2026-08-09T15:27:40.263319+00:00",
+      "recovery_completed_at": "2026-08-09T15:27:40.355773+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.320 throughput_MiB_s=3.121"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.316"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 324.333,
+        "recovery_ms": 90.948,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.320 throughput_MiB_s=3.121"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.316"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 29,
-      "device_node": "/dev/bus/usb/007/065",
+      "device_node": "/dev/bus/usb/007/046",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2126.633,
-      "disconnected_at": "2026-08-09T03:08:43.785632+00:00",
-      "reconnected_at": "2026-08-09T03:08:45.912267+00:00",
-      "recovery_completed_at": "2026-08-09T03:08:46.344100+00:00",
+      "disconnect_ms": 4461.975,
+      "disconnected_at": "2026-08-09T15:27:45.838823+00:00",
+      "reconnected_at": "2026-08-09T15:27:50.300802+00:00",
+      "recovery_completed_at": "2026-08-09T15:27:50.394599+00:00",
       "recovery_smoke": {
-        "attempt_count": 2,
+        "attempt_count": 1,
         "attempts": [
-          {
-            "exit_code": 2,
-            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
-            "stdout": ""
-          },
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.200"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 430.819,
+        "recovery_ms": 92.44,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.200"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 30,
-      "device_node": "/dev/bus/usb/007/066",
+      "device_node": "/dev/bus/usb/007/047",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2434.749,
-      "disconnected_at": "2026-08-09T03:08:53.541892+00:00",
-      "reconnected_at": "2026-08-09T03:08:55.976642+00:00",
-      "recovery_completed_at": "2026-08-09T03:08:56.301539+00:00",
+      "disconnect_ms": 3347.176,
+      "disconnected_at": "2026-08-09T15:27:56.386320+00:00",
+      "reconnected_at": "2026-08-09T15:27:59.733496+00:00",
+      "recovery_completed_at": "2026-08-09T15:27:59.825830+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.320 throughput_MiB_s=3.123"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.368"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 323.393,
+        "recovery_ms": 90.817,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.320 throughput_MiB_s=3.123"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.368"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 31,
-      "device_node": "/dev/bus/usb/007/067",
+      "device_node": "/dev/bus/usb/007/048",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3041.285,
-      "disconnected_at": "2026-08-09T03:09:26.659298+00:00",
-      "reconnected_at": "2026-08-09T03:09:29.700585+00:00",
-      "recovery_completed_at": "2026-08-09T03:09:30.029297+00:00",
+      "disconnect_ms": 2131.278,
+      "disconnected_at": "2026-08-09T15:28:18.911777+00:00",
+      "reconnected_at": "2026-08-09T15:28:21.043056+00:00",
+      "recovery_completed_at": "2026-08-09T15:28:21.136954+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.289"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.346,
+        "recovery_ms": 91.851,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.289"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 32,
-      "device_node": "/dev/bus/usb/007/068",
+      "device_node": "/dev/bus/usb/007/049",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3149.125,
-      "disconnected_at": "2026-08-09T03:09:35.101852+00:00",
-      "reconnected_at": "2026-08-09T03:09:38.250977+00:00",
-      "recovery_completed_at": "2026-08-09T03:09:38.577478+00:00",
+      "disconnect_ms": 2333.58,
+      "disconnected_at": "2026-08-09T15:28:31.486699+00:00",
+      "reconnected_at": "2026-08-09T15:28:33.820282+00:00",
+      "recovery_completed_at": "2026-08-09T15:28:33.912136+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.322 throughput_MiB_s=3.107"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.371"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 324.591,
+        "recovery_ms": 90.425,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.322 throughput_MiB_s=3.107"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.371"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 33,
-      "device_node": "/dev/bus/usb/007/069",
+      "device_node": "/dev/bus/usb/007/050",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2231.582,
-      "disconnected_at": "2026-08-09T03:09:42.742885+00:00",
-      "reconnected_at": "2026-08-09T03:09:44.974468+00:00",
-      "recovery_completed_at": "2026-08-09T03:09:45.303134+00:00",
+      "disconnect_ms": 3458.939,
+      "disconnected_at": "2026-08-09T15:28:40.113884+00:00",
+      "reconnected_at": "2026-08-09T15:28:43.572824+00:00",
+      "recovery_completed_at": "2026-08-09T15:28:43.667086+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.237"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.529,
+        "recovery_ms": 92.751,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.237"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 34,
-      "device_node": "/dev/bus/usb/007/070",
+      "device_node": "/dev/bus/usb/007/051",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2132.099,
-      "disconnected_at": "2026-08-09T03:09:47.334905+00:00",
-      "reconnected_at": "2026-08-09T03:09:49.467004+00:00",
-      "recovery_completed_at": "2026-08-09T03:09:49.795820+00:00",
+      "disconnect_ms": 3954.228,
+      "disconnected_at": "2026-08-09T15:28:51.902071+00:00",
+      "reconnected_at": "2026-08-09T15:28:55.856300+00:00",
+      "recovery_completed_at": "2026-08-09T15:28:55.951549+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.091 throughput_MiB_s=11.039"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.545,
+        "recovery_ms": 93.588,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.091 throughput_MiB_s=11.039"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 35,
-      "device_node": "/dev/bus/usb/007/071",
+      "device_node": "/dev/bus/usb/007/052",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2334.684,
-      "disconnected_at": "2026-08-09T03:09:51.828389+00:00",
-      "reconnected_at": "2026-08-09T03:09:54.163073+00:00",
-      "recovery_completed_at": "2026-08-09T03:09:54.486795+00:00",
+      "disconnect_ms": 2128.771,
+      "disconnected_at": "2026-08-09T15:29:02.445041+00:00",
+      "reconnected_at": "2026-08-09T15:29:04.573813+00:00",
+      "recovery_completed_at": "2026-08-09T15:29:04.668564+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.320 throughput_MiB_s=3.121"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.165"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 322.386,
+        "recovery_ms": 93.01,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.320 throughput_MiB_s=3.121"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.165"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 36,
-      "device_node": "/dev/bus/usb/007/072",
+      "device_node": "/dev/bus/usb/007/053",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2127.872,
-      "disconnected_at": "2026-08-09T03:10:21.076179+00:00",
-      "reconnected_at": "2026-08-09T03:10:23.204052+00:00",
-      "recovery_completed_at": "2026-08-09T03:10:23.533861+00:00",
+      "disconnect_ms": 2536.534,
+      "disconnected_at": "2026-08-09T15:29:14.516834+00:00",
+      "reconnected_at": "2026-08-09T15:29:17.053368+00:00",
+      "recovery_completed_at": "2026-08-09T15:29:17.145592+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.336"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.162,
+        "recovery_ms": 90.877,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.336"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 37,
-      "device_node": "/dev/bus/usb/007/073",
+      "device_node": "/dev/bus/usb/007/054",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2740.576,
-      "disconnected_at": "2026-08-09T03:10:27.185583+00:00",
-      "reconnected_at": "2026-08-09T03:10:29.926160+00:00",
-      "recovery_completed_at": "2026-08-09T03:10:30.255524+00:00",
+      "disconnect_ms": 2849.917,
+      "disconnected_at": "2026-08-09T15:29:31.359941+00:00",
+      "reconnected_at": "2026-08-09T15:29:34.209857+00:00",
+      "recovery_completed_at": "2026-08-09T15:29:34.302291+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.276"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.718,
+        "recovery_ms": 91.185,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.276"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 38,
-      "device_node": "/dev/bus/usb/007/074",
+      "device_node": "/dev/bus/usb/007/055",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2834.708,
-      "disconnected_at": "2026-08-09T03:10:33.605847+00:00",
-      "reconnected_at": "2026-08-09T03:10:36.440554+00:00",
-      "recovery_completed_at": "2026-08-09T03:10:36.771016+00:00",
+      "disconnect_ms": 2029.34,
+      "disconnected_at": "2026-08-09T15:29:43.945253+00:00",
+      "reconnected_at": "2026-08-09T15:29:45.974595+00:00",
+      "recovery_completed_at": "2026-08-09T15:29:46.067048+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.269"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.492,
+        "recovery_ms": 90.983,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.269"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 39,
-      "device_node": "/dev/bus/usb/007/075",
+      "device_node": "/dev/bus/usb/007/056",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3444.474,
-      "disconnected_at": "2026-08-09T03:10:39.711714+00:00",
-      "reconnected_at": "2026-08-09T03:10:43.156192+00:00",
-      "recovery_completed_at": "2026-08-09T03:10:43.586895+00:00",
+      "disconnect_ms": 2131.705,
+      "disconnected_at": "2026-08-09T15:30:03.823900+00:00",
+      "reconnected_at": "2026-08-09T15:30:05.955607+00:00",
+      "recovery_completed_at": "2026-08-09T15:30:06.047794+00:00",
       "recovery_smoke": {
-        "attempt_count": 2,
+        "attempt_count": 1,
         "attempts": [
-          {
-            "exit_code": 2,
-            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
-            "stdout": ""
-          },
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.322 throughput_MiB_s=3.109"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.365"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 428.504,
+        "recovery_ms": 90.761,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.322 throughput_MiB_s=3.109"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.365"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 40,
-      "device_node": "/dev/bus/usb/007/076",
+      "device_node": "/dev/bus/usb/007/057",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 1827.256,
-      "disconnected_at": "2026-08-09T03:11:02.865344+00:00",
-      "reconnected_at": "2026-08-09T03:11:04.692603+00:00",
-      "recovery_completed_at": "2026-08-09T03:11:05.021246+00:00",
+      "disconnect_ms": 2840.311,
+      "disconnected_at": "2026-08-09T15:30:28.989576+00:00",
+      "reconnected_at": "2026-08-09T15:30:31.829888+00:00",
+      "recovery_completed_at": "2026-08-09T15:30:31.922128+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.080"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.281"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.409,
+        "recovery_ms": 90.817,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.080"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.281"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 41,
-      "device_node": "/dev/bus/usb/007/077",
+      "device_node": "/dev/bus/usb/007/058",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2332.116,
-      "disconnected_at": "2026-08-09T03:11:30.381377+00:00",
-      "reconnected_at": "2026-08-09T03:11:32.713495+00:00",
-      "recovery_completed_at": "2026-08-09T03:11:33.038657+00:00",
+      "disconnect_ms": 2331.414,
+      "disconnected_at": "2026-08-09T15:30:37.405284+00:00",
+      "reconnected_at": "2026-08-09T15:30:39.736700+00:00",
+      "recovery_completed_at": "2026-08-09T15:30:39.829706+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.321 throughput_MiB_s=3.119"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.189"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 323.438,
+        "recovery_ms": 91.819,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.321 throughput_MiB_s=3.119"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.189"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 42,
-      "device_node": "/dev/bus/usb/007/078",
+      "device_node": "/dev/bus/usb/007/059",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2836.99,
-      "disconnected_at": "2026-08-09T03:11:35.174945+00:00",
-      "reconnected_at": "2026-08-09T03:11:38.011936+00:00",
-      "recovery_completed_at": "2026-08-09T03:11:38.341769+00:00",
+      "disconnect_ms": 1827.966,
+      "disconnected_at": "2026-08-09T15:30:44.099809+00:00",
+      "reconnected_at": "2026-08-09T15:30:45.927777+00:00",
+      "recovery_completed_at": "2026-08-09T15:30:46.018688+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.362"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.739,
+        "recovery_ms": 89.659,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.362"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 43,
-      "device_node": "/dev/bus/usb/007/079",
+      "device_node": "/dev/bus/usb/007/060",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2632.528,
-      "disconnected_at": "2026-08-09T03:11:41.084532+00:00",
-      "reconnected_at": "2026-08-09T03:11:43.717062+00:00",
-      "recovery_completed_at": "2026-08-09T03:11:44.045441+00:00",
+      "disconnect_ms": 2130.49,
+      "disconnected_at": "2026-08-09T15:30:50.181433+00:00",
+      "reconnected_at": "2026-08-09T15:30:52.311924+00:00",
+      "recovery_completed_at": "2026-08-09T15:30:52.406292+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.240"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.627,
+        "recovery_ms": 92.269,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.240"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 44,
-      "device_node": "/dev/bus/usb/007/080",
+      "device_node": "/dev/bus/usb/007/061",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2838.116,
-      "disconnected_at": "2026-08-09T03:11:46.581472+00:00",
-      "reconnected_at": "2026-08-09T03:11:49.419589+00:00",
-      "recovery_completed_at": "2026-08-09T03:11:49.746375+00:00",
+      "disconnect_ms": 3144.424,
+      "disconnected_at": "2026-08-09T15:30:56.063889+00:00",
+      "reconnected_at": "2026-08-09T15:30:59.208312+00:00",
+      "recovery_completed_at": "2026-08-09T15:30:59.300160+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.322 throughput_MiB_s=3.104"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.320"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 325.01,
+        "recovery_ms": 91.057,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.322 throughput_MiB_s=3.104"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.320"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 45,
-      "device_node": "/dev/bus/usb/007/081",
+      "device_node": "/dev/bus/usb/007/062",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2536.291,
-      "disconnected_at": "2026-08-09T03:12:08.410871+00:00",
-      "reconnected_at": "2026-08-09T03:12:10.947163+00:00",
-      "recovery_completed_at": "2026-08-09T03:12:11.273894+00:00",
+      "disconnect_ms": 2131.371,
+      "disconnected_at": "2026-08-09T15:31:44.196561+00:00",
+      "reconnected_at": "2026-08-09T15:31:46.327934+00:00",
+      "recovery_completed_at": "2026-08-09T15:31:46.421804+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.322 throughput_MiB_s=3.107"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.191"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 325.244,
+        "recovery_ms": 92.196,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.322 throughput_MiB_s=3.107"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.191"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 46,
-      "device_node": "/dev/bus/usb/007/082",
+      "device_node": "/dev/bus/usb/007/063",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2431.778,
-      "disconnected_at": "2026-08-09T03:12:14.215945+00:00",
-      "reconnected_at": "2026-08-09T03:12:16.647727+00:00",
-      "recovery_completed_at": "2026-08-09T03:12:17.079955+00:00",
+      "disconnect_ms": 2129.683,
+      "disconnected_at": "2026-08-09T15:31:51.097709+00:00",
+      "reconnected_at": "2026-08-09T15:31:53.227392+00:00",
+      "recovery_completed_at": "2026-08-09T15:31:53.322258+00:00",
       "recovery_smoke": {
-        "attempt_count": 2,
+        "attempt_count": 1,
         "attempts": [
-          {
-            "exit_code": 2,
-            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
-            "stdout": ""
-          },
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.150"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 431.308,
+        "recovery_ms": 93.264,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.150"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 47,
-      "device_node": "/dev/bus/usb/007/083",
+      "device_node": "/dev/bus/usb/007/064",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2432.857,
-      "disconnected_at": "2026-08-09T03:12:19.517330+00:00",
-      "reconnected_at": "2026-08-09T03:12:21.950188+00:00",
-      "recovery_completed_at": "2026-08-09T03:12:22.279750+00:00",
+      "disconnect_ms": 2132.661,
+      "disconnected_at": "2026-08-09T15:31:55.966325+00:00",
+      "reconnected_at": "2026-08-09T15:31:58.098987+00:00",
+      "recovery_completed_at": "2026-08-09T15:31:58.193196+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.072"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.552,
+        "recovery_ms": 92.887,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.072"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 48,
-      "device_node": "/dev/bus/usb/007/084",
+      "device_node": "/dev/bus/usb/007/065",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2634.559,
-      "disconnected_at": "2026-08-09T03:12:25.119127+00:00",
-      "reconnected_at": "2026-08-09T03:12:27.753687+00:00",
-      "recovery_completed_at": "2026-08-09T03:12:28.083474+00:00",
+      "disconnect_ms": 2335.138,
+      "disconnected_at": "2026-08-09T15:32:00.122956+00:00",
+      "reconnected_at": "2026-08-09T15:32:02.458094+00:00",
+      "recovery_completed_at": "2026-08-09T15:32:02.551986+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.299"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.227,
+        "recovery_ms": 92.038,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.299"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 49,
-      "device_node": "/dev/bus/usb/007/085",
+      "device_node": "/dev/bus/usb/007/066",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2332.933,
-      "disconnected_at": "2026-08-09T03:12:30.924418+00:00",
-      "reconnected_at": "2026-08-09T03:12:33.257352+00:00",
-      "recovery_completed_at": "2026-08-09T03:12:33.587026+00:00",
+      "disconnect_ms": 1825.198,
+      "disconnected_at": "2026-08-09T15:32:08.039520+00:00",
+      "reconnected_at": "2026-08-09T15:32:09.864719+00:00",
+      "recovery_completed_at": "2026-08-09T15:32:09.955096+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.389"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.36,
+        "recovery_ms": 89.499,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.389"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 50,
-      "device_node": "/dev/bus/usb/007/086",
+      "device_node": "/dev/bus/usb/007/067",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2532.468,
-      "disconnected_at": "2026-08-09T03:12:35.919220+00:00",
-      "reconnected_at": "2026-08-09T03:12:38.451689+00:00",
-      "recovery_completed_at": "2026-08-09T03:12:38.781127+00:00",
+      "disconnect_ms": 1520.197,
+      "disconnected_at": "2026-08-09T15:32:37.781984+00:00",
+      "reconnected_at": "2026-08-09T15:32:39.302182+00:00",
+      "recovery_completed_at": "2026-08-09T15:32:39.396449+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.073"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.263"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.106,
+        "recovery_ms": 92.815,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.073"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.263"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 51,
-      "device_node": "/dev/bus/usb/007/087",
+      "device_node": "/dev/bus/usb/007/068",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2228.158,
-      "disconnected_at": "2026-08-09T03:13:06.767939+00:00",
-      "reconnected_at": "2026-08-09T03:13:08.996100+00:00",
-      "recovery_completed_at": "2026-08-09T03:13:09.325815+00:00",
+      "disconnect_ms": 1625.728,
+      "disconnected_at": "2026-08-09T15:32:41.021950+00:00",
+      "reconnected_at": "2026-08-09T15:32:42.647678+00:00",
+      "recovery_completed_at": "2026-08-09T15:32:42.740971+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.297"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.424,
+        "recovery_ms": 91.974,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.297"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 52,
-      "device_node": "/dev/bus/usb/007/088",
+      "device_node": "/dev/bus/usb/007/069",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2534.424,
-      "disconnected_at": "2026-08-09T03:13:13.177902+00:00",
-      "reconnected_at": "2026-08-09T03:13:15.712326+00:00",
-      "recovery_completed_at": "2026-08-09T03:13:16.042281+00:00",
+      "disconnect_ms": 2640.679,
+      "disconnected_at": "2026-08-09T15:32:46.194652+00:00",
+      "reconnected_at": "2026-08-09T15:32:48.835332+00:00",
+      "recovery_completed_at": "2026-08-09T15:32:48.929453+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.252"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.738,
+        "recovery_ms": 92.675,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.252"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 53,
-      "device_node": "/dev/bus/usb/007/089",
+      "device_node": "/dev/bus/usb/007/070",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3245.623,
-      "disconnected_at": "2026-08-09T03:13:18.982734+00:00",
-      "reconnected_at": "2026-08-09T03:13:22.228361+00:00",
-      "recovery_completed_at": "2026-08-09T03:13:22.558241+00:00",
+      "disconnect_ms": 2132.2,
+      "disconnected_at": "2026-08-09T15:32:53.602813+00:00",
+      "reconnected_at": "2026-08-09T15:32:55.735013+00:00",
+      "recovery_completed_at": "2026-08-09T15:32:55.827002+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.322"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.176,
+        "recovery_ms": 90.982,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.322"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 54,
-      "device_node": "/dev/bus/usb/007/090",
+      "device_node": "/dev/bus/usb/007/071",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4357.62,
-      "disconnected_at": "2026-08-09T03:13:25.100404+00:00",
-      "reconnected_at": "2026-08-09T03:13:29.458025+00:00",
-      "recovery_completed_at": "2026-08-09T03:13:29.787477+00:00",
+      "disconnect_ms": 2133.748,
+      "disconnected_at": "2026-08-09T15:32:57.651782+00:00",
+      "reconnected_at": "2026-08-09T15:32:59.785531+00:00",
+      "recovery_completed_at": "2026-08-09T15:32:59.878876+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.074"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.262"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.896,
+        "recovery_ms": 91.883,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.074"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.262"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 55,
-      "device_node": "/dev/bus/usb/007/091",
+      "device_node": "/dev/bus/usb/007/072",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 5980.337,
-      "disconnected_at": "2026-08-09T03:13:34.252839+00:00",
-      "reconnected_at": "2026-08-09T03:13:40.233176+00:00",
-      "recovery_completed_at": "2026-08-09T03:13:40.563061+00:00",
+      "disconnect_ms": 1627.651,
+      "disconnected_at": "2026-08-09T15:33:02.520387+00:00",
+      "reconnected_at": "2026-08-09T15:33:04.148039+00:00",
+      "recovery_completed_at": "2026-08-09T15:33:04.241930+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.196"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.213,
+        "recovery_ms": 92.305,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.196"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 56,
-      "device_node": "/dev/bus/usb/007/092",
+      "device_node": "/dev/bus/usb/007/073",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4965.024,
-      "disconnected_at": "2026-08-09T03:13:45.025756+00:00",
-      "reconnected_at": "2026-08-09T03:13:49.990781+00:00",
-      "recovery_completed_at": "2026-08-09T03:13:50.320690+00:00",
+      "disconnect_ms": 1828.21,
+      "disconnected_at": "2026-08-09T15:33:07.189944+00:00",
+      "reconnected_at": "2026-08-09T15:33:09.018150+00:00",
+      "recovery_completed_at": "2026-08-09T15:33:09.112666+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.133"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.672,
+        "recovery_ms": 93.022,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.133"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 57,
-      "device_node": "/dev/bus/usb/007/093",
+      "device_node": "/dev/bus/usb/007/074",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4661.045,
-      "disconnected_at": "2026-08-09T03:13:54.580728+00:00",
-      "reconnected_at": "2026-08-09T03:13:59.241774+00:00",
-      "recovery_completed_at": "2026-08-09T03:13:59.571220+00:00",
+      "disconnect_ms": 2028.249,
+      "disconnected_at": "2026-08-09T15:33:11.555538+00:00",
+      "reconnected_at": "2026-08-09T15:33:13.583788+00:00",
+      "recovery_completed_at": "2026-08-09T15:33:13.677828+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.176"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.151,
+        "recovery_ms": 92.361,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.176"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 58,
-      "device_node": "/dev/bus/usb/007/094",
+      "device_node": "/dev/bus/usb/007/075",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 5165.905,
-      "disconnected_at": "2026-08-09T03:14:03.524876+00:00",
-      "reconnected_at": "2026-08-09T03:14:08.690768+00:00",
-      "recovery_completed_at": "2026-08-09T03:14:09.018801+00:00",
+      "disconnect_ms": 1832.162,
+      "disconnected_at": "2026-08-09T15:33:17.134639+00:00",
+      "reconnected_at": "2026-08-09T15:33:18.966804+00:00",
+      "recovery_completed_at": "2026-08-09T15:33:19.061471+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.184"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 326.854,
+        "recovery_ms": 93.292,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.184"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 59,
-      "device_node": "/dev/bus/usb/007/095",
+      "device_node": "/dev/bus/usb/007/076",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4256.122,
-      "disconnected_at": "2026-08-09T03:14:12.973840+00:00",
-      "reconnected_at": "2026-08-09T03:14:17.229962+00:00",
-      "recovery_completed_at": "2026-08-09T03:14:17.559316+00:00",
+      "disconnect_ms": 2331.21,
+      "disconnected_at": "2026-08-09T15:33:21.499373+00:00",
+      "reconnected_at": "2026-08-09T15:33:23.830582+00:00",
+      "recovery_completed_at": "2026-08-09T15:33:23.922843+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.362"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.08,
+        "recovery_ms": 90.659,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.362"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 60,
-      "device_node": "/dev/bus/usb/007/096",
+      "device_node": "/dev/bus/usb/007/077",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 5271.819,
-      "disconnected_at": "2026-08-09T03:14:21.414724+00:00",
-      "reconnected_at": "2026-08-09T03:14:26.686544+00:00",
-      "recovery_completed_at": "2026-08-09T03:14:27.015306+00:00",
+      "disconnect_ms": 2539.697,
+      "disconnected_at": "2026-08-09T15:33:25.649593+00:00",
+      "reconnected_at": "2026-08-09T15:33:28.189291+00:00",
+      "recovery_completed_at": "2026-08-09T15:33:28.282367+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.333"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.243,
+        "recovery_ms": 91.534,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.333"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 61,
-      "device_node": "/dev/bus/usb/007/097",
+      "device_node": "/dev/bus/usb/007/078",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4867.31,
-      "disconnected_at": "2026-08-09T03:14:31.373928+00:00",
-      "reconnected_at": "2026-08-09T03:14:36.241240+00:00",
-      "recovery_completed_at": "2026-08-09T03:14:36.570675+00:00",
+      "disconnect_ms": 2539.499,
+      "disconnected_at": "2026-08-09T15:33:32.046494+00:00",
+      "reconnected_at": "2026-08-09T15:33:34.586000+00:00",
+      "recovery_completed_at": "2026-08-09T15:33:34.679897+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.224"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.081,
+        "recovery_ms": 92.564,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.224"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 62,
-      "device_node": "/dev/bus/usb/007/098",
+      "device_node": "/dev/bus/usb/007/079",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3957.159,
-      "disconnected_at": "2026-08-09T03:14:40.730137+00:00",
-      "reconnected_at": "2026-08-09T03:14:44.687297+00:00",
-      "recovery_completed_at": "2026-08-09T03:14:45.016592+00:00",
+      "disconnect_ms": 2030.666,
+      "disconnected_at": "2026-08-09T15:33:36.406326+00:00",
+      "reconnected_at": "2026-08-09T15:33:38.436994+00:00",
+      "recovery_completed_at": "2026-08-09T15:33:38.530314+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.262"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.006,
+        "recovery_ms": 91.748,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.262"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 63,
-      "device_node": "/dev/bus/usb/007/099",
+      "device_node": "/dev/bus/usb/007/080",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4357.597,
-      "disconnected_at": "2026-08-09T03:14:48.569813+00:00",
-      "reconnected_at": "2026-08-09T03:14:52.927412+00:00",
-      "recovery_completed_at": "2026-08-09T03:14:53.256277+00:00",
+      "disconnect_ms": 2436.367,
+      "disconnected_at": "2026-08-09T15:33:41.172435+00:00",
+      "reconnected_at": "2026-08-09T15:33:43.608804+00:00",
+      "recovery_completed_at": "2026-08-09T15:33:43.701810+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.314"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.296,
+        "recovery_ms": 91.549,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.314"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 64,
-      "device_node": "/dev/bus/usb/007/100",
+      "device_node": "/dev/bus/usb/007/081",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 5070.739,
-      "disconnected_at": "2026-08-09T03:14:56.602521+00:00",
-      "reconnected_at": "2026-08-09T03:15:01.673260+00:00",
-      "recovery_completed_at": "2026-08-09T03:15:02.001835+00:00",
+      "disconnect_ms": 2338.866,
+      "disconnected_at": "2026-08-09T15:33:46.341736+00:00",
+      "reconnected_at": "2026-08-09T15:33:48.680603+00:00",
+      "recovery_completed_at": "2026-08-09T15:33:48.775649+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.115"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.182,
+        "recovery_ms": 93.169,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.115"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 65,
-      "device_node": "/dev/bus/usb/007/101",
+      "device_node": "/dev/bus/usb/007/082",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3748.354,
-      "disconnected_at": "2026-08-09T03:15:05.651507+00:00",
-      "reconnected_at": "2026-08-09T03:15:09.399872+00:00",
-      "recovery_completed_at": "2026-08-09T03:15:09.834057+00:00",
+      "disconnect_ms": 2438.97,
+      "disconnected_at": "2026-08-09T15:33:50.906484+00:00",
+      "reconnected_at": "2026-08-09T15:33:53.345455+00:00",
+      "recovery_completed_at": "2026-08-09T15:33:53.439465+00:00",
       "recovery_smoke": {
-        "attempt_count": 2,
+        "attempt_count": 1,
         "attempts": [
-          {
-            "exit_code": 2,
-            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
-            "stdout": ""
-          },
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.252"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 432.549,
+        "recovery_ms": 92.265,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.252"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 66,
-      "device_node": "/dev/bus/usb/007/102",
+      "device_node": "/dev/bus/usb/007/083",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4562.662,
-      "disconnected_at": "2026-08-09T03:15:13.690312+00:00",
-      "reconnected_at": "2026-08-09T03:15:18.252977+00:00",
-      "recovery_completed_at": "2026-08-09T03:15:18.581749+00:00",
+      "disconnect_ms": 2841.604,
+      "disconnected_at": "2026-08-09T15:33:55.272177+00:00",
+      "reconnected_at": "2026-08-09T15:33:58.113783+00:00",
+      "recovery_completed_at": "2026-08-09T15:33:58.205594+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.380"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.416,
+        "recovery_ms": 90.289,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.075"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.380"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 67,
-      "device_node": "/dev/bus/usb/007/103",
+      "device_node": "/dev/bus/usb/007/084",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 5172.409,
-      "disconnected_at": "2026-08-09T03:15:21.731585+00:00",
-      "reconnected_at": "2026-08-09T03:15:26.903999+00:00",
-      "recovery_completed_at": "2026-08-09T03:15:27.335957+00:00",
+      "disconnect_ms": 3658.021,
+      "disconnected_at": "2026-08-09T15:34:01.964965+00:00",
+      "reconnected_at": "2026-08-09T15:34:05.622988+00:00",
+      "recovery_completed_at": "2026-08-09T15:34:05.716453+00:00",
       "recovery_smoke": {
-        "attempt_count": 2,
+        "attempt_count": 1,
         "attempts": [
-          {
-            "exit_code": 2,
-            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
-            "stdout": ""
-          },
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.272"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 430.743,
+        "recovery_ms": 92.178,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.272"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 68,
-      "device_node": "/dev/bus/usb/007/104",
+      "device_node": "/dev/bus/usb/007/085",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4458.784,
-      "disconnected_at": "2026-08-09T03:15:32.505300+00:00",
-      "reconnected_at": "2026-08-09T03:15:36.964084+00:00",
-      "recovery_completed_at": "2026-08-09T03:15:37.293176+00:00",
+      "disconnect_ms": 2332.597,
+      "disconnected_at": "2026-08-09T15:34:09.374422+00:00",
+      "reconnected_at": "2026-08-09T15:34:11.707021+00:00",
+      "recovery_completed_at": "2026-08-09T15:34:11.801849+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.148"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.729,
+        "recovery_ms": 93.178,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.148"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 69,
-      "device_node": "/dev/bus/usb/007/105",
+      "device_node": "/dev/bus/usb/007/086",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4557.698,
-      "disconnected_at": "2026-08-09T03:15:41.860291+00:00",
-      "reconnected_at": "2026-08-09T03:15:46.417991+00:00",
-      "recovery_completed_at": "2026-08-09T03:15:46.746722+00:00",
+      "disconnect_ms": 2333.042,
+      "disconnected_at": "2026-08-09T15:34:17.792222+00:00",
+      "reconnected_at": "2026-08-09T15:34:20.125275+00:00",
+      "recovery_completed_at": "2026-08-09T15:34:20.323181+00:00",
       "recovery_smoke": {
-        "attempt_count": 1,
+        "attempt_count": 2,
         "attempts": [
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.244"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.391,
+        "recovery_ms": 196.244,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.244"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 70,
-      "device_node": "/dev/bus/usb/007/106",
+      "device_node": "/dev/bus/usb/007/087",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4155.136,
-      "disconnected_at": "2026-08-09T03:15:49.790440+00:00",
-      "reconnected_at": "2026-08-09T03:15:53.945579+00:00",
-      "recovery_completed_at": "2026-08-09T03:15:54.274521+00:00",
+      "disconnect_ms": 1623.124,
+      "disconnected_at": "2026-08-09T15:34:22.661994+00:00",
+      "reconnected_at": "2026-08-09T15:34:24.285119+00:00",
+      "recovery_completed_at": "2026-08-09T15:34:24.377173+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.368"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.858,
+        "recovery_ms": 90.523,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.368"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 71,
-      "device_node": "/dev/bus/usb/007/107",
+      "device_node": "/dev/bus/usb/007/088",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4255.3,
-      "disconnected_at": "2026-08-09T03:15:57.928967+00:00",
-      "reconnected_at": "2026-08-09T03:16:02.184267+00:00",
-      "recovery_completed_at": "2026-08-09T03:16:02.512584+00:00",
+      "disconnect_ms": 1319.19,
+      "disconnected_at": "2026-08-09T15:34:26.508602+00:00",
+      "reconnected_at": "2026-08-09T15:34:27.827793+00:00",
+      "recovery_completed_at": "2026-08-09T15:34:27.919595+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.292"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 326.969,
+        "recovery_ms": 91.013,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.292"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 72,
-      "device_node": "/dev/bus/usb/007/108",
+      "device_node": "/dev/bus/usb/007/089",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2942.853,
-      "disconnected_at": "2026-08-09T03:16:05.253140+00:00",
-      "reconnected_at": "2026-08-09T03:16:08.195994+00:00",
-      "recovery_completed_at": "2026-08-09T03:16:08.524845+00:00",
+      "disconnect_ms": 1824.262,
+      "disconnected_at": "2026-08-09T15:34:30.667320+00:00",
+      "reconnected_at": "2026-08-09T15:34:32.491583+00:00",
+      "recovery_completed_at": "2026-08-09T15:34:32.584536+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.342"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.561,
+        "recovery_ms": 91.422,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.342"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 73,
-      "device_node": "/dev/bus/usb/007/109",
+      "device_node": "/dev/bus/usb/007/090",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4968.079,
-      "disconnected_at": "2026-08-09T03:16:18.259215+00:00",
-      "reconnected_at": "2026-08-09T03:16:23.227294+00:00",
-      "recovery_completed_at": "2026-08-09T03:16:23.556968+00:00",
+      "disconnect_ms": 2336.802,
+      "disconnected_at": "2026-08-09T15:34:35.226699+00:00",
+      "reconnected_at": "2026-08-09T15:34:37.563502+00:00",
+      "recovery_completed_at": "2026-08-09T15:34:37.656678+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.347"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.021,
+        "recovery_ms": 91.57,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.347"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 74,
-      "device_node": "/dev/bus/usb/007/110",
+      "device_node": "/dev/bus/usb/007/091",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4157.229,
-      "disconnected_at": "2026-08-09T03:16:27.517537+00:00",
-      "reconnected_at": "2026-08-09T03:16:31.674766+00:00",
-      "recovery_completed_at": "2026-08-09T03:16:32.003614+00:00",
+      "disconnect_ms": 1318.102,
+      "disconnected_at": "2026-08-09T15:34:39.081238+00:00",
+      "reconnected_at": "2026-08-09T15:34:40.399342+00:00",
+      "recovery_completed_at": "2026-08-09T15:34:40.492842+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.294"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.687,
+        "recovery_ms": 92.029,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.294"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 75,
-      "device_node": "/dev/bus/usb/007/111",
+      "device_node": "/dev/bus/usb/007/092",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4054.855,
-      "disconnected_at": "2026-08-09T03:16:34.944557+00:00",
-      "reconnected_at": "2026-08-09T03:16:38.999414+00:00",
-      "recovery_completed_at": "2026-08-09T03:16:39.328011+00:00",
+      "disconnect_ms": 2132.47,
+      "disconnected_at": "2026-08-09T15:34:44.149084+00:00",
+      "reconnected_at": "2026-08-09T15:34:46.281555+00:00",
+      "recovery_completed_at": "2026-08-09T15:34:46.374256+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.352"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.267,
+        "recovery_ms": 91.033,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.352"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 76,
-      "device_node": "/dev/bus/usb/007/112",
+      "device_node": "/dev/bus/usb/007/093",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4156.914,
-      "disconnected_at": "2026-08-09T03:16:42.577091+00:00",
-      "reconnected_at": "2026-08-09T03:16:46.734006+00:00",
-      "recovery_completed_at": "2026-08-09T03:16:47.062383+00:00",
+      "disconnect_ms": 1826.779,
+      "disconnected_at": "2026-08-09T15:34:47.793379+00:00",
+      "reconnected_at": "2026-08-09T15:34:49.620159+00:00",
+      "recovery_completed_at": "2026-08-09T15:34:49.713997+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.080"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.285"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.538,
+        "recovery_ms": 92.218,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.080"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.285"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 77,
-      "device_node": "/dev/bus/usb/007/113",
+      "device_node": "/dev/bus/usb/007/094",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4770.966,
-      "disconnected_at": "2026-08-09T03:16:50.713780+00:00",
-      "reconnected_at": "2026-08-09T03:16:55.484746+00:00",
-      "recovery_completed_at": "2026-08-09T03:16:55.814665+00:00",
+      "disconnect_ms": 2033.463,
+      "disconnected_at": "2026-08-09T15:34:51.645853+00:00",
+      "reconnected_at": "2026-08-09T15:34:53.679318+00:00",
+      "recovery_completed_at": "2026-08-09T15:34:53.773113+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.074"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.187"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.273,
+        "recovery_ms": 92.441,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.074"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.187"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 78,
-      "device_node": "/dev/bus/usb/007/114",
+      "device_node": "/dev/bus/usb/007/095",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4254.904,
-      "disconnected_at": "2026-08-09T03:16:58.965273+00:00",
-      "reconnected_at": "2026-08-09T03:17:03.220178+00:00",
-      "recovery_completed_at": "2026-08-09T03:17:03.548580+00:00",
+      "disconnect_ms": 2130.309,
+      "disconnected_at": "2026-08-09T15:34:55.195240+00:00",
+      "reconnected_at": "2026-08-09T15:34:57.325551+00:00",
+      "recovery_completed_at": "2026-08-09T15:34:57.419737+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.161"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.298,
+        "recovery_ms": 92.928,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.161"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 79,
-      "device_node": "/dev/bus/usb/007/115",
+      "device_node": "/dev/bus/usb/007/096",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4258.495,
-      "disconnected_at": "2026-08-09T03:17:07.200665+00:00",
-      "reconnected_at": "2026-08-09T03:17:11.459160+00:00",
-      "recovery_completed_at": "2026-08-09T03:17:11.788356+00:00",
+      "disconnect_ms": 1827.709,
+      "disconnected_at": "2026-08-09T15:34:59.050083+00:00",
+      "reconnected_at": "2026-08-09T15:35:00.877793+00:00",
+      "recovery_completed_at": "2026-08-09T15:35:00.971288+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.291"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.902,
+        "recovery_ms": 91.964,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.291"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 80,
-      "device_node": "/dev/bus/usb/007/116",
+      "device_node": "/dev/bus/usb/007/097",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3549.179,
-      "disconnected_at": "2026-08-09T03:17:16.151727+00:00",
-      "reconnected_at": "2026-08-09T03:17:19.700908+00:00",
-      "recovery_completed_at": "2026-08-09T03:17:20.029990+00:00",
+      "disconnect_ms": 1624.882,
+      "disconnected_at": "2026-08-09T15:35:03.103661+00:00",
+      "reconnected_at": "2026-08-09T15:35:04.728545+00:00",
+      "recovery_completed_at": "2026-08-09T15:35:04.822437+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.267"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.68,
+        "recovery_ms": 92.168,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.267"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 81,
-      "device_node": "/dev/bus/usb/007/117",
+      "device_node": "/dev/bus/usb/007/098",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4053.379,
-      "disconnected_at": "2026-08-09T03:17:23.378661+00:00",
-      "reconnected_at": "2026-08-09T03:17:27.432042+00:00",
-      "recovery_completed_at": "2026-08-09T03:17:27.863545+00:00",
+      "disconnect_ms": 1828.753,
+      "disconnected_at": "2026-08-09T15:35:06.244623+00:00",
+      "reconnected_at": "2026-08-09T15:35:08.073378+00:00",
+      "recovery_completed_at": "2026-08-09T15:35:08.167388+00:00",
       "recovery_smoke": {
-        "attempt_count": 2,
+        "attempt_count": 1,
         "attempts": [
-          {
-            "exit_code": 2,
-            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
-            "stdout": ""
-          },
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.258"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 429.956,
+        "recovery_ms": 92.437,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.258"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 82,
-      "device_node": "/dev/bus/usb/007/118",
+      "device_node": "/dev/bus/usb/007/099",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3951.548,
-      "disconnected_at": "2026-08-09T03:17:30.505442+00:00",
-      "reconnected_at": "2026-08-09T03:17:34.456992+00:00",
-      "recovery_completed_at": "2026-08-09T03:17:34.787275+00:00",
+      "disconnect_ms": 2841.545,
+      "disconnected_at": "2026-08-09T15:35:11.629030+00:00",
+      "reconnected_at": "2026-08-09T15:35:14.470577+00:00",
+      "recovery_completed_at": "2026-08-09T15:35:14.563165+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.316"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.835,
+        "recovery_ms": 91.194,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.316"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 83,
-      "device_node": "/dev/bus/usb/007/119",
+      "device_node": "/dev/bus/usb/007/100",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4962.192,
-      "disconnected_at": "2026-08-09T03:17:37.526472+00:00",
-      "reconnected_at": "2026-08-09T03:17:42.488665+00:00",
-      "recovery_completed_at": "2026-08-09T03:17:42.817784+00:00",
+      "disconnect_ms": 3855.712,
+      "disconnected_at": "2026-08-09T15:35:16.492973+00:00",
+      "reconnected_at": "2026-08-09T15:35:20.348684+00:00",
+      "recovery_completed_at": "2026-08-09T15:35:20.443020+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.080"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.325"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.658,
+        "recovery_ms": 91.675,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.080"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.325"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 84,
-      "device_node": "/dev/bus/usb/007/120",
+      "device_node": "/dev/bus/usb/007/101",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 4862.45,
-      "disconnected_at": "2026-08-09T03:17:46.873181+00:00",
-      "reconnected_at": "2026-08-09T03:17:51.735632+00:00",
-      "recovery_completed_at": "2026-08-09T03:17:52.064692+00:00",
+      "disconnect_ms": 1316.715,
+      "disconnected_at": "2026-08-09T15:35:23.087918+00:00",
+      "reconnected_at": "2026-08-09T15:35:24.404634+00:00",
+      "recovery_completed_at": "2026-08-09T15:35:24.498326+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.161"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.428,
+        "recovery_ms": 92.362,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.161"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 85,
-      "device_node": "/dev/bus/usb/007/121",
+      "device_node": "/dev/bus/usb/007/102",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3949.725,
-      "disconnected_at": "2026-08-09T03:17:54.804328+00:00",
-      "reconnected_at": "2026-08-09T03:17:58.754054+00:00",
-      "recovery_completed_at": "2026-08-09T03:17:59.084122+00:00",
+      "disconnect_ms": 2433.569,
+      "disconnected_at": "2026-08-09T15:35:28.453140+00:00",
+      "reconnected_at": "2026-08-09T15:35:30.886711+00:00",
+      "recovery_completed_at": "2026-08-09T15:35:30.979896+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.248"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.032,
+        "recovery_ms": 91.949,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.248"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 86,
-      "device_node": "/dev/bus/usb/007/122",
+      "device_node": "/dev/bus/usb/007/103",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3651.504,
-      "disconnected_at": "2026-08-09T03:18:02.837976+00:00",
-      "reconnected_at": "2026-08-09T03:18:06.489482+00:00",
-      "recovery_completed_at": "2026-08-09T03:18:06.820011+00:00",
+      "disconnect_ms": 2029.709,
+      "disconnected_at": "2026-08-09T15:35:33.617702+00:00",
+      "reconnected_at": "2026-08-09T15:35:35.647412+00:00",
+      "recovery_completed_at": "2026-08-09T15:35:35.845117+00:00",
       "recovery_smoke": {
-        "attempt_count": 1,
+        "attempt_count": 2,
         "attempts": [
+          {
+            "exit_code": 2,
+            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
+            "stdout": ""
+          },
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.224"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 329.381,
+        "recovery_ms": 195.49,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.224"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 87,
-      "device_node": "/dev/bus/usb/007/123",
+      "device_node": "/dev/bus/usb/007/104",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3951.881,
-      "disconnected_at": "2026-08-09T03:18:09.963842+00:00",
-      "reconnected_at": "2026-08-09T03:18:13.915724+00:00",
-      "recovery_completed_at": "2026-08-09T03:18:14.348747+00:00",
+      "disconnect_ms": 1520.287,
+      "disconnected_at": "2026-08-09T15:35:41.835070+00:00",
+      "reconnected_at": "2026-08-09T15:35:43.355358+00:00",
+      "recovery_completed_at": "2026-08-09T15:35:43.448275+00:00",
       "recovery_smoke": {
-        "attempt_count": 2,
+        "attempt_count": 1,
         "attempts": [
-          {
-            "exit_code": 2,
-            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
-            "stdout": ""
-          },
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.323"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 431.433,
+        "recovery_ms": 91.488,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.323"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 88,
-      "device_node": "/dev/bus/usb/007/124",
+      "device_node": "/dev/bus/usb/007/105",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3243.151,
-      "disconnected_at": "2026-08-09T03:18:15.973659+00:00",
-      "reconnected_at": "2026-08-09T03:18:19.216810+00:00",
-      "recovery_completed_at": "2026-08-09T03:18:19.544803+00:00",
+      "disconnect_ms": 1824.54,
+      "disconnected_at": "2026-08-09T15:35:46.391435+00:00",
+      "reconnected_at": "2026-08-09T15:35:48.215976+00:00",
+      "recovery_completed_at": "2026-08-09T15:35:48.308750+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.259"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 326.765,
+        "recovery_ms": 91.428,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.259"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 89,
-      "device_node": "/dev/bus/usb/007/125",
+      "device_node": "/dev/bus/usb/007/106",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 3343.852,
-      "disconnected_at": "2026-08-09T03:18:25.631564+00:00",
-      "reconnected_at": "2026-08-09T03:18:28.975416+00:00",
-      "recovery_completed_at": "2026-08-09T03:18:29.303688+00:00",
+      "disconnect_ms": 1317.0,
+      "disconnected_at": "2026-08-09T15:35:52.063502+00:00",
+      "reconnected_at": "2026-08-09T15:35:53.380505+00:00",
+      "recovery_completed_at": "2026-08-09T15:35:53.474173+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.242"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.487,
+        "recovery_ms": 92.259,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.242"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 90,
-      "device_node": "/dev/bus/usb/007/126",
+      "device_node": "/dev/bus/usb/007/107",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2433.346,
-      "disconnected_at": "2026-08-09T03:18:32.244487+00:00",
-      "reconnected_at": "2026-08-09T03:18:34.677834+00:00",
-      "recovery_completed_at": "2026-08-09T03:18:35.006582+00:00",
+      "disconnect_ms": 2839.755,
+      "disconnected_at": "2026-08-09T15:35:57.434944+00:00",
+      "reconnected_at": "2026-08-09T15:36:00.274700+00:00",
+      "recovery_completed_at": "2026-08-09T15:36:00.368533+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.304"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.527,
+        "recovery_ms": 92.363,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.076"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.304"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 91,
-      "device_node": "/dev/bus/usb/007/127",
+      "device_node": "/dev/bus/usb/007/108",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2536.453,
-      "disconnected_at": "2026-08-09T03:18:37.441199+00:00",
-      "reconnected_at": "2026-08-09T03:18:39.977654+00:00",
-      "recovery_completed_at": "2026-08-09T03:18:40.306804+00:00",
+      "disconnect_ms": 1828.114,
+      "disconnected_at": "2026-08-09T15:36:03.823643+00:00",
+      "reconnected_at": "2026-08-09T15:36:05.651758+00:00",
+      "recovery_completed_at": "2026-08-09T15:36:05.746601+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.184"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.904,
+        "recovery_ms": 93.523,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.184"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 92,
-      "device_node": "/dev/bus/usb/007/002",
+      "device_node": "/dev/bus/usb/007/109",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2132.535,
-      "disconnected_at": "2026-08-09T03:18:42.029799+00:00",
-      "reconnected_at": "2026-08-09T03:18:44.162335+00:00",
-      "recovery_completed_at": "2026-08-09T03:18:44.594464+00:00",
+      "disconnect_ms": 1320.371,
+      "disconnected_at": "2026-08-09T15:36:06.865246+00:00",
+      "reconnected_at": "2026-08-09T15:36:08.185618+00:00",
+      "recovery_completed_at": "2026-08-09T15:36:08.278601+00:00",
       "recovery_smoke": {
-        "attempt_count": 2,
+        "attempt_count": 1,
         "attempts": [
-          {
-            "exit_code": 2,
-            "stderr": "FAIL device 34b7:1236 absent or inaccessible",
-            "stdout": ""
-          },
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.212"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 430.813,
+        "recovery_ms": 91.606,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.077"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.212"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 93,
-      "device_node": "/dev/bus/usb/007/003",
+      "device_node": "/dev/bus/usb/007/110",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2636.794,
-      "disconnected_at": "2026-08-09T03:18:46.320124+00:00",
-      "reconnected_at": "2026-08-09T03:18:48.956919+00:00",
-      "recovery_completed_at": "2026-08-09T03:18:49.287091+00:00",
+      "disconnect_ms": 1621.568,
+      "disconnected_at": "2026-08-09T15:36:11.225601+00:00",
+      "reconnected_at": "2026-08-09T15:36:12.847171+00:00",
+      "recovery_completed_at": "2026-08-09T15:36:12.940426+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.267"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.205,
+        "recovery_ms": 92.353,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.267"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 94,
-      "device_node": "/dev/bus/usb/007/004",
+      "device_node": "/dev/bus/usb/007/111",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2130.302,
-      "disconnected_at": "2026-08-09T03:18:50.810494+00:00",
-      "reconnected_at": "2026-08-09T03:18:52.940796+00:00",
-      "recovery_completed_at": "2026-08-09T03:18:53.270479+00:00",
+      "disconnect_ms": 2838.213,
+      "disconnected_at": "2026-08-09T15:36:16.087261+00:00",
+      "reconnected_at": "2026-08-09T15:36:18.925474+00:00",
+      "recovery_completed_at": "2026-08-09T15:36:19.018510+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.294"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 328.372,
+        "recovery_ms": 91.365,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.078"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.294"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 95,
-      "device_node": "/dev/bus/usb/007/005",
+      "device_node": "/dev/bus/usb/007/112",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2227.401,
-      "disconnected_at": "2026-08-09T03:18:54.489186+00:00",
-      "reconnected_at": "2026-08-09T03:18:56.716592+00:00",
-      "recovery_completed_at": "2026-08-09T03:18:57.041367+00:00",
+      "disconnect_ms": 1318.767,
+      "disconnected_at": "2026-08-09T15:36:24.302126+00:00",
+      "reconnected_at": "2026-08-09T15:36:25.620895+00:00",
+      "recovery_completed_at": "2026-08-09T15:36:25.715458+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.320 throughput_MiB_s=3.125"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.142"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 323.812,
+        "recovery_ms": 92.78,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.320 throughput_MiB_s=3.125"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.090 throughput_MiB_s=11.142"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 96,
-      "device_node": "/dev/bus/usb/007/006",
+      "device_node": "/dev/bus/usb/007/113",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2331.323,
-      "disconnected_at": "2026-08-09T03:18:59.580113+00:00",
-      "reconnected_at": "2026-08-09T03:19:01.911437+00:00",
-      "recovery_completed_at": "2026-08-09T03:19:02.234545+00:00",
+      "disconnect_ms": 1019.756,
+      "disconnected_at": "2026-08-09T15:36:28.151892+00:00",
+      "reconnected_at": "2026-08-09T15:36:29.171649+00:00",
+      "recovery_completed_at": "2026-08-09T15:36:29.265019+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.320 throughput_MiB_s=3.124"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.302"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 322.285,
+        "recovery_ms": 91.126,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.320 throughput_MiB_s=3.124"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.302"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 97,
-      "device_node": "/dev/bus/usb/007/007",
+      "device_node": "/dev/bus/usb/007/114",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2228.373,
-      "disconnected_at": "2026-08-09T03:19:05.988657+00:00",
-      "reconnected_at": "2026-08-09T03:19:08.217032+00:00",
-      "recovery_completed_at": "2026-08-09T03:19:08.545084+00:00",
+      "disconnect_ms": 1825.885,
+      "disconnected_at": "2026-08-09T15:36:31.198686+00:00",
+      "reconnected_at": "2026-08-09T15:36:33.024573+00:00",
+      "recovery_completed_at": "2026-08-09T15:36:33.117115+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.363"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 326.836,
+        "recovery_ms": 90.709,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.363"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 98,
-      "device_node": "/dev/bus/usb/007/008",
+      "device_node": "/dev/bus/usb/007/115",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2128.004,
-      "disconnected_at": "2026-08-09T03:19:11.287165+00:00",
-      "reconnected_at": "2026-08-09T03:19:13.415171+00:00",
-      "recovery_completed_at": "2026-08-09T03:19:13.743611+00:00",
+      "disconnect_ms": 1520.405,
+      "disconnected_at": "2026-08-09T15:36:36.365971+00:00",
+      "reconnected_at": "2026-08-09T15:36:37.886377+00:00",
+      "recovery_completed_at": "2026-08-09T15:36:37.979066+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.305"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 327.436,
+        "recovery_ms": 91.714,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.325 throughput_MiB_s=3.079"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.305"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 99,
-      "device_node": "/dev/bus/usb/007/009",
+      "device_node": "/dev/bus/usb/007/116",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2430.689,
-      "disconnected_at": "2026-08-09T03:19:15.773624+00:00",
-      "reconnected_at": "2026-08-09T03:19:18.204314+00:00",
-      "recovery_completed_at": "2026-08-09T03:19:18.530580+00:00",
+      "disconnect_ms": 1318.962,
+      "disconnected_at": "2026-08-09T15:36:40.415271+00:00",
+      "reconnected_at": "2026-08-09T15:36:41.734234+00:00",
+      "recovery_completed_at": "2026-08-09T15:36:41.828006+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.322 throughput_MiB_s=3.105"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.299"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 324.779,
+        "recovery_ms": 91.852,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.322 throughput_MiB_s=3.105"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.089 throughput_MiB_s=11.299"
       },
       "topology_path": "7-1.4"
     },
     {
       "cycle": 100,
-      "device_node": "/dev/bus/usb/007/010",
+      "device_node": "/dev/bus/usb/007/117",
       "device_node_readable": true,
       "device_node_writable": true,
-      "disconnect_ms": 2334.861,
-      "disconnected_at": "2026-08-09T03:19:20.661828+00:00",
-      "reconnected_at": "2026-08-09T03:19:22.996693+00:00",
-      "recovery_completed_at": "2026-08-09T03:19:23.322013+00:00",
+      "disconnect_ms": 2129.633,
+      "disconnected_at": "2026-08-09T15:36:43.457015+00:00",
+      "reconnected_at": "2026-08-09T15:36:45.586650+00:00",
+      "recovery_completed_at": "2026-08-09T15:36:45.679090+00:00",
       "recovery_smoke": {
         "attempt_count": 1,
         "attempts": [
           {
             "exit_code": 0,
             "stderr": "",
-            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.321 throughput_MiB_s=3.117"
+            "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.326"
           }
         ],
         "exit_code": 0,
-        "recovery_ms": 324.018,
+        "recovery_ms": 90.923,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.321 throughput_MiB_s=3.117"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.326"
       },
       "topology_path": "7-1.4"
     }
   ],
-  "device_node": "/dev/bus/usb/007/036",
+  "device_node": "/dev/bus/usb/007/016",
   "device_node_readable": true,
   "device_node_writable": true,
   "disconnect_method": "physical-cable",
@@ -2558,13 +2538,13 @@
       {
         "exit_code": 0,
         "stderr": "",
-        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.324 throughput_MiB_s=3.090"
+        "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.377"
       }
     ],
     "exit_code": 0,
-    "recovery_ms": 325.771,
+    "recovery_ms": 89.936,
     "stderr": "",
-    "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.324 throughput_MiB_s=3.090"
+    "stdout": "PASS platform=linux vid=34b7 pid=1236 interface=0 bytes=1048576 elapsed_s=0.088 throughput_MiB_s=11.377"
   },
   "minimum_disconnect_ms": 250,
   "operator": "gtc",
@@ -2576,7 +2556,7 @@
   "smoke_executable": "host/target/release/hpm-usb-smoke",
   "smoke_retry_ms": 100,
   "smoke_sha256": "e11427c2804ebe1442c2973469d875b0c2242289d71d0cc56bf7ff748a2c8c47",
-  "started_at": "2026-08-09T03:03:44.210516+00:00",
+  "started_at": "2026-08-09T15:19:58.873056+00:00",
   "status": "PASS",
   "test_id": "T-USB-007",
   "topology_path": "7-1.4",

@@ -23,7 +23,9 @@ Windows native CI and Windows functional vendor-Bulk HIL are complete. Protocol
 and device session implementation that already landed is valid P4P progress;
 it is no longer described as prohibited or pending on packaging.
 
-Physical cable cycling is PASS at P3A/T-USB-007 with 100/100 recovery cycles.
+Physical cable cycling is owned by P3A/T-USB-007. The current 100/100 recovery
+run is behavioral evidence, but qualification remains `PARTIAL` because the
+original collector did not record firmware identity.
 Windows PnP binding capture remains a P3A evidence item, while release EXE
 hashes, dependency/license bundle and installer packaging remain P6. Those
 items keep their own `PARTIAL` or `NOT_TESTED` states and are not implied by
