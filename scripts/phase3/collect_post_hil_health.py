@@ -62,6 +62,36 @@ USB_FIELDS = (
     "in_flight",
     "stack",
 )
+MCAN_FIELDS = (
+    "magic",
+    "version",
+    "mode",
+    "initialized",
+    "online",
+    "tx_armed",
+    "source_clock_hz",
+    "control_status",
+    "nominal_bit_timing",
+    "priority",
+    "interrupts",
+    "frames_received",
+    "frames_published",
+    "invalid_frames",
+    "queue_sends",
+    "queue_drops",
+    "ring_count",
+    "ring_drops",
+    "ring_high_watermark",
+    "bus_off",
+    "warning",
+    "error_passive",
+    "recovery_attempts",
+    "tx_rejected_disarmed",
+    "tx_rejected_invalid",
+    "activity_drops",
+    "stack",
+    "last_rx_tick",
+)
 HEALTH_FIELDS = (
     "boot_magic",
     "boot_tick",
@@ -98,6 +128,8 @@ HEX_FIELDS = {
     "missing",
     "stall",
     "alloc_magic",
+    "control_status",
+    "nominal_bit_timing",
 }
 
 
@@ -255,12 +287,14 @@ def _parse_record(output: str, prefix: str, fields: tuple[str, ...]) -> dict[str
 def parse_snapshot(output: str) -> dict[str, dict[str, int]]:
     return {
         "usb_owner": _parse_record(output, "P3A_USB", USB_FIELDS),
+        "mcan0_owner": _parse_record(output, "P3B_MCAN", MCAN_FIELDS),
         "rtos_health": _parse_record(output, "P3A_HEALTH", HEALTH_FIELDS),
     }
 
 
 def validate_snapshot(snapshot: dict[str, dict[str, int]], minimum_stack: int) -> None:
     usb = snapshot["usb_owner"]
+    mcan = snapshot["mcan0_owner"]
     health = snapshot["rtos_health"]
     required_usb = {
         "magic": 0x5553424F,
@@ -294,6 +328,38 @@ def validate_snapshot(snapshot: dict[str, dict[str, int]], minimum_stack: int) -
     if usb["stack"] < minimum_stack:
         raise RuntimeError("USB owner stack watermark is below the threshold")
 
+    expected_mcan = {
+        "magic": 0x4D43414E,
+        "version": 1,
+        "mode": 1,
+        "initialized": 1,
+        "online": 1,
+        "tx_armed": 0,
+        "priority": 4,
+        "invalid_frames": 0,
+        "queue_drops": 0,
+        "ring_drops": 0,
+        "recovery_attempts": 0,
+        "activity_drops": 0,
+    }
+    for field, expected in expected_mcan.items():
+        if mcan[field] != expected:
+            raise RuntimeError(f"MCAN0 owner invariant failed: {field} != {expected}")
+    if mcan["source_clock_hz"] <= 0:
+        raise RuntimeError("MCAN0 source clock is invalid")
+    if (mcan["control_status"] & 0x20) == 0:
+        raise RuntimeError("MCAN0 hardware monitor/listen-only bit is clear")
+    if mcan["frames_published"] > mcan["frames_received"]:
+        raise RuntimeError("MCAN0 published frame count exceeds received count")
+    if mcan["ring_count"] > mcan["frames_published"]:
+        raise RuntimeError("MCAN0 RX ring count exceeds published frame count")
+    if mcan["ring_count"] > 64 or mcan["ring_high_watermark"] > 64:
+        raise RuntimeError("MCAN0 RX ring accounting exceeds static capacity")
+    if mcan["ring_count"] > mcan["ring_high_watermark"]:
+        raise RuntimeError("MCAN0 RX ring count exceeds its high watermark")
+    if mcan["stack"] < minimum_stack:
+        raise RuntimeError("MCAN0 owner stack watermark is below the threshold")
+
     expected_health = {
         "boot_magic": 0x424F4F54,
         "health_magic": 0x484C5448,
@@ -302,7 +368,7 @@ def validate_snapshot(snapshot: dict[str, dict[str, int]], minimum_stack: int) -
         "fault_reason": 0,
         "watchdog_magic": 0x57444756,
         "watchdog_version": 1,
-        "required": 0x7,
+        "required": 0xF,
         "missing": 0,
         "stall": 0,
         "alloc_magic": 0x414C4C43,
@@ -326,7 +392,7 @@ def validate_snapshot(snapshot: dict[str, dict[str, int]], minimum_stack: int) -
 def _sample_target(gdb: Path, elf: Path, port: int) -> dict[str, dict[str, int]]:
     usb_format = " ".join(
         f"{name}=%08x"
-        if name == "magic"
+        if name in {"magic", "control_status", "nominal_bit_timing"}
         else f"{name}=%llu"
         if name in {"rx_bytes", "tx_bytes"}
         else f"{name}=%u"
@@ -345,6 +411,35 @@ def _sample_target(gdb: Path, elf: Path, port: int) -> dict[str, dict[str, int]]
         "g_app_usb_owner_state.rx_bytes, g_app_usb_owner_state.tx_bytes, "
         "g_app_usb_owner_state.transfer_errors, g_app_usb_owner_state.out_armed, "
         "g_app_usb_owner_state.in_flight, g_app_usb_owner_state.stack_high_watermark"
+    )
+    mcan_format = " ".join(
+        f"{name}=%08x"
+        if name == "magic"
+        else f"{name}=%llu"
+        if name == "last_rx_tick"
+        else f"{name}=%u"
+        for name in MCAN_FIELDS
+    )
+    mcan_values = (
+        "g_app_mcan0_owner_state.magic, g_app_mcan0_owner_state.version, "
+        "g_app_mcan0_owner_state.mode, g_app_mcan0_owner_state.initialized, "
+        "g_app_mcan0_owner_state.online, g_app_mcan0_owner_state.tx_armed, "
+        "g_app_mcan0_owner_state.source_clock_hz, "
+        "g_app_mcan0_owner_state.control_status, "
+        "g_app_mcan0_owner_state.nominal_bit_timing, "
+        "g_app_mcan0_owner_state.irq_priority, g_app_mcan0_owner_state.interrupt_count, "
+        "g_app_mcan0_owner_state.frames_received, g_app_mcan0_owner_state.frames_published, "
+        "g_app_mcan0_owner_state.invalid_frames, g_app_mcan0_owner_state.queue_send_count, "
+        "g_app_mcan0_owner_state.queue_drops, g_app_mcan0_owner_state.ring_count, "
+        "g_app_mcan0_owner_state.ring_drops, g_app_mcan0_owner_state.ring_high_watermark, "
+        "g_app_mcan0_owner_state.bus_off_count, g_app_mcan0_owner_state.warning_count, "
+        "g_app_mcan0_owner_state.error_passive_count, "
+        "g_app_mcan0_owner_state.automatic_recovery_attempts, "
+        "g_app_mcan0_owner_state.tx_rejected_disarmed, "
+        "g_app_mcan0_owner_state.tx_rejected_invalid, "
+        "g_app_mcan0_owner_state.activity_signal_drops, "
+        "g_app_mcan0_owner_state.stack_high_watermark, "
+        "g_app_mcan0_owner_state.last_rx_tick"
     )
     health_format = " ".join(
         f"{name}=%08x"
@@ -379,6 +474,8 @@ def _sample_target(gdb: Path, elf: Path, port: int) -> dict[str, dict[str, int]]
         "-ex",
         f'printf "P3A_USB {usb_format}\\n", {usb_values}',
         "-ex",
+        f'printf "P3B_MCAN {mcan_format}\\n", {mcan_values}',
+        "-ex",
         f'printf "P3A_HEALTH {health_format}\\n", {health_values}',
         "-ex",
         "monitor go",
@@ -402,15 +499,18 @@ def collect(
     manifest_path = _resolve(args.firmware_manifest, root)
     evidence: dict[str, Any] = {
         "schema_version": 1,
-        "evidence_id": "P3A-POST-HIL-HEALTH",
+        "evidence_id": "P3AB-POST-HIL-HEALTH",
         "test_references": [],
         "status": "RUNNING",
         "evidence_boundary": {
             "verdict": "PENDING",
-            "covered": "one atomic post-HIL debugger halt jointly sampling USB owner and RTOS health invariants",
+            "covered": (
+                "one atomic post-HIL debugger halt jointly sampling USB owner, "
+                "MCAN0 listen-only owner, and RTOS health invariants"
+            ),
             "not_covered": (
                 "independent qualification of any referenced USB workload, RTOS "
-                "duration, Windows, protocol/session, or CAN behavior; linkage is a "
+                "duration, Windows, protocol/session, or CAN traffic behavior; linkage is a "
                 "fresh host-side ELF/device association rather than an on-device run nonce"
             ),
         },
@@ -503,7 +603,7 @@ def collect(
         evidence["completed_at"] = _now()
         _write_evidence(output, evidence)
         print(
-            f"PASS P3A post-HIL health elf_sha256={evidence['elf_sha256']} "
+            f"PASS P3AB post-HIL health elf_sha256={evidence['elf_sha256']} "
             f"evidence={output}"
         )
         return 0
@@ -539,7 +639,7 @@ def main() -> int:
         "--output",
         type=Path,
         default=DEFAULT_ROOT
-        / "docs/evidence/phase3/P3A-post-HIL-health-current.json",
+        / "docs/evidence/phase3/P3AB-post-HIL-health-current.json",
     )
     parser.add_argument("--minimum-stack-words", type=int, default=128)
     parser.add_argument("--maximum-hil-age-seconds", type=float, default=300.0)

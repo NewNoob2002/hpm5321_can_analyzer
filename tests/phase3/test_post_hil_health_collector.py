@@ -26,10 +26,17 @@ def healthy_output() -> str:
         "disconnects=1 configurations=2 queue_sends=205 queue_drops=0 stale=1 "
         "rx_completions=100 tx_completions=100 rx_bytes=204800 tx_bytes=204800 "
         "transfer_errors=0 out_armed=1 in_flight=0 stack=256\n"
+        "P3B_MCAN magic=4d43414e version=1 mode=1 initialized=1 online=1 "
+        "tx_armed=0 source_clock_hz=80000000 control_status=00000020 "
+        "nominal_bit_timing=06000a03 priority=4 interrupts=0 frames_received=0 frames_published=0 "
+        "invalid_frames=0 queue_sends=0 queue_drops=0 ring_count=0 ring_drops=0 "
+        "ring_high_watermark=0 bus_off=0 warning=0 error_passive=0 "
+        "recovery_attempts=0 tx_rejected_disarmed=0 tx_rejected_invalid=0 "
+        "activity_drops=0 stack=256 last_rx_tick=0\n"
         "P3A_HEALTH boot_magic=424f4f54 boot_tick=100 reset=00000010 "
         "health_magic=484c5448 health_version=1 heartbeat=100 drops=0 health_stack=300 "
         "last_tick=10000 fault_magic=00000000 fault_reason=0 watchdog_magic=57444756 "
-        "watchdog_version=1 required=00000007 missing=00000000 stall=00000000 "
+        "watchdog_version=1 required=0000000f missing=00000000 stall=00000000 "
         "evaluations=100 healthy=100 alloc_magic=414c4c43 alloc_version=1 "
         "alloc_frozen=1 allocations=1 post_freeze_allocations=0\n"
     )
@@ -42,11 +49,13 @@ class PostHilHealthCollectorTests(unittest.TestCase):
         validate_snapshot(snapshot, 128)
 
         self.assertEqual(snapshot["usb_owner"]["rx_bytes"], 204800)
-        self.assertEqual(snapshot["rtos_health"]["required"], 0x7)
+        self.assertEqual(snapshot["mcan0_owner"]["mode"], 1)
+        self.assertEqual(snapshot["rtos_health"]["required"], 0xF)
 
-    def test_fails_closed_on_usb_or_rtos_health_violation(self) -> None:
+    def test_fails_closed_on_usb_mcan_or_rtos_health_violation(self) -> None:
         for broken in (
             healthy_output().replace("queue_drops=0", "queue_drops=1"),
+            healthy_output().replace("tx_armed=0", "tx_armed=1"),
             healthy_output().replace("healthy=100", "healthy=99"),
         ):
             with self.subTest(broken=broken):
@@ -72,6 +81,7 @@ class PostHilHealthCollectorTests(unittest.TestCase):
         self.assertEqual(command.count("monitor go"), 1)
         joined = " ".join(command)
         self.assertIn("g_app_usb_owner_state", joined)
+        self.assertIn("g_app_mcan0_owner_state", joined)
         self.assertIn("g_app_health_state", joined)
         self.assertIn("g_app_watchdog_state", joined)
 

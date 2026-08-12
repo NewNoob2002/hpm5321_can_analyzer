@@ -1,0 +1,26 @@
+set pagination off
+set print pretty on
+printf "P3B_MCAN0_OWNER_SNAPSHOT\n"
+p/x g_app_mcan0_owner_state.magic
+p g_app_mcan0_owner_state.version
+p g_app_mcan0_owner_state.mode
+p g_app_mcan0_owner_state.initialized
+p g_app_mcan0_owner_state.online
+p g_app_mcan0_owner_state.tx_armed
+p g_app_mcan0_owner_state.source_clock_hz
+p/x g_app_mcan0_owner_state.control_status
+p/x g_app_mcan0_owner_state.nominal_bit_timing
+p g_app_mcan0_owner_state.irq_priority
+p g_app_mcan0_owner_state.frames_received
+p g_app_mcan0_owner_state.frames_published
+p g_app_mcan0_owner_state.queue_drops
+p g_app_mcan0_owner_state.ring_count
+p g_app_mcan0_owner_state.ring_drops
+p g_app_mcan0_owner_state.ring_high_watermark
+p g_app_mcan0_owner_state.bus_off_count
+p g_app_mcan0_owner_state.automatic_recovery_attempts
+p g_app_mcan0_owner_state.last_rx_tick
+p g_app_mcan0_owner_state.stack_high_watermark
+p/x g_app_mcan0_owner_state.last_protocol_status
+p/x g_app_mcan0_owner_state.last_error_count
+p/x g_app_mcan0_owner_state.last_interrupt_snapshot

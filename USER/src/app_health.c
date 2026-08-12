@@ -14,10 +14,13 @@
 #define APP_HEALTH_MAGIC (0x484C5448U) /* "HLTH" */
 #define APP_HEALTH_VERSION (1U)
 #define APP_HEALTH_STACK_WORDS (configMINIMAL_STACK_SIZE + 256U)
-#define APP_HEALTH_QUEUE_LENGTH (4U)
+#define APP_HEALTH_QUEUE_LENGTH (8U)
 #define APP_HEALTH_TASK_PRIORITY (2U)
 #define APP_HEALTH_HEARTBEAT_MS (500U)
+#define APP_HEALTH_ACTIVITY_MS (50U)
 #define APP_HEALTH_EVENT_HEARTBEAT (1U)
+#define APP_HEALTH_EVENT_CAN0_RX (2U)
+#define APP_HEALTH_EVENT_CAN0_TX (3U)
 
 static StaticTask_t health_task_tcb;
 static StackType_t health_task_stack[APP_HEALTH_STACK_WORDS];
@@ -26,6 +29,8 @@ static uint8_t health_queue_storage[APP_HEALTH_QUEUE_LENGTH * sizeof(uint32_t)];
 static StaticTimer_t heartbeat_timer_control;
 static QueueHandle_t health_queue;
 static TimerHandle_t heartbeat_timer;
+static bool can0_rx_activity_pending;
+static bool can0_tx_activity_pending;
 
 volatile app_health_state_t g_app_health_state = {
     .magic = APP_HEALTH_MAGIC,
@@ -55,10 +60,47 @@ static void heartbeat_timer_callback(TimerHandle_t timer)
     }
 }
 
+static bool signal_activity(uint32_t event, bool *pending)
+{
+    bool should_queue;
+
+    if (health_queue == NULL || pending == NULL) {
+        return false;
+    }
+    taskENTER_CRITICAL();
+    should_queue = !*pending;
+    *pending = true;
+    taskEXIT_CRITICAL();
+    if (!should_queue) {
+        return true;
+    }
+    if (xQueueSend(health_queue, &event, 0U) == pdPASS) {
+        return true;
+    }
+    taskENTER_CRITICAL();
+    *pending = false;
+    taskEXIT_CRITICAL();
+    return false;
+}
+
+bool app_health_signal_can0_rx(void)
+{
+    return signal_activity(APP_HEALTH_EVENT_CAN0_RX,
+                           &can0_rx_activity_pending);
+}
+
+bool app_health_signal_can0_tx(void)
+{
+    return signal_activity(APP_HEALTH_EVENT_CAN0_TX,
+                           &can0_tx_activity_pending);
+}
+
 static void health_task(void *context)
 {
     uint32_t event;
     bool status_on = false;
+    TickType_t can0_rx_off_tick = 0U;
+    TickType_t can0_tx_off_tick = 0U;
     (void)context;
 
     board_led_write(BOARD_LED_OFF_LEVEL);
@@ -67,26 +109,62 @@ static void health_task(void *context)
 
     while (1) {
         const BaseType_t received = xQueueReceive(
-            health_queue, &event,
-            pdMS_TO_TICKS(APP_HEALTH_HEARTBEAT_MS));
+            health_queue, &event, pdMS_TO_TICKS(APP_HEALTH_ACTIVITY_MS));
+        const TickType_t now = xTaskGetTickCount();
 
-        if (received == pdPASS &&
-            event == APP_HEALTH_EVENT_HEARTBEAT) {
-            status_on = !status_on;
-            board_led_write(status_on ? BOARD_LED_ON_LEVEL : BOARD_LED_OFF_LEVEL);
-            g_app_health_state.status_led_on = (uint32_t)status_on;
-            g_app_health_state.heartbeat_count++;
-            g_app_health_state.last_heartbeat_tick = app_time_now();
-            g_app_health_state.stack_high_watermark =
-                uxTaskGetStackHighWaterMark(NULL);
+        if (received == pdPASS) {
+            if (event == APP_HEALTH_EVENT_HEARTBEAT) {
+                status_on = !status_on;
+                board_led_write(status_on ? BOARD_LED_ON_LEVEL
+                                           : BOARD_LED_OFF_LEVEL);
+                g_app_health_state.status_led_on = (uint32_t)status_on;
+                g_app_health_state.heartbeat_count++;
+                g_app_health_state.last_heartbeat_tick = app_time_now();
+                g_app_health_state.stack_high_watermark =
+                    uxTaskGetStackHighWaterMark(NULL);
+                app_watchdog_vote(APP_WATCHDOG_VOTER_HEALTH);
+                (void)app_watchdog_evaluate();
+                g_app_health_state.watchdog_missing_mask =
+                    g_app_watchdog_state.missing_mask;
+                g_app_health_state.watchdog_healthy_evaluations =
+                    g_app_watchdog_state.healthy_evaluation_count;
+            } else if (event == APP_HEALTH_EVENT_CAN0_RX) {
+                gpio_write_pin(BOARD_CAN0_RX_LED_GPIO_CTRL,
+                               BOARD_CAN0_RX_LED_GPIO_INDEX,
+                               BOARD_CAN0_RX_LED_GPIO_PIN,
+                               BOARD_CAN_LED_ON_LEVEL);
+                can0_rx_off_tick = now + pdMS_TO_TICKS(APP_HEALTH_ACTIVITY_MS);
+            } else if (event == APP_HEALTH_EVENT_CAN0_TX) {
+                gpio_write_pin(BOARD_CAN0_TX_LED_GPIO_CTRL,
+                               BOARD_CAN0_TX_LED_GPIO_INDEX,
+                               BOARD_CAN0_TX_LED_GPIO_PIN,
+                               BOARD_CAN_LED_ON_LEVEL);
+                can0_tx_off_tick = now + pdMS_TO_TICKS(APP_HEALTH_ACTIVITY_MS);
+            }
+        }
+        if (can0_rx_off_tick != 0U &&
+            (int32_t)(now - can0_rx_off_tick) >= 0) {
+            taskENTER_CRITICAL();
+            can0_rx_activity_pending = false;
+            taskEXIT_CRITICAL();
+            gpio_write_pin(BOARD_CAN0_RX_LED_GPIO_CTRL,
+                           BOARD_CAN0_RX_LED_GPIO_INDEX,
+                           BOARD_CAN0_RX_LED_GPIO_PIN,
+                           BOARD_CAN_LED_OFF_LEVEL);
+            can0_rx_off_tick = 0U;
+        }
+        if (can0_tx_off_tick != 0U &&
+            (int32_t)(now - can0_tx_off_tick) >= 0) {
+            taskENTER_CRITICAL();
+            can0_tx_activity_pending = false;
+            taskEXIT_CRITICAL();
+            gpio_write_pin(BOARD_CAN0_TX_LED_GPIO_CTRL,
+                           BOARD_CAN0_TX_LED_GPIO_INDEX,
+                           BOARD_CAN0_TX_LED_GPIO_PIN,
+                           BOARD_CAN_LED_OFF_LEVEL);
+            can0_tx_off_tick = 0U;
         }
 
-        app_watchdog_vote(APP_WATCHDOG_VOTER_HEALTH);
-        (void)app_watchdog_evaluate();
-        g_app_health_state.watchdog_missing_mask =
-            g_app_watchdog_state.missing_mask;
-        g_app_health_state.watchdog_healthy_evaluations =
-            g_app_watchdog_state.healthy_evaluation_count;
     }
 }
 
