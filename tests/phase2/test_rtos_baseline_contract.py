@@ -27,7 +27,7 @@ class RtosBaselineContractTests(unittest.TestCase):
             if any(token in text for token in writer_tokens):
                 writers.append(source.name)
 
-        self.assertEqual(writers, ["app_health.c", "freertos_hooks.c"])
+        self.assertEqual(sorted(writers), ["app_health.c", "freertos_hooks.c"])
         self.assertNotIn("idleTask", (USER / "src/main.c").read_text())
 
         fault = (USER / "src/freertos_hooks.c").read_text()
