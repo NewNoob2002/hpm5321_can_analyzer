@@ -85,11 +85,12 @@ file-level manifest at `T-CAN-EXT-source-manifest.sha256` (manifest digest
 The former safe-order ELF
 `b1076d8ea75589fa4491694b34398de7e3fcebb4f3dd6c414c33030413971187`
 predates the current CMake definitions and is explicitly **superseded**, not
-source-bound to the current manifest. The current reset-disarmed TX artifact is
+source-bound to the current manifest. The retained reset-disarmed TX artifact is
 `build/review-mcan-tx/output/demo.elf`, SHA-256
-`bbbef9d7cba5ec9bcf09bf56486db7e75f466ea533d4c1f5fa9823437a0348ef`.
-The artifact attestation inputs are recorded in
-`T-CAN-TX-current-artifact.json`.
+`bfd96070d9dfb7575aee9b31361dd69746d8baa466e3b63b6d6b1d2f6cb10cc0`.
+The artifact attestation inputs and archived source commit are recorded in
+`T-CAN-TX-current-artifact.json`; validation intentionally does not bind this
+historical artifact to the moving repository worktree.
 This historical report is superseded for reset/disarm work by the ABI-v4 and
 ABI-v5 reports. ABI-v4 target and external results passed independently but
-lacked a same-run nonce; ABI-v5 is the current nonce-bound evidence path.
+lacked a same-run nonce; ABI-v5 is the retained nonce-bound evidence path.

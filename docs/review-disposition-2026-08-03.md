@@ -4,7 +4,7 @@
 |---|---:|---|
 | MCAN power-up order unsafe | Yes | Software warm-reset containment fixed and proven by T-CAN-BOOT-001; absolute reset-to-first-instruction safety remains a PCB blocker because STB is hardware-low |
 | Overlay contains client/secret keys | Yes | Stale `.hpmpc` removed; misleading EVK READMEs removed; external credential rotation remains owner action if values were real |
-| External evidence not reconstructible from revision | Yes | Tracked file-level manifest, dependency lock and clean-rebuild script cover the current ABI-v5 artifact; historical TX evidence remains non-formal |
+| External evidence not reconstructible from revision | Yes | The ABI-v5 artifact attestation pins its source commit, file-level manifest, dependency lock and build flags; the rebuild script checks out those archived inputs instead of validating against the moving worktree |
 | CAN validator lacks timing gates | Yes | Strict timestamp monotonicity, 900–1100 ms duration, 8–12 ms mean and 1–20 ms individual interval gates added with negative tests |
 | Capture format cannot prove flags/config | Yes | Operator metadata sidecar is mandatory; validator now binds it to exact capture and ELF hashes. Historical capture is explicitly `historical-unbound` because no source manifest was preserved |
 | Overlay generation metadata conflicts | Yes | Non-authoritative HPM5361 `.hpmpc` and HPM5300EVK READMEs removed; authoritative adapted sources and regeneration limits documented |
@@ -13,7 +13,7 @@
 | USB endpoint model checks weak | Yes | Raw addresses, duplicate addresses, reserved bits, dynamic SDK-header capacity and computed highest endpoint are checked; regression tests added |
 | Active-TX image replays 100 frames after every reset and remains connected | Yes | Fixed: every reset clears a RAM arm token; TX build starts listen-only, consumes a one-shot debugger token before normal mode, then deinitializes MCAN and returns pads to GPIO inputs after TX or failure |
 | CMake permits unsafe/ambiguous flag combinations | Yes | Fixed: all flags must be literal 0/1; active TX plus either RX option and ACK_RX without REQUIRE_RX fail at configure time |
-| Claimed source-bound TX ELF predates current manifest | Yes | Historical artifacts are superseded. Current ABI-v5 artifact records exact ELF, canonical source manifest, SDK commit, build flags and nonce; `rebuild_current_artifact.sh` performs a clean rebuild before validation |
+| Claimed source-bound TX ELF predates current manifest | Yes | Historical artifacts are superseded. The retained ABI-v5 artifact records exact ELF, archived source commit and manifest, SDK commit, build flags and nonce; `rebuild_current_artifact.sh` reproduces that archived source snapshot before validation |
 | Fixes absent from version control | Yes | Closed by Phase 0 commits beginning at `9ac4294`; board overlay, lock, plans, probes, tests and evidence are tracked |
 | GPIO mux precedes input-direction establishment | Yes | Fixed order: GPIOM ownership and GPIO input direction are established before FUNC_CTL selects GPIO. T-CAN-012 evidence records PB00/PB01 OE cleared and GPIOM selection |
 | RX proof waits up to one hour before checking errors | Yes | Fixed: every polling iteration captures error state and stops on CEL, warning, passive, or bus-off before checking completion |
@@ -41,7 +41,7 @@
 | Internal-loopback HEAD connects physical MCAN pads before init | Yes | Working source removes `board_init_can()`; new ELF `cd5585e7...` ran 8/8 and GDB confirmed PB00/PB01/PB08/PB09 FUNC_CTL remained GPIO-safe (`0`) |
 | Internal-loopback evidence points to unsafe old ELF | Yes | Evidence now references the safe ELF, exact SDK commit, source manifest and raw GDB/compare-sections record |
 | Historical capture can be relabelled manifest-bound | Yes | Capture validator now accepts only `historical-unbound`; the former positive relabel test is inverted and must fail |
-| Current artifact JSON has no validator | Yes | Added `validate_current_artifact.py` plus positive/stale-hash tests; it verifies ELF, canonical manifest, SDK commit/BUILD_VERSION, compile definitions and ABI |
+| Artifact JSON has no validator | Yes | Added `validate_current_artifact.py` plus positive/stale-hash tests; it verifies ELF, archived source commit/manifest, SDK commit/BUILD_VERSION, compile definitions and ABI without requiring the current worktree to equal the historical build inputs |
 | `cleanup_completed` remains 1 during normal TX | Yes | Cleanup snapshot is invalidated immediately before normal-mode initialization |
 | ARM final check omits listen-only mode and critical IR | Yes | ARM checks require INIT=0, MON=1, zero BO/EW/EP/CEL and no ARA/WDI/ELO/BEU/BEC/MRAF/RXFIFO-loss fault bits |
 | Target and adapter results lack same-run binding | Yes | ABI-v4 is relabeled independent/unbound. ABI-v5 nonce `0xA504` is verified across debugger write/readback, terminal result, every CAN payload, metadata and attestation; target flash sections are matched to the ELF and replay regression coverage is included |
