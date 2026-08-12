@@ -2,12 +2,14 @@
 
 ## Product firmware
 
-The root firmware contains the P2 RTOS ownership baseline plus the first P3A
-USB vertical slice: a statically allocated `health_task`, USB owner task,
-queues and software timer; a stable high-low-high sampled 64-bit MCHTMR
-timebase; fault hooks; clock snapshots; health-only LED writes; and raw vendor
-Bulk echo. It does **not** yet implement the USB-CAN data plane, production
-MCAN owner tasks, protocol wiring, hardware-watchdog feeding or product CLI.
+The root firmware contains the P2 RTOS ownership baseline, the first P3A USB
+vertical slice and the P3B MCAN0 listen-only software slice: statically
+allocated `health_task`, USB owner and MCAN0 owner tasks, bounded queues/ring
+and software timer; a stable high-low-high sampled 64-bit MCHTMR timebase;
+fault hooks; clock snapshots; health-only LED writes; raw vendor Bulk echo; and
+timestamped Classic-CAN RX publication with explicit loss/error diagnostics.
+It does **not** yet implement the USB-CAN data plane, protocol wiring,
+authorized product TX, hardware-watchdog feeding or product CLI.
 The Rust protocol,
 device-session model, transport abstraction, fake backend and USB smoke tool
 are implemented and tested, but are not yet a complete analyzer application.
@@ -17,7 +19,10 @@ CAN1/MCAN0 LEDs on PY01/PY02, CAN2/MCAN2 LEDs on PY03/PA09 and STATUS on PA31.
 Planning addendum `spi2-sd-led-2026-08-09` is approved and normalized. Product
 firmware still has no `storage_task` and does not drive CAN activity LEDs from
 CAN events; `health_task` is now the sole post-BSP LED writer and supplies the
-STATUS heartbeat. P0S remains blocked on electrical/media/profile proof.
+STATUS heartbeat. The MCAN0 owner now signals accepted RX activity to
+`health_task`, which pulses CAN1 RX while preserving sole GPIO-writer
+ownership; CAN1 TX remains off because product TX is disarmed. P0S remains
+blocked on electrical/media/profile proof.
 `scripts/phase0/storage_profile.py` makes the numeric and evidence requirements
 executable; it intentionally rejects the checked-in BLOCKED evidence template.
 
@@ -32,6 +37,22 @@ Projects under `tools/phase0/` are isolated hardware-characterization firmware:
 - `led_chaser`: one-at-a-time visual pin, polarity and routing check for all five LEDs
 
 Probe results reduce hardware risk but are not product-feature completion.
+
+## Phase 3B
+
+P3B is `PARTIAL`. The product build now has a long-running static MCAN0 owner
+at 1 Mbit/s Classic CAN, initialized listen-only before the pads are connected.
+It drains RXFIFO0 through a bounded ISR queue into a 64-record timestamped
+consumer ring, records queue/ring loss separately, snapshots error state, votes
+the watchdog and never performs automatic bus-off recovery. Its TX entry point
+is present only as a fail-closed boundary and always rejects while disarmed.
+
+The software/build boundary is recorded in
+`docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md`. P3B still
+needs product-image target/listen-only proof, external RX/timing correlation,
+the 30-minute `BP-CAN-MVP-v1` run and bounded bus-off policy evidence. Protocol
+arm/expiry/rate admission, TX result/cancel and USB disconnect/reset disarm
+belong to the P4E integration step and must land before product TX is enabled.
 
 ## Phase 2
 
