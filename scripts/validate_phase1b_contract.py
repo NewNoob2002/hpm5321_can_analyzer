@@ -90,17 +90,20 @@ def validate(root: Path) -> list[str]:
             "All four steps passed",
         ),
         "docs/evidence/phase1/T-DEV-005-jlink-gdb-report.md": (
+            "port 2331",
             "Breakpoint 1, main",
             "stepi",
             "monitor reset",
         ),
+        "docs/development/setup-linux.md": (
+            "HPM5321xCFx",
+            "JTAG 4 MHz",
+            "port 2331",
+            "break main",
+        ),
         ".github/workflows/host-rust.yml": (
             "os: [ubuntu-latest, windows-latest]",
             "toolchain install 1.97.1",
-        ),
-        ".vscode/launch.json": (
-            '"miDebuggerServerAddress": "localhost:2331"',
-            '"break main"',
         ),
     }
     for relative, tokens in checks.items():

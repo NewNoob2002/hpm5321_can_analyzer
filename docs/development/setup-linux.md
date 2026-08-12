@@ -28,7 +28,10 @@ SDK revisions, compiler identity, sizes and SHA-256 values.
 
 VSCode tasks call only these scripts/presets. clangd reads the Flash Debug
 compilation database. Start J-Link GDB Server separately with target
-`HPM5321xCFx`, JTAG 4 MHz, port 2331, then use the checked-in attach profile.
+`HPM5321xCFx`, JTAG 4 MHz and port 2331. Attach the pinned RISC-V GDB to
+`localhost:2331`, then run `monitor reset`, `break main` and `continue`.
+An editor may wrap this command contract locally, but a repository-owned VSCode
+launch profile is not required for Phase 1B closure.
 Flashing remains a safety-preflight operation and is not part of a build task.
 
 ## USB device access

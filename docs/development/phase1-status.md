@@ -10,7 +10,7 @@ Status values: `PASS`, `PARTIAL`, `BLOCKED`, `NOT_TESTED`, `NOT_APPLICABLE`.
 | Linux environment contract | PASS | `scripts/env/check.sh` rejects missing tools, invalid SDK paths and unlocked SDK commits |
 | Flash Debug/Release and RAM Debug builds | PASS | Three CMake configure/build presets emit ELF/BIN/MAP, compilation database and build manifest |
 | VSCode build/clangd contract | PASS | Tasks call only `scripts/build.sh`; clangd uses the actual Flash Debug database |
-| J-Link VSCode debug profile | PASS | J-Link is selected; checked-in attach profile and `T-DEV-005-jlink-gdb-report.md` prove reset, `main` breakpoint, source/register inspection and step using its exact GDB contract |
+| J-Link debug contract | PASS | J-Link is selected; `setup-linux.md` freezes the target/interface/speed/port/GDB commands and `T-DEV-005-jlink-gdb-report.md` proves reset, `main` breakpoint, source/register inspection and step. A checked-in editor launch profile is optional, not a closure gate |
 | OpenOCD debug adapter | NOT_APPLICABLE | Not selected for MVP; the current board has no SDK OpenOCD config and J-Link is the validated primary adapter |
 | Windows clean build | PASS | GitHub run `30886654542` on Windows Server 2025 at `e55d3c0`: pinned Rust/MSVC format/build/test/clippy all passed |
 | Local Linux Rust/C sanitizer toolchain | PASS | Rust/Cargo 1.97.1 format, 55 release tests and clippy pass; GCC 16 ASan/UBSan probe and four C codec/session parity tests pass; `T-HOST-LOCAL-TOOLCHAIN-report.md` |
