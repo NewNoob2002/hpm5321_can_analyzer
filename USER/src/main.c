@@ -7,7 +7,7 @@
 #include "app_fault.h"
 #include "app_health.h"
 #include "app_irq_contract.h"
-#include "app_mcan_irq_test.h"
+#include "app_mcan0_owner.h"
 #include "app_time.h"
 #include "app_usb_owner.h"
 #include "board.h"
@@ -139,9 +139,9 @@ int main(void)
     capture_clock_state();
     print_boot_banner();
 
-    log_i("P3A USB vertical slice: static USB owner and RTOS health");
+    log_i("P3B MCAN0 listen-only owner with P3A USB and RTOS health");
     configASSERT(app_health_start());
-    configASSERT(app_mcan_irq_test_start());
+    configASSERT(app_mcan0_owner_start());
     configASSERT(app_usb_owner_start());
     app_allocation_freeze();
     app_fault_inject_if_configured();

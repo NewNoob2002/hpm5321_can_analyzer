@@ -20,5 +20,7 @@ typedef struct {
 extern volatile app_health_state_t g_app_health_state;
 
 bool app_health_start(void);
+bool app_health_signal_can0_rx(void);
+bool app_health_signal_can0_tx(void);
 
 #endif /* APP_HEALTH_H */

@@ -109,17 +109,20 @@ class RtosAdvancedContractTests(unittest.TestCase):
                     APP_WATCHDOG_VOTER_MASK(APP_WATCHDOG_VOTER_TIMER_SERVICE);
                 const uint32_t usb =
                     APP_WATCHDOG_VOTER_MASK(APP_WATCHDOG_VOTER_USB_OWNER);
+                const uint32_t mcan0 =
+                    APP_WATCHDOG_VOTER_MASK(APP_WATCHDOG_VOTER_MCAN0_OWNER);
 
                 assert(!app_watchdog_init(0U));
                 assert(!app_watchdog_init(1UL << APP_WATCHDOG_VOTER_CAPACITY));
                 assert(app_watchdog_init(APP_WATCHDOG_REQUIRED_MASK));
                 assert(!app_watchdog_evaluate());
                 assert(g_app_watchdog_state.missing_mask ==
-                       (health | timer | usb));
+                       (health | timer | usb | mcan0));
 
                 app_watchdog_vote(APP_WATCHDOG_VOTER_HEALTH);
                 app_watchdog_vote(APP_WATCHDOG_VOTER_TIMER_SERVICE);
                 app_watchdog_vote(APP_WATCHDOG_VOTER_USB_OWNER);
+                app_watchdog_vote(APP_WATCHDOG_VOTER_MCAN0_OWNER);
                 assert(app_watchdog_evaluate());
                 assert(g_app_watchdog_state.missing_mask == 0U);
 
@@ -127,6 +130,7 @@ class RtosAdvancedContractTests(unittest.TestCase):
                 app_watchdog_vote(APP_WATCHDOG_VOTER_HEALTH);
                 app_watchdog_vote(APP_WATCHDOG_VOTER_TIMER_SERVICE);
                 app_watchdog_vote(APP_WATCHDOG_VOTER_USB_OWNER);
+                app_watchdog_vote(APP_WATCHDOG_VOTER_MCAN0_OWNER);
                 assert(!app_watchdog_evaluate());
                 assert(g_app_watchdog_state.missing_mask == timer);
 
@@ -134,6 +138,7 @@ class RtosAdvancedContractTests(unittest.TestCase):
                 app_watchdog_vote(APP_WATCHDOG_VOTER_HEALTH);
                 app_watchdog_vote(APP_WATCHDOG_VOTER_TIMER_SERVICE);
                 app_watchdog_vote(APP_WATCHDOG_VOTER_USB_OWNER);
+                app_watchdog_vote(APP_WATCHDOG_VOTER_MCAN0_OWNER);
                 assert(!app_watchdog_evaluate());
                 assert(g_app_watchdog_state.missing_mask == health);
 
@@ -141,6 +146,7 @@ class RtosAdvancedContractTests(unittest.TestCase):
                 app_watchdog_vote(APP_WATCHDOG_VOTER_HEALTH);
                 app_watchdog_vote(APP_WATCHDOG_VOTER_TIMER_SERVICE);
                 app_watchdog_vote(APP_WATCHDOG_VOTER_USB_OWNER);
+                app_watchdog_vote(APP_WATCHDOG_VOTER_MCAN0_OWNER);
                 assert(app_watchdog_evaluate());
                 assert(g_app_watchdog_state.healthy_evaluation_count == 2U);
                 assert(g_app_watchdog_state.evaluation_count == 5U);
@@ -167,13 +173,13 @@ class RtosAdvancedContractTests(unittest.TestCase):
         self.assertIn("app_fault_inject_if_configured();", main)
         self.assertNotIn("ebreak", hooks)
 
-    def test_mcan0_irq_qualification_uses_static_freertos_path(self):
+    def test_mcan0_irq_qualification_remains_archived_not_product_wired(self):
         cmake = (ROOT / "CMakeLists.txt").read_text()
         source = (USER / "src/app_mcan_irq_test.c").read_text()
         header = (USER / "inc/app_mcan_irq_test.h").read_text()
         main = (USER / "src/main.c").read_text()
 
-        self.assertIn("sdk_app_src(USER/src/app_mcan_irq_test.c)", cmake)
+        self.assertNotIn("sdk_app_src(USER/src/app_mcan_irq_test.c)", cmake)
         self.assertIn("APP_MCAN_IRQ_TEST_ISR_PRIORITY (4U)", header)
         self.assertIn(
             "APP_IRQ_ASSERT_FREERTOS_API_PRIORITY(APP_MCAN_IRQ_TEST_ISR_PRIORITY)",
@@ -191,12 +197,9 @@ class RtosAdvancedContractTests(unittest.TestCase):
         self.assertNotIn("board_init_can(HPM_MCAN0)", source)
         self.assertNotIn("xQueueCreate(", source)
         self.assertNotIn("xTaskCreate(", source)
-        self.assertLess(
-            main.index("app_mcan_irq_test_start()"),
-            main.index("app_allocation_freeze();"),
-        )
+        self.assertNotIn("app_mcan_irq_test_start()", main)
         self.assertIn("app_usb_owner_start()", main)
-        self.assertNotIn("mcan_owner_task", main)
+        self.assertIn("app_mcan0_owner_start()", main)
 
     def test_frozen_heartbeat_runner_pins_the_qualified_elf(self):
         runner = (ROOT / "scripts/phase2/run_frozen_heartbeat.sh").read_text()
