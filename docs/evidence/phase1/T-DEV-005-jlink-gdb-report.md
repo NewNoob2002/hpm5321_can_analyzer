@@ -11,13 +11,14 @@ ELF SHA-256: `9255dafe0824032289a833d287fd66a0ffdaa030cdaebdddcaa3cca887f96071`
 - SEGGER J-Link GDB Server `V9.66`
 - GNU RISC-V GDB `13.2`
 - VSCode `1.132.0`
-- Profile: `.vscode/launch.json`, port 2331, `break main`
+- Test-time editor profile: port 2331, `break main`; the repository-owned
+  launch file was later removed as optional editor configuration
 
 ## Procedure And Result
 
 The root Flash Debug ELF was programmed temporarily. The test then used the
-checked-in profile's ELF, port and reset/break commands plus the J-Link target,
-interface and speed documented by `setup-linux.md`:
+test-time profile's ELF, port and reset/break commands plus the J-Link target,
+interface and speed now frozen directly by `setup-linux.md`:
 
 ```text
 target remote localhost:2331

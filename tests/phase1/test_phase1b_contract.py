@@ -40,6 +40,12 @@ class Phase1BContractTests(unittest.TestCase):
         errors = VALIDATOR.validate(self.root)
         self.assertTrue(any("cannot read" in item for item in errors))
 
+    def test_optional_vscode_launch_profile_is_not_a_closure_gate(self):
+        launch = self.root / ".vscode/launch.json"
+        if launch.exists():
+            launch.unlink()
+        self.assertEqual(VALIDATOR.validate(self.root), [])
+
     def test_stale_blocker_reopens_phase(self):
         path = self.root / "docs/development/adr-host-stack-spike.md"
         path.write_text(
