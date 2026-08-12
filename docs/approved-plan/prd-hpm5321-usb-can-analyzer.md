@@ -336,7 +336,8 @@ P8 唯一 scoped prerequisites：
 - `.vscode/extensions.json`
 - `.vscode/settings.json`
 - `.vscode/tasks.json`
-- `.vscode/launch.json`
+- optional local editor launch configuration; the versioned contract lives in
+  `docs/development/setup-linux.md` and the J-Link evidence report
 - `scripts/env/`、`scripts/build.*`、`scripts/flash.*`
 - `docs/development/setup-{linux,windows,macos}.md`
 
