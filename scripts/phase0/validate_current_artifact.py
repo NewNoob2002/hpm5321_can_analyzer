@@ -8,7 +8,11 @@ from pathlib import Path
 import re
 import subprocess
 
-from validate_can_capture import ROOT, sha256_file, verify_source_manifest
+from validate_can_capture import (
+    ROOT,
+    sha256_file,
+    verify_archived_source_manifest,
+)
 
 
 def fail(message: str) -> None:
@@ -34,12 +38,12 @@ def main() -> None:
             fail("ABI-v5 artifact attestation requires a 16-bit run_nonce")
 
     artifact = ROOT / data["artifact"]
-    manifest = ROOT / data["source_manifest"]
     if not artifact.is_file() or sha256_file(artifact) != data["elf_sha256"]:
         fail("artifact SHA-256 mismatch")
-    manifest_digest = verify_source_manifest(manifest)
-    if manifest_digest != data["source_manifest_sha256"]:
-        fail("source manifest SHA-256 mismatch")
+    source_commit = data.get("source_commit", "")
+    if not re.fullmatch(r"[0-9a-f]{40}", source_commit):
+        fail("artifact attestation requires a full source_commit")
+    manifest_digest = verify_archived_source_manifest(data)
 
     sdk_base_value = os.environ.get("HPM_SDK_BASE")
     if not sdk_base_value:
@@ -73,14 +77,19 @@ def main() -> None:
         if f"-D{name}={value}" not in command:
             fail(f"build definition mismatch: {name}")
 
-    source = ROOT / source_suffix
-    abi_match = re.search(r"#define PROBE_RESULT_ABI_VERSION\s+\((\d+)U\)", source.read_text())
+    source_text = subprocess.run(
+        ["git", "-C", str(ROOT), "show", f"{source_commit}:{source_suffix}"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    abi_match = re.search(r"#define PROBE_RESULT_ABI_VERSION\s+\((\d+)U\)", source_text)
     if abi_match is None or int(abi_match.group(1)) != data["result_abi_version"]:
         fail("result ABI mismatch")
 
     print(
         f"PASS artifact={data['elf_sha256']} manifest={manifest_digest} "
-        f"sdk={sdk_commit} abi={data['result_abi_version']}"
+        f"source={source_commit} sdk={sdk_commit} abi={data['result_abi_version']}"
     )
 
 
