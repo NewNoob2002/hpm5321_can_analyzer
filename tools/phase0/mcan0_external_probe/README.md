@@ -17,6 +17,11 @@ Both builds disable automatic retransmission and publish the volatile
 `g_mcan0_external_result` structure for GDB evidence. This probe is not product
 firmware.
 
+The retained reproducible artifact is historical evidence. Its attestation
+pins a Git source commit and canonical manifest; `rebuild_current_artifact.sh`
+extracts that archived commit before rebuilding, so later planning or product
+CMake changes do not invalidate the evidence or get mistaken for tested input.
+
 The result ABI is version 5 and includes the run nonce plus post-cleanup CCCR, IOC FUNC_CTL,
 GPIO OE, and GPIOM snapshots. DONE requires the cleanup readback to pass.
 Build options accept only literal `0` or `1`;

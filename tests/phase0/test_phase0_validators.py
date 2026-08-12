@@ -155,10 +155,22 @@ class CurrentArtifactTests(unittest.TestCase):
             env=env,
         )
 
-    def test_current_artifact_attestation(self):
+    def test_archived_artifact_attestation(self):
         if "HPM_SDK_BASE" not in os.environ:
             self.skipTest("HPM_SDK_BASE is required for SDK revision validation")
         self.assertEqual(self.run_validator(self.attestation).returncode, 0)
+
+    def test_archived_artifact_requires_source_commit(self):
+        if "HPM_SDK_BASE" not in os.environ:
+            self.skipTest("HPM_SDK_BASE is required for SDK revision validation")
+        data = json.loads(self.attestation.read_text())
+        data.pop("source_commit")
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "artifact.json"
+            path.write_text(json.dumps(data))
+            result = self.run_validator(path)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("requires a full source_commit", result.stderr)
 
     def test_stale_artifact_hash_rejected(self):
         if "HPM_SDK_BASE" not in os.environ:
