@@ -35,6 +35,16 @@ class UsbHotplugCollectorTests(unittest.TestCase):
         self.assertEqual(result["attempts"], [failed, passed])
         self.assertGreaterEqual(result["recovery_ms"], 0)
 
+    def test_protocol_smoke_uses_protocol_subcommand(self):
+        self.assertEqual(
+            MODULE._smoke_command(Path("/tmp/smoke"), 1024, "protocol"),
+            ["/tmp/smoke", "smoke"],
+        )
+        self.assertEqual(
+            MODULE._smoke_command(Path("/tmp/smoke"), 1024, "raw-echo"),
+            ["/tmp/smoke", "--bytes", "1024"],
+        )
+
     def test_finds_only_matching_vid_pid(self):
         with tempfile.TemporaryDirectory() as temporary:
             sysfs = Path(temporary)
@@ -156,6 +166,7 @@ class UsbHotplugCollectorTests(unittest.TestCase):
                 overall_timeout_seconds=3,
                 recovery_timeout_seconds=1.0,
                 smoke_retry_ms=5,
+                smoke_kind="raw-echo",
                 smoke_bytes=1024,
                 smoke_executable=smoke,
                 firmware_manifest=manifest,
@@ -221,6 +232,7 @@ class UsbHotplugCollectorTests(unittest.TestCase):
                 overall_timeout_seconds=1,
                 recovery_timeout_seconds=0.1,
                 smoke_retry_ms=5,
+                smoke_kind="raw-echo",
                 smoke_bytes=1024,
                 smoke_executable=smoke,
                 firmware_manifest=root / "unused.json",
@@ -276,6 +288,7 @@ class UsbHotplugCollectorTests(unittest.TestCase):
                 overall_timeout_seconds=1,
                 recovery_timeout_seconds=0.1,
                 smoke_retry_ms=5,
+                smoke_kind="raw-echo",
                 smoke_bytes=1024,
                 smoke_executable=smoke,
                 firmware_manifest=root / "unused.json",

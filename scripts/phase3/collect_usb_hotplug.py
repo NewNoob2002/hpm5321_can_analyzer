@@ -97,9 +97,17 @@ def _write_evidence(path: Path, evidence: dict[str, Any]) -> None:
     temporary.replace(path)
 
 
-def _run_smoke(executable: Path, byte_count: int) -> dict[str, Any]:
+def _smoke_command(executable: Path, byte_count: int, smoke_kind: str) -> list[str]:
+    if smoke_kind == "protocol":
+        return [str(executable), "smoke"]
+    return [str(executable), "--bytes", str(byte_count)]
+
+
+def _run_smoke(
+    executable: Path, byte_count: int, smoke_kind: str = "raw-echo"
+) -> dict[str, Any]:
     result = subprocess.run(
-        [str(executable), "--bytes", str(byte_count)],
+        _smoke_command(executable, byte_count, smoke_kind),
         capture_output=True,
         text=True,
     )
@@ -115,12 +123,13 @@ def _run_smoke_with_retry(
     byte_count: int,
     timeout_seconds: float,
     retry_ms: int,
+    smoke_kind: str = "raw-echo",
 ) -> dict[str, Any]:
     started = time.monotonic()
     deadline = started + timeout_seconds
     attempts: list[dict[str, Any]] = []
     while True:
-        smoke = _run_smoke(executable, byte_count)
+        smoke = _run_smoke(executable, byte_count, smoke_kind)
         attempts.append(smoke)
         now = time.monotonic()
         if smoke["exit_code"] == 0 or now >= deadline:
@@ -148,12 +157,20 @@ def collect(args: argparse.Namespace) -> int:
         manifest_path = root / manifest_path
     manifest_path = manifest_path.resolve()
 
+    protocol_smoke = args.smoke_kind == "protocol"
+    recovery_coverage = (
+        "100 physical disconnect/reconnect cycles, udev node access, and a "
+        "successful UCAN HELLO/device-info/capabilities/diagnostics transaction "
+        "after every cycle"
+        if protocol_smoke
+        else "100 physical disconnect/reconnect cycles, udev node access, and an exact 1 MiB recovery echo after every cycle"
+    )
     evidence: dict[str, Any] = {
         "schema_version": 1,
         "test_id": "T-USB-007",
         "evidence_boundary": {
             "verdict": "PENDING",
-            "covered": "100 physical disconnect/reconnect cycles, udev node access, and an exact 1 MiB recovery echo after every cycle",
+            "covered": recovery_coverage,
             "not_covered": "Windows PnP, FS fallback, endpoint HALT, protocol/session, or CAN data-plane behavior",
         },
         "status_semantics": "PASS qualifies T-USB-007 for the recorded physical-cable cycles and recovery echo only",
@@ -168,6 +185,7 @@ def collect(args: argparse.Namespace) -> int:
         "minimum_disconnect_ms": args.minimum_disconnect_ms,
         "recovery_timeout_seconds": args.recovery_timeout_seconds,
         "smoke_retry_ms": args.smoke_retry_ms,
+        "smoke_kind": args.smoke_kind,
         "smoke_bytes": args.smoke_bytes,
         "smoke_executable": _display_path(executable, root),
         "smoke_sha256": "",
@@ -229,6 +247,7 @@ def collect(args: argparse.Namespace) -> int:
             args.smoke_bytes,
             args.recovery_timeout_seconds,
             args.smoke_retry_ms,
+            args.smoke_kind,
         )
         if evidence["initial_smoke"]["exit_code"] != 0:
             raise RuntimeError("initial recovery smoke failed")
@@ -261,6 +280,7 @@ def collect(args: argparse.Namespace) -> int:
                     args.smoke_bytes,
                     args.recovery_timeout_seconds,
                     args.smoke_retry_ms,
+                    args.smoke_kind,
                 )
                 ready_devices = find_usb_devices(args.sysfs_root, args.vid, args.pid)
                 ready_device = ready_devices[0] if len(ready_devices) == 1 else None
@@ -345,6 +365,11 @@ def main() -> int:
     parser.add_argument("--recovery-timeout-seconds", type=float, default=15.0)
     parser.add_argument("--smoke-retry-ms", type=int, default=100)
     parser.add_argument("--smoke-bytes", type=int, default=1_048_576)
+    parser.add_argument(
+        "--smoke-kind",
+        choices=("raw-echo", "protocol"),
+        default="raw-echo",
+    )
     parser.add_argument(
         "--smoke-executable",
         type=Path,
