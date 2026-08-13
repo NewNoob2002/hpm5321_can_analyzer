@@ -683,6 +683,37 @@ mod tests {
     }
 
     #[test]
+    fn v1_event_payloads_reject_unnegotiated_extensions() {
+        let event = FlowControlEvent {
+            response_depth: 1,
+            event_depth: 2,
+            data_depth: 3,
+            pool_high_water: 4,
+            device_tick: 5,
+        };
+        let mut extended = event.encode();
+        extended.extend_from_slice(&[1, 2, 3]);
+        assert!(matches!(
+            FlowControlEvent::decode(&extended),
+            Err(PayloadError::InvalidLength { .. })
+        ));
+
+        let batch = CanRxBatch {
+            flags: 0,
+            base_timestamp: 1,
+            device_drop_total: 0,
+            config_generation: 1,
+            records: vec![],
+        };
+        let mut delimited = batch.encode().unwrap();
+        delimited.push(0);
+        assert!(matches!(
+            CanRxBatch::decode(&delimited),
+            Err(PayloadError::InvalidLength { .. })
+        ));
+    }
+
+    #[test]
     fn data_loss_event_validation() {
         let event = DataLossEvent {
             channel: 0,

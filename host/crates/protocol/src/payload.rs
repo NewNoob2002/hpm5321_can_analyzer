@@ -37,7 +37,7 @@ impl HelloRequest {
         if self.min_major == 0
             || self.min_major > self.max_major
             || self.min_minor > self.max_minor
-            || self.host_max_message == 0
+            || !(256..=1_048_576).contains(&self.host_max_message)
             || self.host_features & !V1_FEATURES != 0
         {
             return Err(PayloadError::InvalidValue("HELLO range"));
@@ -84,7 +84,7 @@ impl HelloResponse {
     pub fn encode(&self) -> Result<Vec<u8>, PayloadError> {
         if self.major == 0
             || self.session_id == 0
-            || self.max_message == 0
+            || !(256..=1_048_576).contains(&self.max_message)
             || self.device_features & !V1_FEATURES != 0
         {
             return Err(PayloadError::InvalidValue("HELLO response"));
@@ -766,6 +766,36 @@ mod tests {
             PingRequest::decode(&ping),
             Err(PayloadError::InvalidReserved)
         );
+    }
+
+    #[test]
+    fn v1_payloads_reject_unnegotiated_extensions() {
+        let hello = HelloResponse {
+            major: 1,
+            minor: 1,
+            session_id: 1,
+            max_message: 1024,
+            device_features: 0,
+        };
+        let mut extended = hello.encode().unwrap();
+        extended.extend_from_slice(&[0xa5, 0x5a]);
+        assert!(matches!(
+            HelloResponse::decode(&extended),
+            Err(PayloadError::InvalidLength { .. })
+        ));
+
+        let info = DeviceInfo {
+            firmware_semver: "1".into(),
+            build_id: "b".into(),
+            board_id: "p".into(),
+            serial: "s".into(),
+        };
+        let mut delimited = info.encode().unwrap();
+        delimited.push(0);
+        assert!(matches!(
+            DeviceInfo::decode(&delimited),
+            Err(PayloadError::InvalidLength { .. })
+        ));
     }
 
     fn sample_capabilities() -> Capabilities {

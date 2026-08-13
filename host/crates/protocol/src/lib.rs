@@ -61,12 +61,28 @@ pub enum CodecError {
     FrameTooShort,
     BadMagic,
     UnsupportedHeaderLength(u8),
-    PayloadTooLarge { declared: usize, maximum: usize },
-    LengthMismatch { declared: usize, actual: usize },
+    PayloadTooLarge {
+        declared: usize,
+        maximum: usize,
+    },
+    LengthMismatch {
+        declared: usize,
+        actual: usize,
+    },
     InvalidFlags(u8),
     InvalidStatus,
     InvalidSequence,
-    CrcMismatch { expected: u32, actual: u32 },
+    CrcMismatch {
+        expected: u32,
+        actual: u32,
+    },
+    InvalidMaximumMessage(usize),
+    IncompatibleVersion {
+        expected_major: u8,
+        expected_minor: u8,
+        actual_major: u8,
+        actual_minor: u8,
+    },
 }
 
 impl fmt::Display for CodecError {
@@ -118,6 +134,27 @@ impl Frame {
         bytes[20..24].copy_from_slice(&crc.to_le_bytes());
         Ok(bytes)
     }
+}
+
+/// Validate a frame after HELLO has selected a protocol version.
+///
+/// Framing intentionally does not perform this check: before negotiation the
+/// peer's version must remain observable so HELLO and device-information
+/// exchanges can report incompatibility cleanly.
+pub fn validate_negotiated_version(
+    frame: &Frame,
+    expected_major: u8,
+    expected_minor: u8,
+) -> Result<(), CodecError> {
+    if frame.major != expected_major || frame.minor != expected_minor {
+        return Err(CodecError::IncompatibleVersion {
+            expected_major,
+            expected_minor,
+            actual_major: frame.major,
+            actual_minor: frame.minor,
+        });
+    }
+    Ok(())
 }
 
 pub fn decode(bytes: &[u8], max_message: usize) -> Result<Frame, CodecError> {
@@ -208,9 +245,46 @@ impl StreamDecoder {
         self.discarded
     }
 
+    pub fn max_message(&self) -> usize {
+        self.max_message
+    }
+
+    /// Apply the HELLO-negotiated payload limit to subsequent frames.
+    pub fn set_max_message(&mut self, max_message: usize) {
+        self.max_message = max_message;
+        let limit = HEADER_LEN.saturating_add(max_message);
+        if self.buffer.len() > limit {
+            let discard = self.buffer.len() - limit;
+            self.buffer.drain(..discard);
+            self.discarded += discard as u64;
+        }
+    }
+
     pub fn push(&mut self, bytes: &[u8]) -> Vec<Frame> {
-        self.buffer.extend_from_slice(bytes);
         let mut frames = Vec::new();
+        let buffer_limit = HEADER_LEN.saturating_add(self.max_message);
+        let mut remaining = bytes;
+        while !remaining.is_empty() {
+            let capacity = buffer_limit.saturating_sub(self.buffer.len());
+            if capacity == 0 {
+                self.decode_buffered(&mut frames);
+                if self.buffer.len() == buffer_limit {
+                    self.discard_one();
+                }
+                continue;
+            }
+            let take = capacity.min(remaining.len());
+            self.buffer.extend_from_slice(&remaining[..take]);
+            remaining = &remaining[take..];
+            self.decode_buffered(&mut frames);
+        }
+        // An empty push is also useful for draining a frame made complete by a
+        // negotiated-limit change.
+        self.decode_buffered(&mut frames);
+        frames
+    }
+
+    fn decode_buffered(&mut self, frames: &mut Vec<Frame>) {
         loop {
             self.align_magic();
             if self.buffer.len() < HEADER_LEN {
@@ -223,6 +297,16 @@ impl StreamDecoder {
             }
             let frame_len = HEADER_LEN + payload_len;
             if self.buffer.len() < frame_len {
+                // A corrupt prefix can otherwise head-of-line block a later
+                // complete frame until its plausible (possibly very large)
+                // declared length arrives. Only resynchronize when a later
+                // candidate is already complete and CRC-valid, preserving
+                // ordinary fragmentation of a legitimate first frame.
+                if let Some(offset) = self.find_later_complete_frame() {
+                    self.buffer.drain(..offset);
+                    self.discarded += offset as u64;
+                    continue;
+                }
                 break;
             }
             match decode(&self.buffer[..frame_len], self.max_message) {
@@ -233,7 +317,31 @@ impl StreamDecoder {
                 Err(_) => self.discard_one(),
             }
         }
-        frames
+    }
+
+    fn find_later_complete_frame(&self) -> Option<usize> {
+        let mut search_from = 1;
+        while search_from + MAGIC.len() <= self.buffer.len() {
+            let relative = self.buffer[search_from..]
+                .windows(MAGIC.len())
+                .position(|window| window == MAGIC)?;
+            let offset = search_from + relative;
+            let candidate = &self.buffer[offset..];
+            if candidate.len() >= HEADER_LEN && candidate[6] as usize == HEADER_LEN {
+                let payload_len =
+                    u32::from_le_bytes(candidate[16..20].try_into().unwrap()) as usize;
+                if payload_len <= self.max_message {
+                    let frame_len = HEADER_LEN + payload_len;
+                    if candidate.len() >= frame_len
+                        && decode(&candidate[..frame_len], self.max_message).is_ok()
+                    {
+                        return Some(offset);
+                    }
+                }
+            }
+            search_from = offset + 1;
+        }
+        None
     }
 
     fn align_magic(&mut self) {
@@ -317,6 +425,67 @@ mod tests {
         let mut decoder = StreamDecoder::new(65_536);
         assert_eq!(decoder.push(&bad), vec![Frame::request(0x0002, 2, vec![])]);
         assert!(decoder.discarded_bytes() >= HEADER_LEN as u64);
+    }
+
+    #[test]
+    fn plausible_incomplete_false_magic_does_not_block_complete_frame() {
+        let good = Frame::request(0x0002, 2, vec![]).encode(65_536).unwrap();
+        let mut false_prefix = vec![0u8; HEADER_LEN];
+        false_prefix[..4].copy_from_slice(&MAGIC);
+        false_prefix[6] = HEADER_LEN as u8;
+        false_prefix[16..20].copy_from_slice(&60_000u32.to_le_bytes());
+        false_prefix.extend_from_slice(&good);
+
+        let mut decoder = StreamDecoder::new(65_536);
+        assert_eq!(
+            decoder.push(&false_prefix),
+            vec![Frame::request(0x0002, 2, vec![])]
+        );
+        assert_eq!(decoder.discarded_bytes(), HEADER_LEN as u64);
+    }
+
+    #[test]
+    fn incomplete_frame_with_magic_in_fragment_remains_buffered() {
+        let frame = Frame::request(0x0030, 7, b"prefix-UCAN-suffix".to_vec())
+            .encode(65_536)
+            .unwrap();
+        let split = frame.len() - 3;
+        let mut decoder = StreamDecoder::new(65_536);
+        assert!(decoder.push(&frame[..split]).is_empty());
+        assert_eq!(
+            decoder.push(&frame[split..]),
+            vec![Frame::request(0x0030, 7, b"prefix-UCAN-suffix".to_vec())]
+        );
+    }
+
+    #[test]
+    fn negotiated_version_validation_is_session_scoped() {
+        let mut frame = hello();
+        frame.minor = 1;
+        let encoded = frame.encode(65_536).unwrap();
+        let decoded = decode(&encoded, 65_536).unwrap();
+        assert_eq!(
+            decoded.minor, 1,
+            "pre-HELLO decoding must retain peer version"
+        );
+        assert!(matches!(
+            validate_negotiated_version(&decoded, 1, 0),
+            Err(CodecError::IncompatibleVersion { .. })
+        ));
+        assert!(validate_negotiated_version(&decoded, 1, 1).is_ok());
+    }
+
+    #[test]
+    fn very_large_hostile_push_keeps_decoder_memory_bounded() {
+        let good = Frame::request(0x0002, 2, vec![]).encode(64).unwrap();
+        let mut input = vec![b'x'; 1_000_000];
+        input.extend_from_slice(&good);
+        let mut decoder = StreamDecoder::new(64);
+        assert_eq!(
+            decoder.push(&input),
+            vec![Frame::request(0x0002, 2, vec![])]
+        );
+        assert!(decoder.buffer.len() <= HEADER_LEN + decoder.max_message());
     }
 
     #[test]
