@@ -119,6 +119,13 @@ class UsbOwnerContractTests(unittest.TestCase):
             "app_watchdog_vote(APP_WATCHDOG_VOTER_USB_OWNER)", source
         )
 
+    def test_usb_owner_enables_rng_clock_before_identity_generation(self):
+        source = (USER / "src/app_usb_owner.c").read_text()
+
+        clock_enable = source.index("clock_add_to_group(clock_rng, 0)")
+        rng_init = source.index("rng_init(HPM_RNG)")
+        self.assertLess(clock_enable, rng_init)
+
     def test_gdb_snapshot_covers_usb_runtime_contract(self):
         snapshot = (
             ROOT / "scripts/phase3/usb_owner_snapshot.gdb"

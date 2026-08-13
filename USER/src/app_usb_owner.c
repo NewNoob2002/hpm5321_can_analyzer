@@ -6,6 +6,7 @@
 #include "app_time.h"
 #include "app_watchdog.h"
 #include "board.h"
+#include "hpm_clock_drv.h"
 #include "hpm_interrupt.h"
 #include "hpm_rng_drv.h"
 #include "hpm_usb_drv.h"
@@ -542,6 +543,7 @@ static void usb_owner_task(void* context) {
     app_watchdog_vote(APP_WATCHDOG_VOTER_USB_OWNER);
 
     uint32_t identity[3] = {0U, 0U, 0U};
+    clock_add_to_group(clock_rng, 0);
     const bool identity_ready =
         rng_init(HPM_RNG) == status_success && rng_rand_wait(HPM_RNG, identity, sizeof(identity)) == status_success;
     boot_epoch = ((uint64_t)identity[0] << 32) | identity[1];
