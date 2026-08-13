@@ -33,6 +33,10 @@ typedef struct {
     uint64_t rx_bytes;
     uint64_t tx_bytes;
     uint32_t transfer_errors;
+    uint32_t protocol_frames_rx;
+    uint32_t protocol_frames_tx;
+    uint32_t protocol_resync_bytes;
+    uint32_t protocol_dispatch_errors;
     uint32_t out_armed;
     uint32_t in_flight;
     uint32_t stack_high_watermark;
@@ -41,5 +45,6 @@ typedef struct {
 extern volatile app_usb_owner_state_t g_app_usb_owner_state;
 
 bool app_usb_owner_start(void);
+bool app_usb_owner_signal_can_rx(void);
 
 #endif /* APP_USB_OWNER_H */

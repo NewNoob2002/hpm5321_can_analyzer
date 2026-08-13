@@ -6,6 +6,7 @@
 #include "app_health.h"
 #include "app_irq_contract.h"
 #include "app_time.h"
+#include "app_usb_owner.h"
 #include "app_watchdog.h"
 #include "board.h"
 #include "hpm_interrupt.h"
@@ -260,6 +261,9 @@ static void publish_rx(const app_mcan0_event_t *event)
     taskEXIT_CRITICAL();
 
     if (published && !app_health_signal_can0_rx()) {
+        g_app_mcan0_owner_state.activity_signal_drops++;
+    }
+    if (published && !app_usb_owner_signal_can_rx()) {
         g_app_mcan0_owner_state.activity_signal_drops++;
     }
 }

@@ -53,6 +53,26 @@ set_property(TARGET ${HPM_SDK_LIB} PROPERTY SOURCES "${APP_HPM_SDK_SOURCES}")
 set(APP_SEGGER_RTT_ROOT "${HPM_SDK_BASE}/middleware/segger_rtt")
 sdk_inc(${APP_SEGGER_RTT_ROOT}/Config ${APP_SEGGER_RTT_ROOT}/RTT)
 sdk_src(${APP_SEGGER_RTT_ROOT}/RTT/SEGGER_RTT.c)
+# Keep RTT available to EasyLogger, but remove its newlib syscall shim so the
+# SDK debug console remains the sole libc stdout owner.
+get_property(APP_HPM_SDK_GCC_SOURCES TARGET ${HPM_SDK_GCC_LIB} PROPERTY SOURCES)
+list(REMOVE_ITEM APP_HPM_SDK_GCC_SOURCES
+    "${APP_SEGGER_RTT_ROOT}/Syscalls/SEGGER_RTT_Syscalls_GCC.c")
+set_property(TARGET ${HPM_SDK_GCC_LIB} PROPERTY SOURCES
+    "${APP_HPM_SDK_GCC_SOURCES}")
+
+# The SDK forces float-capable printf/scanf into every GCC image when nano.specs
+# is enabled. This product uses integer/string formatting only, and the forced
+# objects overflow the 128 KiB ILM in the RAM Debug preset. Keep nano.specs, but
+# remove the two unused force-link options from this application's SDK
+# interface.
+get_property(APP_HPM_SDK_LINK_LIBRARIES
+    TARGET ${HPM_SDK_LIB_ITF} PROPERTY INTERFACE_LINK_LIBRARIES)
+list(REMOVE_ITEM APP_HPM_SDK_LINK_LIBRARIES
+    "-u _printf_float"
+    "-u _scanf_float")
+set_property(TARGET ${HPM_SDK_LIB_ITF} PROPERTY INTERFACE_LINK_LIBRARIES
+    "${APP_HPM_SDK_LINK_LIBRARIES}")
 
 sdk_compile_definitions(
     -DCONFIG_NDEBUG_CONSOLE=0
@@ -70,6 +90,9 @@ endforeach()
 
 sdk_inc(config)
 sdk_inc(USER/inc)
+sdk_inc(protocol/v1/c)
+sdk_app_src(protocol/v1/c/ucan_codec.c)
+sdk_app_src(protocol/v1/c/ucan_session.c)
 sdk_app_src(USER/src/app_allocation.c)
 sdk_app_src(USER/src/app_health.c)
 sdk_app_src(USER/src/app_mcan0_owner.c)

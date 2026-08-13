@@ -62,16 +62,47 @@ class UsbOwnerContractTests(unittest.TestCase):
         self.assertIn("USB_BOS_CAP_PLATFORM_WINUSB_DESCRIPTOR_INIT", source)
         self.assertIn("USB_MSOSV2_COMP_ID_FUNCTION_WINUSB_SINGLE", source)
 
-    def test_owner_preserves_buffer_until_in_completion(self):
+    def test_owner_wires_bulk_stream_to_ucan_session(self):
+        source = (USER / "src/app_usb_owner.c").read_text()
+        mcan = (USER / "src/app_mcan0_owner.c").read_text()
+        header = (USER / "inc/app_usb_owner.h").read_text()
+        cmake = (ROOT / "CMakeLists.txt").read_text()
+
+        self.assertIn("protocol/v1/c/ucan_codec.c", cmake)
+        self.assertIn("protocol/v1/c/ucan_session.c", cmake)
+        self.assertIn("ucan_stream_decoder_feed", source)
+        self.assertIn("ucan_session_handle_frame", source)
+        self.assertIn("ucan_session_dequeue", source)
+        self.assertIn("ucan_session_on_rx", source)
+        self.assertIn("ucan_session_emit_rx_batch", source)
+        self.assertIn("APP_USB_EVENT_CAN_RX_READY", source)
+        self.assertIn("can_rx_event_pending", source)
+        self.assertIn("app_usb_owner_signal_can_rx", header)
+        self.assertIn("app_usb_owner_signal_can_rx()", mcan)
+        self.assertNotIn("APP_USB_OWNER_STARTUP_DELAY_MS", source)
+
+    def test_owner_advertises_extended_id_capture(self):
+        source = (USER / "src/app_usb_owner.c").read_text()
+
+        self.assertIn("ucan_config.channels[0].feature_bits = 0x0039U", source)
+        self.assertIn("source.use_ext_id ? 0x0001U : 0U", source)
+
+    def test_owner_preserves_protocol_tx_buffer_until_in_completion(self):
         source = (USER / "src/app_usb_owner.c").read_text()
 
         rx_case = source.index("case APP_USB_EVENT_RX_COMPLETE:")
         tx_case = source.index("case APP_USB_EVENT_TX_COMPLETE:")
         rx_body = source[rx_case:tx_case]
         tx_body = source[tx_case:]
-        self.assertIn("usbd_ep_start_write", rx_body)
-        self.assertNotIn("arm_out_transfer", rx_body.split("break;", 1)[0])
+        self.assertNotIn("usbd_ep_start_write", rx_body)
+        self.assertIn("arm_out_transfer", rx_body)
+        self.assertIn("start_next_in_transfer", tx_body)
         self.assertIn("arm_out_transfer", tx_body)
+        self.assertRegex(
+            tx_body,
+            r"usb_chunk_offset\s*==\s*usb_chunk_length[\s\S]*?"
+            r"response_pending\s*==\s*0U[\s\S]*?arm_out_transfer",
+        )
         self.assertIn("stale_events", source)
         self.assertIn("generation", source)
 

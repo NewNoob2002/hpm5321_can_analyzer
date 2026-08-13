@@ -17,7 +17,20 @@ class BspBannerContractTests(unittest.TestCase):
         self.assertNotIn("-DCONFIG_NDEBUG_CONSOLE=1", cmake)
         self.assertNotIn("set(CONFIG_SEGGER_RTT 1)", cmake)
         self.assertIn("sdk_src(${APP_SEGGER_RTT_ROOT}/RTT/SEGGER_RTT.c)", cmake)
-        self.assertNotIn("SEGGER_RTT_Syscalls_GCC.c", cmake)
+        self.assertIn("APP_HPM_SDK_GCC_SOURCES", cmake)
+        self.assertIn(
+            "${APP_SEGGER_RTT_ROOT}/Syscalls/SEGGER_RTT_Syscalls_GCC.c",
+            cmake,
+        )
+        self.assertIn("list(REMOVE_ITEM APP_HPM_SDK_GCC_SOURCES", cmake)
+        self.assertNotIn("-D_write=SEGGER_RTT_unused_write", cmake)
+        self.assertIn("APP_HPM_SDK_LINK_LIBRARIES", cmake)
+        self.assertIn('"-u _printf_float"', cmake)
+        self.assertIn('"-u _scanf_float"', cmake)
+        self.assertIn(
+            "list(REMOVE_ITEM APP_HPM_SDK_LINK_LIBRARIES",
+            cmake,
+        )
 
     def test_board_contract_identifies_uart_and_pcb_revision(self):
         header = (ROOT / "boards/hpm5321_custom/board.h").read_text()
