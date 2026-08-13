@@ -79,7 +79,7 @@ class Mcan0OwnerContractTests(unittest.TestCase):
             header, r"APP_MCAN0_OWNER_EVENT_QUEUE_LENGTH\s+\(64U\)"
         )
         self.assertRegex(
-            source, r"APP_MCAN0_OWNER_TASK_PRIORITY\s+\(4U\)"
+            source, r"APP_MCAN0_OWNER_TASK_PRIORITY\s+\(3U\)"
         )
         self.assertIn("app_mcan0_owner_pop_rx", source)
         self.assertNotIn("xQueueCreate(", source)
