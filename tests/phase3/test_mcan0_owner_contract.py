@@ -7,6 +7,21 @@ USER = ROOT / "USER"
 
 
 class Mcan0OwnerContractTests(unittest.TestCase):
+    def test_hardware_capture_collector_is_read_only(self):
+        source = (
+            ROOT / "host/crates/core/examples/can_hil_capture.rs"
+        ).read_text()
+
+        self.assertIn("msg::START_CAPTURE", source)
+        self.assertIn("msg::STOP_CAPTURE", source)
+        self.assertIn("msg::CAN_RX_BATCH", source)
+        self.assertIn("tx_operations_issued", source)
+        self.assertIn("remaining < Duration::from_millis(1)", source)
+        self.assertIn("if !host_acceptance", source)
+        self.assertIn("Duration::from_millis(100)", source)
+        self.assertNotIn("msg::TX_ARM", source)
+        self.assertNotIn("msg::CAN_TX", source)
+
     def test_product_build_replaces_one_shot_irq_probe(self):
         cmake = (ROOT / "CMakeLists.txt").read_text()
         main = (USER / "src/main.c").read_text()
