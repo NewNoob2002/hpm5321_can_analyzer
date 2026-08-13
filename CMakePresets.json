@@ -46,6 +46,16 @@
             }
         },
         {
+            "name": "hpm5321-flash-release-500k-preflight",
+            "inherits": "hpm5321-base",
+            "displayName": "HPM5321 Custom - Flash Release (500 kbit/s Listen-Only Preflight)",
+            "binaryDir": "${sourceDir}/build/hpm5321-flash-release-500k-preflight",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "APP_MCAN_BITRATE": "500000"
+            }
+        },
+        {
             "name": "hpm5321-ram-debug",
             "inherits": "hpm5321-base",
             "displayName": "HPM5321 Custom - RAM Debug",
@@ -73,6 +83,12 @@
             "name": "hpm5321-flash-release-fs",
             "displayName": "Build HPM5321 Flash Release (Forced Full Speed)",
             "configurePreset": "hpm5321-flash-release-fs",
+            "jobs": 8
+        },
+        {
+            "name": "hpm5321-flash-release-500k-preflight",
+            "displayName": "Build HPM5321 Flash Release (500 kbit/s Listen-Only Preflight)",
+            "configurePreset": "hpm5321-flash-release-500k-preflight",
             "jobs": 8
         },
         {

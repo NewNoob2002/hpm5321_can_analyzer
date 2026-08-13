@@ -19,6 +19,14 @@ class DevelopmentContractTests(unittest.TestCase):
         self.assertTrue(required <= build)
         self.assertIn("hpm5321-flash-release-fs", configure)
         self.assertIn("hpm5321-flash-release-fs", build)
+        self.assertIn("hpm5321-flash-release-500k-preflight", configure)
+        self.assertIn("hpm5321-flash-release-500k-preflight", build)
+        self.assertEqual(
+            configure["hpm5321-flash-release-500k-preflight"]["cacheVariables"][
+                "APP_MCAN_BITRATE"
+            ],
+            "500000",
+        )
         self.assertEqual(
             configure["hpm5321-flash-release-fs"]["cacheVariables"][
                 "APP_USB_FORCE_FULL_SPEED"
