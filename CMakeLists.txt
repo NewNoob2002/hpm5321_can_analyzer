@@ -13,6 +13,13 @@ option(APP_USB_FORCE_FULL_SPEED
     "Force the USB device controller to enumerate at Full Speed for P3A qualification"
     OFF)
 
+set(APP_MCAN_BITRATE "1000000" CACHE STRING
+    "MCAN0 listen-only nominal bitrate; 500000 is qualification preflight only")
+set_property(CACHE APP_MCAN_BITRATE PROPERTY STRINGS 500000 1000000)
+if(NOT APP_MCAN_BITRATE MATCHES "^(500000|1000000)$")
+    message(FATAL_ERROR "APP_MCAN_BITRATE must be 500000 or 1000000")
+endif()
+
 set(APP_FIRMWARE_VERSION "0.1.0-dev" CACHE STRING
     "Firmware semantic version reported by the P2 UART boot banner")
 if(NOT APP_FIRMWARE_VERSION MATCHES "^[0-9]+[.][0-9]+[.][0-9]+(-[0-9A-Za-z.-]+)?$")
@@ -80,6 +87,7 @@ sdk_compile_definitions(
     -DAPP_BOARD_REVISION=\"${APP_BOARD_REVISION}\"
     -DUSE_SYSCALL_INTERRUPT_PRIORITY=1
     -DAPP_FAULT_INJECT_REASON=${APP_FAULT_INJECT_REASON}
+    -DAPP_MCAN0_OWNER_BITRATE=${APP_MCAN_BITRATE}U
     $<$<CONFIG:Debug>:DEBUG>
 )
 

@@ -61,6 +61,7 @@ data = {
     ).splitlines()[0],
     "build_options": {
         "APP_USB_FORCE_FULL_SPEED": cache_value("APP_USB_FORCE_FULL_SPEED") == "ON",
+        "APP_MCAN_BITRATE": int(cache_value("APP_MCAN_BITRATE")),
     },
     "compile_commands_sha256": hashlib.sha256(compile_db.read_bytes()).hexdigest(),
     "artifacts": artifacts,

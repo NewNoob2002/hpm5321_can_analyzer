@@ -563,6 +563,11 @@ static void usb_owner_task(void* context) {
 
     while (1) {
         if (xQueueReceive(usb_owner_queue, &event, pdMS_TO_TICKS(APP_USB_OWNER_POLL_MS)) == pdPASS) {
+            /* Timestamp control requests, especially PING, against a protocol
+             * clock refreshed after the event arrived but before dispatch.
+             * Refreshing only after process_event() makes the reported device
+             * tick stale by up to APP_USB_OWNER_POLL_MS while the bus is idle. */
+            advance_protocol_clock();
             process_event(&event);
         }
         if (protocol_reset_pending != 0U) {

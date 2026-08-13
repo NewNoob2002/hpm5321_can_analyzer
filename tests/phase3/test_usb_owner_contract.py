@@ -81,6 +81,14 @@ class UsbOwnerContractTests(unittest.TestCase):
         self.assertIn("app_usb_owner_signal_can_rx()", mcan)
         self.assertNotIn("APP_USB_OWNER_STARTUP_DELAY_MS", source)
 
+    def test_owner_refreshes_protocol_clock_before_request_dispatch(self):
+        source = (USER / "src/app_usb_owner.c").read_text()
+        loop = source[source.index("while (1) {"):]
+
+        clock = loop.index("advance_protocol_clock();")
+        dispatch = loop.index("process_event(&event);")
+        self.assertLess(clock, dispatch)
+
     def test_owner_advertises_extended_id_capture(self):
         source = (USER / "src/app_usb_owner.c").read_text()
 

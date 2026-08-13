@@ -51,6 +51,14 @@ class Mcan0OwnerContractTests(unittest.TestCase):
         self.assertIn("request->reserved != 0U", source)
         self.assertNotIn("mcan_transmit_", source)
 
+    def test_500k_preflight_is_a_separate_listen_only_build(self):
+        presets = (ROOT / "CMakePresets.json").read_text()
+        cmake = (ROOT / "CMakeLists.txt").read_text()
+
+        self.assertIn("hpm5321-flash-release-500k-preflight", presets)
+        self.assertIn('"APP_MCAN_BITRATE": "500000"', presets)
+        self.assertIn("-DAPP_MCAN0_OWNER_BITRATE=${APP_MCAN_BITRATE}U", cmake)
+
     def test_owner_uses_static_bounded_isr_and_rx_queues(self):
         source = (USER / "src/app_mcan0_owner.c").read_text()
         header = (USER / "inc/app_mcan0_owner.h").read_text()
