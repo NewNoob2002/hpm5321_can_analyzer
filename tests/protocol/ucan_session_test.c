@@ -41,6 +41,9 @@ static const ucan_session_config_t cfg = {
     .tx_result_cache_entries = 16,
     .replay_retention_ms = 5000,
     .tag_reuse_guard_ms = 1000,
+    .max_message = 65536,
+    .session_id = 0x12345678u,
+    .boot_epoch = 0x1122334455667788ull,
     .channel_count = 1,
     .channels = {{
         .channel = 0,
@@ -52,6 +55,7 @@ static const ucan_session_config_t cfg = {
         .data_max = 0,
         .max_filters = 32,
     }},
+    .product_max_bus_load_permille = {900, 0},
 };
 
 typedef struct {
@@ -121,12 +125,38 @@ static void drain_all(ucan_session_t *s, uint16_t *types, uint32_t *seqs,
         ucan_frame_t f;
         ucan_frame_decode(buf, len, 65536, &f);
         if (n < max) {
-            types[n] = f.message_type;
-            seqs[n] = evt;
+            if (types != NULL) {
+                types[n] = f.message_type;
+            }
+            if (seqs != NULL) {
+                seqs[n] = evt;
+            }
             n++;
         }
     }
     *count = n;
+}
+
+static void queue_critical_fixture(ucan_q_critical_t *q, uint32_t sequence) {
+    ucan_frame_t frame;
+    uint32_t frame_len = 0;
+    const uint16_t tail =
+        (uint16_t)((q->head + q->count) % UCAN_QUEUE_CRITICAL_CAP);
+    ucan_queue_item_t *item = &q->items[tail];
+
+    memset(&frame, 0, sizeof(frame));
+    frame.major = UCAN_PROTOCOL_MAJOR;
+    frame.minor = UCAN_PROTOCOL_MINOR;
+    frame.flags = UCAN_FLAG_EVENT;
+    frame.message_type = UCAN_MSG_FLOW_CONTROL;
+    frame.sequence = sequence;
+    check(ucan_frame_encode(&frame, item->data, sizeof(item->data),
+                            &frame_len) == 0,
+          "critical FIFO fixture encodes");
+    item->len = frame_len;
+    item->evt_seq = sequence;
+    item->kind = 2;
+    q->count++;
 }
 
 static void test_version_and_identity(void) {
@@ -148,7 +178,52 @@ static void test_version_and_identity(void) {
     r = send(&s, UCAN_MSG_HELLO, hello_f, 12);
     check(ucan_decode_hello_resp(r.frame.payload, r.frame.payload_len, &hr) == 0,
           "hello features decode");
-    check(hr.device_features == 0x11u, "hello feature intersection 0x11");
+    check(hr.device_features == 0u, "repeated hello preserves negotiated features");
+
+    ucan_session_config_t listen_cfg = cfg;
+    listen_cfg.channels[0].mode_mask = 0x02;
+    listen_cfg.channels[0].nominal_min = 1000000;
+    listen_cfg.channels[0].nominal_max = 1000000;
+    listen_cfg.initial_mode[0] = 1;
+    ucan_session_t listen;
+    check(ucan_session_init(&listen, &listen_cfg) == 0,
+          "fixed-bitrate listen-only session initializes");
+    hello_negotiate(&listen);
+    uint8_t get_initial[4] = {0, 0, 0, 0};
+    r = send(&listen, UCAN_MSG_GET_CHANNEL_CONFIG, get_initial,
+             sizeof(get_initial));
+    ucan_channel_config_t initial;
+    check(ucan_decode_channel_config(r.frame.payload, r.frame.payload_len,
+                                     &initial) == 0 &&
+              initial.mode == 1 && initial.nominal_bps == 1000000,
+          "initial listen-only config reports active fixed bitrate");
+
+    /* HELLO reports the device receive ceiling; the host ceiling is retained
+     * separately for device-to-host payload admission. */
+    ucan_session_t small;
+    ucan_session_init(&small, &cfg);
+    uint8_t hello_small[12] = {1, 1, 0, 0, 0x00, 0x01, 0, 0, 0, 0, 0, 0};
+    r = send(&small, UCAN_MSG_HELLO, hello_small, sizeof(hello_small));
+    check(ucan_decode_hello_resp(r.frame.payload, r.frame.payload_len, &hr) == 0 &&
+              hr.max_message == cfg.max_message && small.host_rx_max_message == 256,
+          "hello stores directional message limits");
+
+    /* After HELLO, every request must use the negotiated header version. */
+    uint8_t raw[64];
+    uint32_t raw_len = 0;
+    ucan_frame_t bad_version = {2, 0, UCAN_FLAG_REQUEST, UCAN_MSG_GET_DEVICE_INFO,
+                                0, 99, NULL, 0};
+    ucan_frame_encode(&bad_version, raw, sizeof(raw), &raw_len);
+    ucan_frame_t decoded_bad;
+    ucan_frame_decode(raw, raw_len, 65536, &decoded_bad);
+    uint8_t response[128];
+    uint32_t response_len = 0;
+    ucan_session_handle_frame(&small, &decoded_bad, response, sizeof(response),
+                              &response_len);
+    ucan_frame_t bad_resp;
+    ucan_frame_decode(response, response_len, 65536, &bad_resp);
+    check(bad_resp.status == UCAN_STATUS_INCOMPATIBLE_VERSION,
+          "post-hello request version validated");
 
     uint8_t hello_bad[12] = {2, 2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0};
     r = send(&s, UCAN_MSG_HELLO, hello_bad, 12);
@@ -223,6 +298,13 @@ static void test_cas_and_capture(void) {
               0 &&
               applied.generation == 2 && applied.mode == 2,
           "config applied generation 2");
+
+    /* Capability ranges and mode masks are enforced before mutation. */
+    ucan_channel_config_t invalid = {0, 3, 0, 500000, 2000000, 875, 2};
+    ucan_encode_channel_config(&invalid, cfg_buf, sizeof(cfg_buf), &(uint32_t){0});
+    r = send(&s, UCAN_MSG_CONFIG_CHANNEL, cfg_buf, 20);
+    check(r.status == UCAN_STATUS_INVALID_ARGUMENT && s.config_generation == 2,
+          "unsupported FD config rejected by capabilities");
     drain_all(&s, NULL, NULL, 0, &(uint32_t){0});
 
     uint8_t get[4] = {0, 0, 0, 0};
@@ -232,7 +314,7 @@ static void test_cas_and_capture(void) {
               applied.nominal_bps == 500000 && applied.generation == 2,
           "get channel config");
 
-    uint8_t start[8] = {2, 0, 0, 0, 1, 0, 0, 0};
+    uint8_t start[8] = {2, 0, 0, 0, 7, 0, 0, 0};
     r = send(&s, UCAN_MSG_START_CAPTURE, start, 8);
     check(r.status == UCAN_STATUS_OK, "start capture");
     ucan_capture_resp_t cr;
@@ -278,7 +360,7 @@ static void test_cas_and_capture(void) {
     check(cfr.applied_generation == 5, "clear filters generation 5");
     drain_all(&s, NULL, NULL, 0, &(uint32_t){0});
 
-    uint8_t stop[8] = {5, 0, 0, 0, 1, 0, 0, 0};
+    uint8_t stop[8] = {5, 0, 0, 0, 0, 0, 0, 0};
     r = send(&s, UCAN_MSG_STOP_CAPTURE, stop, 8);
     check(r.status == UCAN_STATUS_OK, "stop capture");
     ucan_decode_capture_resp(r.frame.payload, r.frame.payload_len, &cr);
@@ -297,17 +379,21 @@ static void test_tx_lifecycle(void) {
     send(&s, UCAN_MSG_CONFIG_CHANNEL, cfg_buf, 20);
     drain_all(&s, NULL, NULL, 0, &(uint32_t){0});
 
+    uint8_t start_capture[8] = {2, 0, 0, 0, 7, 0, 0, 0};
+    resp_t r = send(&s, UCAN_MSG_START_CAPTURE, start_capture, 8);
+    check(r.status == UCAN_STATUS_OK, "tx-result capture enabled");
+
     uint8_t arm[32];
     ucan_tx_rule_t rule = {0, 0x0f, 0x123, 0x7ff, 500};
-    ucan_tx_arm_req_t arm_req = {2, 5000, 1000, 900, &rule, 1};
+    ucan_tx_arm_req_t arm_req = {3, 5000, 1000, 900, &rule, 1};
     uint32_t alen = 0;
     ucan_encode_tx_arm(&arm_req, arm, sizeof(arm), &alen);
-    resp_t r = send(&s, UCAN_MSG_TX_ARM, arm, alen);
+    r = send(&s, UCAN_MSG_TX_ARM, arm, alen);
     check(r.status == UCAN_STATUS_OK, "arm ok");
     ucan_tx_arm_resp_t ar;
     ucan_decode_tx_arm_resp(r.frame.payload, r.frame.payload_len, &ar);
-    check(ar.applied_config_generation == 3 && ar.arm_epoch == 2,
-          "arm generation 3 epoch 2");
+    check(ar.applied_config_generation == 4 && ar.arm_epoch == 2,
+          "arm generation 4 epoch 2");
     check(ar.expiry_tick == 5000000ull, "arm expiry 5e6 ticks");
 
     uint8_t tx[36];
@@ -339,6 +425,13 @@ static void test_tx_lifecycle(void) {
     ucan_decode_can_tx_resp(r.frame.payload, r.frame.payload_len, &tr);
     check(tr.tx_state == 1 && tr.client_tag == 42, "can_tx pending snapshot");
     check(tr.final_result == 0 && tr.final_tick == 0, "can_tx pending zeros");
+    ucan_can_tx_req_t pending;
+    check(ucan_session_take_pending_tx(&s, &pending) == 0 &&
+              pending.id == 0x123 && pending.client_tag == 42 &&
+              pending.deadline_tick == 0,
+          "accepted tx available to hardware owner");
+    check(ucan_session_take_pending_tx(&s, &pending) == 1,
+          "accepted tx delivered to hardware owner once");
 
     /* Byte-identical replay reads the ledger PENDING snapshot, no new TX. */
     r = send(&s, UCAN_MSG_CAN_TX, tx, tlen);
@@ -397,8 +490,11 @@ static void test_disarm_and_expiry(void) {
     send(&s, UCAN_MSG_CONFIG_CHANNEL, cfg_buf, 20);
     drain_all(&s, NULL, NULL, 0, &(uint32_t){0});
 
+    uint8_t capture_tx[8] = {2, 0, 0, 0, 7, 0, 0, 0};
+    send(&s, UCAN_MSG_START_CAPTURE, capture_tx, 8);
+
     ucan_tx_rule_t rule = {0, 0x0f, 0x123, 0x7ff, 500};
-    ucan_tx_arm_req_t arm_req = {2, 5000, 1000, 900, &rule, 1};
+    ucan_tx_arm_req_t arm_req = {3, 5000, 1000, 900, &rule, 1};
     uint8_t arm[32];
     uint32_t alen = 0;
     ucan_encode_tx_arm(&arm_req, arm, sizeof(arm), &alen);
@@ -418,7 +514,7 @@ static void test_disarm_and_expiry(void) {
     r = send(&s, UCAN_MSG_CAN_TX, tx, tlen);
     check(r.status == UCAN_STATUS_OK, "tx2 accepted");
 
-    uint8_t disarm[16] = {3, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0};
+    uint8_t disarm[16] = {4, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0};
     r = send(&s, UCAN_MSG_TX_DISARM, disarm, 16);
     check(r.status == UCAN_STATUS_OK, "disarm ok");
     ucan_tx_disarm_resp_t dr;
@@ -433,7 +529,7 @@ static void test_disarm_and_expiry(void) {
     check(r.status == UCAN_STATUS_BAD_STATE, "can_tx after disarm");
 
     /* Expiry auto-disarm with a pending frame. */
-    ucan_tx_arm_req_t arm2 = {4, 100, 1000, 900, &rule, 1};
+    ucan_tx_arm_req_t arm2 = {5, 100, 1000, 900, &rule, 1};
     ucan_encode_tx_arm(&arm2, arm, sizeof(arm), &alen);
     r = send(&s, UCAN_MSG_TX_ARM, arm, alen);
     check(r.status == UCAN_STATUS_OK, "re-arm ok");
@@ -565,6 +661,18 @@ static void test_admission_and_replay(void) {
     check(resp.status == UCAN_STATUS_BAD_STATE && (resp.flags & UCAN_FLAG_ERROR) != 0,
           "replay different bytes bad state");
     check(s2.config_generation == 2, "replay mismatch no side effect");
+
+    /* Sequence identity spans message types, not just each type separately. */
+    req3.message_type = UCAN_MSG_START_CAPTURE;
+    uint8_t start_same_seq[8] = {2, 0, 0, 0, 7, 0, 0, 0};
+    req3.payload = start_same_seq;
+    req3.payload_len = sizeof(start_same_seq);
+    ucan_frame_encode(&req3, reqbuf, sizeof(reqbuf), &reqlen);
+    ucan_frame_decode(reqbuf, reqlen, 65536, &dreq);
+    ucan_session_handle_frame(&s2, &dreq, respbuf, sizeof(respbuf), &resplen);
+    ucan_frame_decode(respbuf, resplen, 65536, &resp);
+    check(resp.status == UCAN_STATUS_BAD_STATE && s2.capture_state == 0,
+          "sequence reuse across message types rejected");
     drain_all(&s2, NULL, NULL, 0, &(uint32_t){0});
 }
 
@@ -577,7 +685,7 @@ static void test_loss_and_queues(void) {
     uint8_t cfg_buf[20];
     ucan_encode_channel_config(&ch, cfg_buf, sizeof(cfg_buf), &(uint32_t){0});
     send(&s, UCAN_MSG_CONFIG_CHANNEL, cfg_buf, 20);
-    uint8_t start[8] = {2, 0, 0, 0, 1, 0, 0, 0};
+    uint8_t start[8] = {2, 0, 0, 0, 7, 0, 0, 0};
     send(&s, UCAN_MSG_START_CAPTURE, start, 8);
     drain_all(&s, NULL, NULL, 0, &(uint32_t){0});
 
@@ -593,6 +701,17 @@ static void test_loss_and_queues(void) {
     rec.rx_status = 0;
     uint8_t data[8] = {1, 2, 3, 4, 5, 6, 7, 8};
     rec.payload = data;
+
+    /* Active filter matching sets the canonical hit index and rejects misses. */
+    ucan_filter_rule_t match_rule = {0x123, 0x7ff, 0};
+    ucan_set_filters_req_t set_req = {0, 3, &match_rule, 1};
+    uint8_t set_buf[32];
+    uint32_t set_len = 0;
+    ucan_encode_set_filters(&set_req, set_buf, sizeof(set_buf), &set_len);
+    send(&s, UCAN_MSG_SET_FILTERS, set_buf, set_len);
+    rec.arbitration_id = 0x456;
+    check(ucan_session_on_rx(&s, 0, &rec) == 2, "filter miss excluded");
+    rec.arbitration_id = 0x123;
     for (uint32_t i = 0; i < 32; ++i) {
         rec.channel_sequence = i + 1;
         check(ucan_session_on_rx(&s, 0, &rec) == 0, "ring admit");
@@ -627,7 +746,7 @@ static void test_loss_and_queues(void) {
     uint8_t c3[20];
     ucan_encode_channel_config(&ch3, c3, sizeof(c3), &(uint32_t){0});
     send(&s3, UCAN_MSG_CONFIG_CHANNEL, c3, 20);
-    uint8_t start3[8] = {2, 0, 0, 0, 1, 0, 0, 0};
+    uint8_t start3[8] = {2, 0, 0, 0, 7, 0, 0, 0};
     send(&s3, UCAN_MSG_START_CAPTURE, start3, 8);
     drain_all(&s3, NULL, NULL, 0, &(uint32_t){0});
     rec.channel_sequence = 1;
@@ -648,6 +767,8 @@ static void test_loss_and_queues(void) {
         ucan_session_on_rx(&s3, 0, &rec);
         ucan_session_emit_rx_batch(&s3, 0, &rec);
     }
+    check(s3.channels[0].rx_depth == 0,
+          "dropped USB batch releases admitted RX depth");
     uint16_t t3[64];
     uint32_t q3[64];
     uint32_t n3 = 0;
@@ -660,6 +781,11 @@ static void test_loss_and_queues(void) {
     }
     check(saw_usb_loss, "usb data queue loss event");
     drain_all(&s3, NULL, NULL, 0, &(uint32_t){0});
+    check(ucan_session_on_rx(&s3, 0, &rec) == 0,
+          "RX admission recovers after USB data queue drains");
+    check(ucan_session_emit_rx_batch(&s3, 0, &rec) == 0,
+          "RX batch enqueue recovers after USB data queue drains");
+    drain_all(&s3, NULL, NULL, 0, &(uint32_t){0});
 }
 
 static void test_scheduler_and_reserve(void) {
@@ -667,32 +793,24 @@ static void test_scheduler_and_reserve(void) {
     ucan_session_init(&s, &cfg);
     hello_negotiate(&s);
 
-    /* 8 pings fill the response queue. */
+    /* Responses are returned synchronously and never duplicated into the
+     * async dequeue queues. */
     uint8_t ping[16];
     memset(ping, 0, sizeof(ping));
     for (int i = 0; i < 8; ++i) {
         resp_t r = send(&s, UCAN_MSG_PING, ping, 16);
-        check(r.status == UCAN_STATUS_OK, "ping queued");
+        check(r.status == UCAN_STATUS_OK, "ping synchronous response");
     }
-    /* 9th ping: response reserve exhausted -> BUSY. */
     resp_t r = send(&s, UCAN_MSG_PING, ping, 16);
-    check(r.status == UCAN_STATUS_BUSY && r.is_error, "response reserve busy");
+    check(r.status == UCAN_STATUS_OK && !r.is_error,
+          "synchronous response not limited by async queue");
 
     /* A critical event is queued behind the 8 responses. */
     uint8_t out[512];
     uint32_t olen = 0;
     uint32_t evt = 0;
-    uint16_t types[16];
-    for (int i = 0; i < 8; ++i) {
-        check(ucan_session_dequeue(&s, out, sizeof(out), &olen, &evt) == 0,
-              "drain response");
-        ucan_frame_t f;
-        ucan_frame_decode(out, olen, 65536, &f);
-        types[i] = f.message_type;
-    }
-    check(types[7] == UCAN_MSG_PING, "8 responses drained");
     check(ucan_session_dequeue(&s, out, sizeof(out), &olen, &evt) == 1,
-          "queue empty after drain");
+          "sync responses absent from dequeue");
     drain_all(&s, NULL, NULL, 0, &(uint32_t){0});
 
     /* Frame-time formula sanity (spec 7.1). */
@@ -701,6 +819,124 @@ static void test_scheduler_and_reserve(void) {
     uint64_t fd = ucan_frame_time_us(500000, 2000000, 12, 0x0005, 24);
     check(fd > 0, "fd frame time positive");
     check(ucan_session_reserved_permille(&s, 0) == 0, "reserved load zero");
+
+    /* Once spillover contains an older critical event, all new critical
+     * events must join that spillover until it is flushed. Otherwise a newly
+     * generated event can overtake the older pending event. */
+    ucan_session_t fifo;
+    ucan_session_init(&fifo, &cfg);
+    fifo.negotiated = 1;
+    fifo.host_rx_max_message = cfg.max_message;
+    for (uint32_t sequence = 1; sequence <= UCAN_QUEUE_CRITICAL_CAP;
+         ++sequence) {
+        queue_critical_fixture(&fifo.q_critical, sequence);
+    }
+    queue_critical_fixture(&fifo.q_critical_pending,
+                           UCAN_QUEUE_CRITICAL_CAP + 1);
+    fifo.device_event_sequence = UCAN_QUEUE_CRITICAL_CAP + 1;
+    fifo.event_depth =
+        fifo.q_critical.count + fifo.q_critical_pending.count;
+
+    uint8_t fifo_out[512];
+    uint32_t fifo_len = 0;
+    uint32_t fifo_evt = 0;
+    check(ucan_session_dequeue(&fifo, fifo_out, sizeof(fifo_out), &fifo_len,
+                               &fifo_evt) == 0 &&
+              fifo_evt == 1,
+          "critical FIFO fixture dequeues oldest primary event");
+    fifo.flow_control_pending = 1;
+    ucan_session_poll_flow_control(&fifo);
+
+    uint32_t fifo_sequences[2 * UCAN_QUEUE_CRITICAL_CAP];
+    uint32_t fifo_count = 0;
+    drain_all(&fifo, NULL, fifo_sequences,
+              2 * UCAN_QUEUE_CRITICAL_CAP, &fifo_count);
+    check(fifo_count == UCAN_QUEUE_CRITICAL_CAP + 1,
+          "critical FIFO drains pending and newly generated events");
+    for (uint32_t i = 0; i < fifo_count; ++i) {
+        check(fifo_sequences[i] == i + 2,
+              "critical FIFO preserves event sequence order");
+    }
+}
+
+static void test_capture_filter_and_critical_contract(void) {
+    ucan_session_t s;
+    ucan_session_init(&s, &cfg);
+    hello_negotiate(&s);
+
+    uint8_t bad_start[8] = {1, 0, 0, 0, 1, 0, 0, 0};
+    resp_t r = send(&s, UCAN_MSG_START_CAPTURE, bad_start, sizeof(bad_start));
+    check(r.status == UCAN_STATUS_INVALID_ARGUMENT && s.capture_state == 0 &&
+              s.config_generation == 1,
+          "START requires exact v1 capture profile");
+    uint8_t bad_stop[8] = {1, 0, 0, 0, 1, 0, 0, 0};
+    r = send(&s, UCAN_MSG_STOP_CAPTURE, bad_stop, sizeof(bad_stop));
+    check(r.status == UCAN_STATUS_INVALID_ARGUMENT && s.config_generation == 1,
+          "STOP requires zero flags");
+
+    uint8_t start[8] = {1, 0, 0, 0, 7, 0, 0, 0};
+    check(send(&s, UCAN_MSG_START_CAPTURE, start, sizeof(start)).status ==
+              UCAN_STATUS_OK,
+          "exact capture profile accepted");
+
+    ucan_filter_rule_t deny = {0x123, 0x7ff, 0x0004};
+    ucan_set_filters_req_t filters = {0, 2, &deny, 1};
+    uint8_t filter_bytes[32];
+    uint32_t filter_len = 0;
+    ucan_encode_set_filters(&filters, filter_bytes, sizeof(filter_bytes), &filter_len);
+    check(send(&s, UCAN_MSG_SET_FILTERS, filter_bytes, filter_len).status ==
+              UCAN_STATUS_OK,
+          "deny-only filter installed");
+
+    uint8_t payload[1] = {0x55};
+    ucan_can_rx_record_t rec;
+    memset(&rec, 0, sizeof(rec));
+    rec.channel = 0;
+    rec.dlc = 1;
+    rec.payload = payload;
+    rec.payload_len = 1;
+    rec.arbitration_id = 0x456;
+    check(ucan_session_on_rx(&s, 0, &rec) == 0 && rec.channel_sequence == 1,
+          "deny-only no-match passes and allocates first sequence");
+    rec.arbitration_id = 0x123;
+    check(ucan_session_on_rx(&s, 0, &rec) == 2 && rec.channel_sequence == 1,
+          "deny match drops without consuming sequence");
+    rec.flags = 0x0020;
+    check(ucan_session_on_rx(&s, 0, &rec) == 0 && rec.channel_sequence == 2,
+          "error record bypasses ID filters");
+
+    /* Critical TX results are delivered even while capture is stopped. */
+    ucan_session_t txs;
+    ucan_session_init(&txs, &cfg);
+    hello_negotiate(&txs);
+    ucan_channel_config_t ch = {0, 2, 0, 500000, 0, 875, 1};
+    uint8_t cfg_bytes[20];
+    ucan_encode_channel_config(&ch, cfg_bytes, sizeof(cfg_bytes), &(uint32_t){0});
+    check(send(&txs, UCAN_MSG_CONFIG_CHANNEL, cfg_bytes, sizeof(cfg_bytes)).status ==
+              UCAN_STATUS_OK,
+          "tx channel configured without capture");
+    ucan_tx_rule_t rule = {0, 0x0f, 0x123, 0x7ff, 10};
+    ucan_tx_arm_req_t arm_req = {2, 1000, 10, 900, &rule, 1};
+    uint8_t arm[32];
+    uint32_t arm_len = 0;
+    ucan_encode_tx_arm(&arm_req, arm, sizeof(arm), &arm_len);
+    check(send(&txs, UCAN_MSG_TX_ARM, arm, arm_len).status == UCAN_STATUS_OK,
+          "tx armed without capture");
+    ucan_can_tx_req_t tx = {0, 1, 0, 0x123, 2, 77, 0, payload, 1};
+    uint8_t tx_bytes[32];
+    uint32_t tx_len = 0;
+    ucan_encode_can_tx(&tx, tx_bytes, sizeof(tx_bytes), &tx_len);
+    check(send(&txs, UCAN_MSG_CAN_TX, tx_bytes, tx_len).status == UCAN_STATUS_OK,
+          "tx accepted without capture");
+    ucan_session_can_tx_complete(&txs, 77, 1, 0);
+    uint16_t types[8];
+    uint32_t count = 0;
+    drain_all(&txs, types, NULL, 8, &count);
+    int saw_result = 0;
+    for (uint32_t i = 0; i < count; ++i) {
+        saw_result |= types[i] == UCAN_MSG_CAN_TX_RESULT;
+    }
+    check(saw_result, "critical TX result not capture-gated");
 }
 
 int main(void) {
@@ -711,6 +947,7 @@ int main(void) {
     test_admission_and_replay();
     test_loss_and_queues();
     test_scheduler_and_reserve();
+    test_capture_filter_and_critical_contract();
     printf("%s: session scenarios complete, %d failures\n",
            failures == 0 ? "PASS" : "FAIL", failures);
     return failures == 0 ? 0 : 1;

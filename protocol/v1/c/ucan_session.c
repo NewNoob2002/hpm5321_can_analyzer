@@ -168,11 +168,43 @@ static uint32_t alloc_event_sequence(ucan_session_t *s) {
     return s->device_event_sequence;
 }
 
+static uint32_t device_max_message(const ucan_session_config_t *cfg) {
+    return cfg->max_message != 0 ? cfg->max_message : UCAN_QUEUE_FRAME_BYTES;
+}
+
+static int device_tx_payload_allowed(const ucan_session_t *s, uint32_t payload_len) {
+    uint32_t limit = device_max_message(s->cfg);
+    if (s->negotiated && s->host_rx_max_message < limit) {
+        limit = s->host_rx_max_message;
+    }
+    return payload_len <= limit;
+}
+
 static int enqueue_critical(ucan_session_t *s, const uint8_t *bytes, uint32_t len,
                             uint32_t seq) {
-    ucan_q_critical_t *q = &s->q_critical;
-    if (q->count >= UCAN_QUEUE_CRITICAL_CAP) {
+    if (len < UCAN_HEADER_LEN ||
+        !device_tx_payload_allowed(s, len - UCAN_HEADER_LEN)) {
         return -1;
+    }
+    ucan_q_critical_t *q = &s->q_critical;
+    if (s->q_critical_pending.count != 0) {
+        q = &s->q_critical_pending;
+        if (q->count >= UCAN_QUEUE_CRITICAL_CAP) {
+            if (s->q_critical.count >= UCAN_QUEUE_CRITICAL_CAP) {
+                return -1;
+            }
+            uint16_t primary_tail =
+                (uint16_t)((s->q_critical.head + s->q_critical.count) %
+                           UCAN_QUEUE_CRITICAL_CAP);
+            s->q_critical.items[primary_tail] =
+                q->items[q->head];
+            s->q_critical.count++;
+            q->head =
+                (uint16_t)((q->head + 1) % UCAN_QUEUE_CRITICAL_CAP);
+            q->count--;
+        }
+    } else if (q->count >= UCAN_QUEUE_CRITICAL_CAP) {
+        q = &s->q_critical_pending;
     }
     uint16_t tail = (uint16_t)((q->head + q->count) % UCAN_QUEUE_CRITICAL_CAP);
     ucan_queue_item_t *item = &q->items[tail];
@@ -181,34 +213,24 @@ static int enqueue_critical(ucan_session_t *s, const uint8_t *bytes, uint32_t le
     item->evt_seq = seq;
     item->kind = 2;
     q->count++;
-    s->event_depth = q->count;
+    s->event_depth = s->q_critical.count + s->q_critical_pending.count;
     if (s->event_depth > s->pool_high_water) {
         s->pool_high_water = s->event_depth;
     }
     return 0;
 }
 
-static int enqueue_response(ucan_session_t *s, const uint8_t *bytes, uint32_t len) {
-    ucan_q_response_t *q = &s->q_response;
-    if (q->count >= UCAN_QUEUE_RESPONSE_CAP) {
-        return -1;
-    }
-    uint16_t tail = (uint16_t)((q->head + q->count) % UCAN_QUEUE_RESPONSE_CAP);
-    ucan_queue_item_t *item = &q->items[tail];
-    memcpy(item->data, bytes, len);
-    item->len = len;
-    item->evt_seq = 0;
-    item->kind = 1;
-    q->count++;
-    s->response_depth = q->count;
-    if (s->response_depth > s->pool_high_water) {
-        s->pool_high_water = s->response_depth;
-    }
-    return 0;
+static int critical_capacity_available(const ucan_session_t *s) {
+    return s->q_critical.count < UCAN_QUEUE_CRITICAL_CAP ||
+           s->q_critical_pending.count < UCAN_QUEUE_CRITICAL_CAP;
 }
 
 static int enqueue_data(ucan_session_t *s, const uint8_t *bytes, uint32_t len,
                         uint32_t seq) {
+    if (len < UCAN_HEADER_LEN ||
+        !device_tx_payload_allowed(s, len - UCAN_HEADER_LEN)) {
+        return -1;
+    }
     ucan_q_data_t *q = &s->q_data;
     if (q->count >= UCAN_QUEUE_DATA_CAP) {
         return -1;
@@ -248,6 +270,10 @@ static void emit_can_tx_result(ucan_session_t *s, ucan_tx_slot_t *slot) {
         /* One semantic final result -> one stable event sequence, reused
          * across delivery_pending retries (spec 8.1). */
         if (slot->result_evt_seq == 0) {
+            if (!critical_capacity_available(s)) {
+                slot->delivery_pending = 1;
+                return;
+            }
             slot->result_evt_seq = alloc_event_sequence(s);
         }
         f.sequence = slot->result_evt_seq;
@@ -260,6 +286,31 @@ static void emit_can_tx_result(ucan_session_t *s, ucan_tx_slot_t *slot) {
             }
         }
     }
+}
+
+static int filter_match_index(const ucan_session_channel_t *c,
+                              const ucan_can_rx_record_t *rec) {
+    if ((rec->flags & 0x0020u) != 0) {
+        return -1;
+    }
+    int has_allow = 0;
+    for (uint16_t i = 0; i < c->filter_count; ++i) {
+        const ucan_filter_rule_t *rule = &c->filters[i];
+        if ((rule->flags & 0x0004u) == 0) {
+            has_allow = 1;
+        }
+        int match = (rec->arbitration_id & rule->mask) == (rule->id & rule->mask);
+        if ((rule->flags & 0x0001u) != 0 && (rec->flags & 0x0001u) == 0) {
+            match = 0;
+        }
+        if ((rule->flags & 0x0002u) != 0 && (rec->flags & 0x0002u) == 0) {
+            match = 0;
+        }
+        if (match) {
+            return (rule->flags & 0x0004u) != 0 ? -(int)i - 2 : (int)i;
+        }
+    }
+    return has_allow ? -2 : -1;
 }
 
 static void emit_channel_state(ucan_session_t *s, uint8_t channel, uint8_t state,
@@ -282,15 +333,61 @@ static void emit_channel_state(ucan_session_t *s, uint8_t channel, uint8_t state
         f.minor = UCAN_PROTOCOL_MINOR;
         f.flags = UCAN_FLAG_EVENT;
         f.message_type = UCAN_MSG_CHANNEL_STATE;
+        if (!critical_capacity_available(s)) {
+            s->pending_channel_state_valid[channel] = 1;
+            s->pending_channel_state[channel] = state;
+            s->pending_channel_reason[channel] = reason;
+            return;
+        }
         uint32_t seq = alloc_event_sequence(s);
         f.sequence = seq;
         f.payload = buf;
         f.payload_len = len;
         uint32_t flen = 0;
         if (ucan_frame_encode(&f, frame, sizeof(frame), &flen) == 0) {
-            enqueue_critical(s, frame, flen, seq);
+            if (enqueue_critical(s, frame, flen, seq) == 0) {
+                s->pending_channel_state_valid[channel] = 0;
+            } else {
+                s->pending_channel_state_valid[channel] = 1;
+                s->pending_channel_state[channel] = state;
+                s->pending_channel_reason[channel] = reason;
+            }
         }
     }
+}
+
+static void emit_flow_control(ucan_session_t *s) {
+    ucan_flow_control_event_t ev;
+    ev.response_depth = s->response_depth;
+    ev.event_depth = s->event_depth;
+    ev.data_depth = s->data_depth;
+    ev.pool_high_water = s->pool_high_water;
+    ev.device_tick = s->tick;
+    uint8_t payload[24];
+    uint32_t payload_len = 0;
+    if (ucan_encode_flow_control(&ev, payload, sizeof(payload), &payload_len) != 0 ||
+        !critical_capacity_available(s)) {
+        s->flow_control_pending = 1;
+        return;
+    }
+    uint8_t frame[64];
+    ucan_frame_t f;
+    memset(&f, 0, sizeof(f));
+    f.major = UCAN_PROTOCOL_MAJOR;
+    f.minor = UCAN_PROTOCOL_MINOR;
+    f.flags = UCAN_FLAG_EVENT;
+    f.message_type = UCAN_MSG_FLOW_CONTROL;
+    f.sequence = alloc_event_sequence(s);
+    f.payload = payload;
+    f.payload_len = payload_len;
+    uint32_t frame_len = 0;
+    if (ucan_frame_encode(&f, frame, sizeof(frame), &frame_len) != 0 ||
+        enqueue_critical(s, frame, frame_len, f.sequence) != 0) {
+        s->flow_control_pending = 1;
+        return;
+    }
+    s->flow_control_pending = 0;
+    s->last_flow_control_tick = s->tick;
 }
 
 static void flush_loss_notice(ucan_session_t *s, ucan_loss_acc_t *acc) {
@@ -317,6 +414,9 @@ static void flush_loss_notice(ucan_session_t *s, ucan_loss_acc_t *acc) {
         /* DATA_LOSS allocates its event sequence only on successful
          * critical-slot reservation (spec 8.1); a failed reservation keeps
          * the accumulator for the next retry without burning a sequence. */
+        if (acc->evt_seq == 0 && !critical_capacity_available(s)) {
+            return;
+        }
         if (acc->evt_seq == 0) {
             acc->evt_seq = alloc_event_sequence(s);
         }
@@ -337,6 +437,19 @@ static void flush_loss_notice(ucan_session_t *s, ucan_loss_acc_t *acc) {
  * failed to reserve a critical slot keep their data and are retried once the
  * queue drains (spec 8.1). */
 static void flush_pending(ucan_session_t *s) {
+    while (s->q_critical.count < UCAN_QUEUE_CRITICAL_CAP &&
+           s->q_critical_pending.count != 0) {
+        ucan_queue_item_t *src =
+            &s->q_critical_pending.items[s->q_critical_pending.head];
+        uint16_t tail = (uint16_t)((s->q_critical.head + s->q_critical.count) %
+                                   UCAN_QUEUE_CRITICAL_CAP);
+        s->q_critical.items[tail] = *src;
+        s->q_critical.count++;
+        s->q_critical_pending.head = (uint16_t)(
+            (s->q_critical_pending.head + 1) % UCAN_QUEUE_CRITICAL_CAP);
+        s->q_critical_pending.count--;
+    }
+    s->event_depth = s->q_critical.count + s->q_critical_pending.count;
     if (s->q_critical.count >= UCAN_QUEUE_CRITICAL_CAP) {
         return;
     }
@@ -351,6 +464,15 @@ static void flush_pending(ucan_session_t *s) {
             slot->delivery_pending = 0;
             emit_can_tx_result(s, slot);
         }
+    }
+    for (uint8_t i = 0; i < s->cfg->channel_count; ++i) {
+        if (s->pending_channel_state_valid[i]) {
+            emit_channel_state(s, i, s->pending_channel_state[i],
+                               s->pending_channel_reason[i]);
+        }
+    }
+    if (s->flow_control_pending) {
+        emit_flow_control(s);
     }
 }
 
@@ -391,26 +513,61 @@ static void accumulate_loss(ucan_session_t *s, uint8_t channel, uint8_t source,
 }
 
 int ucan_session_init(ucan_session_t *s, const ucan_session_config_t *cfg) {
+    if (s == NULL || cfg == NULL || cfg->tick_hz == 0 || cfg->channel_count == 0 ||
+        cfg->channel_count > UCAN_SESSION_MAX_CHANNELS || cfg->session_id == 0 ||
+        cfg->boot_epoch == 0 || device_max_message(cfg) < 256u ||
+        device_max_message(cfg) > 1048576u) {
+        return -1;
+    }
+    for (uint8_t i = 0; i < cfg->channel_count; ++i) {
+        if (cfg->channels[i].channel != i ||
+            cfg->initial_mode[i] > 3 ||
+            (cfg->channels[i].mode_mask & (uint8_t)(1u << cfg->initial_mode[i])) == 0 ||
+            cfg->product_max_bus_load_permille[i] > 1000) {
+            return -1;
+        }
+    }
     memset(s, 0, sizeof(*s));
     s->cfg = cfg;
     s->config_generation = 1;
+    s->capture_generation = 1;
     s->arm_epoch = 1;
-    s->session_id = 0x12345678u; /* replaced by real boot nonce in firmware */
-    s->boot_epoch = 0x1122334455667788ull;
-    s->device_event_sequence = 1;
+    s->session_id = cfg->session_id;
+    s->boot_epoch = cfg->boot_epoch;
+    s->device_event_sequence = 0;
     s->queue_generation = 1;
-    s->channels[0].mode = 0;
+    s->diag_generation = 1;
     for (uint8_t i = 0; i < cfg->channel_count && i < UCAN_SESSION_MAX_CHANNELS; ++i) {
-        s->channels[i].mode = 0;
-        s->channels[i].state = 0;
-        s->channels[i].nominal_bps = 0;
+        s->channels[i].mode = cfg->initial_mode[i];
+        s->channels[i].state = cfg->initial_mode[i] == 0 ? 0 :
+                               (cfg->initial_mode[i] == 1 ? 1 : 2);
+        s->channels[i].nominal_bps =
+            cfg->initial_mode[i] != 0 &&
+                    cfg->channels[i].nominal_min != 0 &&
+                    cfg->channels[i].nominal_min ==
+                        cfg->channels[i].nominal_max
+                ? cfg->channels[i].nominal_min
+                : 0;
         s->channels[i].data_bps = 0;
         s->channels[i].sample_permille = 0;
-        s->channels[i].filter_generation = 0;
-        s->channels[i].filter_crc = 0;
+        s->channels[i].filter_generation = 1;
+        s->channels[i].filter_crc = ucan_crc32c(NULL, 0);
         s->channels[i].filter_count = 0;
     }
     return 0;
+}
+
+int ucan_session_reinit(ucan_session_t *s, const ucan_session_config_t *cfg,
+                        uint32_t session_id, uint64_t boot_epoch) {
+    if (cfg == NULL || session_id == 0 || boot_epoch == 0) {
+        return -1;
+    }
+    int rc = ucan_session_init(s, cfg);
+    if (rc == 0) {
+        s->session_id = session_id;
+        s->boot_epoch = boot_epoch;
+    }
+    return rc;
 }
 
 void ucan_session_tick(ucan_session_t *s, uint64_t ticks) {
@@ -448,12 +605,28 @@ void ucan_session_tick(ucan_session_t *s, uint64_t ticks) {
 }
 
 int ucan_session_on_rx(ucan_session_t *s, uint8_t channel,
-                       const ucan_can_rx_record_t *rec) {
+                       ucan_can_rx_record_t *rec) {
     if (channel >= s->cfg->channel_count) {
         return 1;
     }
     ucan_session_channel_t *c = &s->channels[channel];
     c->rx_frames++;
+    if (s->capture_state != 1 ||
+        (((rec->flags & 0x0020u) != 0) ? (s->capture_flags & 0x0002u) == 0
+                                       : (s->capture_flags & 0x0001u) == 0)) {
+        c->filtered++;
+        return 2;
+    }
+    int filter_result = filter_match_index(c, rec);
+    if ((rec->flags & 0x0020u) == 0 && filter_result <= -2) {
+        c->filtered++;
+        return 2;
+    }
+    /* Allocate only after capture/filter admission, but before the bounded
+     * protocol ring admission attempt. Intentional filtering therefore does
+     * not create a host-visible channel gap, while overflow still does. */
+    rec->channel_sequence = wrap_inc(s->next_channel_sequence[channel]);
+    s->next_channel_sequence[channel] = rec->channel_sequence;
     if (c->rx_depth >= (uint32_t)s->cfg->tx_depth) {
         c->dropped++;
         accumulate_loss(s, channel, 1 /* CAN_RING */, 2 /* CHANNEL */, 1 /* OVERFLOW */,
@@ -464,18 +637,64 @@ int ucan_session_on_rx(ucan_session_t *s, uint8_t channel,
     return 0;
 }
 
-int ucan_session_emit_rx_batch(ucan_session_t *s, uint8_t channel,
-                               const ucan_can_rx_record_t *rec) {
+void ucan_session_note_rx_ring_loss(ucan_session_t *s, uint8_t channel,
+                                    uint32_t count) {
+    if (s == NULL || channel >= s->cfg->channel_count || count == 0) {
+        return;
+    }
+    ucan_session_channel_t *c = &s->channels[channel];
+    for (uint32_t i = 0; i < count; ++i) {
+        uint32_t sequence = wrap_inc(s->next_channel_sequence[channel]);
+        s->next_channel_sequence[channel] = sequence;
+        c->dropped++;
+        accumulate_loss(s, channel, 1 /* CAN_RING */, 2 /* CHANNEL */,
+                        1 /* OVERFLOW */, sequence);
+    }
+}
+
+void ucan_session_poll_flow_control(ucan_session_t *s) {
+    if (s == NULL || !s->negotiated) {
+        return;
+    }
+    uint32_t event_capacity = s->cfg->event_capacity == 0 ? 1 :
+                              s->cfg->event_capacity;
+    uint32_t data_capacity = s->cfg->data_capacity == 0 ? 1 :
+                             s->cfg->data_capacity;
+    int pressured = s->event_depth * 4 >= event_capacity * 3 ||
+                    s->data_depth * 4 >= data_capacity * 3;
+    uint64_t interval = s->cfg->tick_hz / 10;
+    if (interval == 0) {
+        interval = 1;
+    }
+    if (s->flow_control_pending ||
+        (pressured && s->tick - s->last_flow_control_tick >= interval)) {
+        emit_flow_control(s);
+    }
+}
+
+static int emit_rx_batch_with_base(ucan_session_t *s, uint8_t channel,
+                                   const ucan_can_rx_record_t *rec,
+                                   uint64_t base_timestamp,
+                                   uint32_t encoded_delta) {
     if (channel >= s->cfg->channel_count || s->capture_state != 1) {
         return 1;
     }
+    ucan_can_rx_record_t captured = *rec;
+    int hit = filter_match_index(&s->channels[channel], rec);
+    if ((((rec->flags & 0x0020u) != 0) ? (s->capture_flags & 0x0002u) == 0
+                                       : (s->capture_flags & 0x0001u) == 0) ||
+        ((rec->flags & 0x0020u) == 0 && hit <= -2)) {
+        return 1;
+    }
+    captured.filter_hit = hit < 0 ? 0xffu : (uint8_t)hit;
+    captured.delta_tick = encoded_delta;
     ucan_can_rx_batch_t batch;
     batch.flags = 0;
-    batch.base_timestamp = s->tick;
+    batch.base_timestamp = base_timestamp;
     batch.device_drop_total = s->channels[channel].dropped;
     batch.config_generation = s->config_generation;
     batch.record_count = 1;
-    batch.records = rec;
+    batch.records = &captured;
     uint8_t buf[256];
     uint32_t len = 0;
     if (ucan_encode_can_rx_batch(&batch, buf, sizeof(buf), &len) != 0) {
@@ -502,12 +721,26 @@ int ucan_session_emit_rx_batch(ucan_session_t *s, uint8_t channel,
         /* USB data queue full: EVENT-domain loss, channel 0xFF. */
         accumulate_loss(s, 0xff, 2 /* USB_DATA_QUEUE */, 1 /* EVENT */,
                         1 /* OVERFLOW */, seq);
+        if (s->channels[channel].rx_depth > 0) {
+            s->channels[channel].rx_depth--;
+        }
         return 1;
     }
     if (s->channels[channel].rx_depth > 0) {
         s->channels[channel].rx_depth--;
     }
     return 0;
+}
+
+int ucan_session_emit_rx_batch(ucan_session_t *s, uint8_t channel,
+                               const ucan_can_rx_record_t *rec) {
+    return emit_rx_batch_with_base(s, channel, rec, s->tick, rec->delta_tick);
+}
+
+int ucan_session_emit_rx_batch_at(ucan_session_t *s, uint8_t channel,
+                                  const ucan_can_rx_record_t *rec,
+                                  uint64_t base_timestamp) {
+    return emit_rx_batch_with_base(s, channel, rec, base_timestamp, 0);
 }
 
 void ucan_session_can_tx_complete(ucan_session_t *s, uint32_t client_tag,
@@ -532,6 +765,36 @@ void ucan_session_can_tx_complete(ucan_session_t *s, uint32_t client_tag,
     s->channels[slot->channel].tx_frames++;
     s->queue_generation = wrap_inc(s->queue_generation);
     emit_can_tx_result(s, slot);
+}
+
+int ucan_session_take_pending_tx(ucan_session_t *s, ucan_can_tx_req_t *tx) {
+    if (s == NULL || tx == NULL) {
+        return 1;
+    }
+    for (int i = 0; i < UCAN_SESSION_MAX_TX_SLOTS; ++i) {
+        ucan_tx_slot_t *slot = &s->tx_ledger[i];
+        if (!slot->occupied || slot->state != 1 || slot->submitted) {
+            continue;
+        }
+        memset(tx, 0, sizeof(*tx));
+        tx->channel = slot->channel;
+        tx->dlc = slot->dlc;
+        tx->can_flags = slot->can_flags;
+        tx->id = slot->arbitration_id;
+        tx->arm_epoch = slot->arm_epoch;
+        tx->client_tag = slot->client_tag;
+        tx->deadline_tick = slot->deadline_tick;
+        tx->payload = slot->payload_len == 0 ? NULL : slot->payload;
+        tx->payload_len = slot->payload_len;
+        slot->submitted = 1;
+        return 0;
+    }
+    return 1;
+}
+
+void ucan_session_can_tx_submit_failed(ucan_session_t *s, uint32_t client_tag,
+                                       uint16_t result, uint32_t can_error) {
+    ucan_session_can_tx_complete(s, client_tag, result, can_error);
 }
 
 static int is_side_effect(uint16_t message_type) {
@@ -566,10 +829,11 @@ static int replay_hit(ucan_session_t *s, const ucan_frame_t *req, uint8_t *out,
         if (!e->occupied) {
             continue;
         }
-        if (e->sequence == req->sequence && e->message_type == req->message_type) {
-            int same_bytes = e->payload_len == req->payload_len &&
-                             (e->payload_len == 0 ||
-                              memcmp(e->payload, req->payload, e->payload_len) == 0);
+        if (e->sequence == req->sequence) {
+            int same_bytes = e->message_type == req->message_type &&
+                             e->payload_len == req->payload_len &&
+                             e->payload_crc32c ==
+                                 ucan_crc32c(req->payload, req->payload_len);
             if (same_bytes && s->tick - e->stored_tick <= retention_ticks) {
                 /* Never copy a cached response that does not fit the caller's
                  * buffer: surface BUSY|RETRYABLE instead of overflowing the
@@ -653,12 +917,8 @@ static void replay_store(ucan_session_t *s, const ucan_frame_t *req,
     e->sequence = req->sequence;
     e->message_type = req->message_type;
     e->stored_tick = s->tick;
-    e->payload_len = req->payload_len > sizeof(e->payload)
-                         ? (uint32_t)sizeof(e->payload)
-                         : req->payload_len;
-    if (e->payload_len != 0) {
-        memcpy(e->payload, req->payload, e->payload_len);
-    }
+    e->payload_len = req->payload_len;
+    e->payload_crc32c = ucan_crc32c(req->payload, req->payload_len);
     e->response_len = response_len < sizeof(e->response) ? response_len
                                                          : (uint32_t)sizeof(e->response);
     memcpy(e->response, response, e->response_len);
@@ -667,6 +927,11 @@ static void replay_store(ucan_session_t *s, const ucan_frame_t *req,
 static int response_ok(ucan_session_t *s, const ucan_frame_t *req, uint8_t *out,
                        uint32_t cap, uint32_t *out_len, uint16_t message_type,
                        const uint8_t *payload, uint32_t payload_len) {
+    if (req->message_type != UCAN_MSG_HELLO &&
+        !device_tx_payload_allowed(s, payload_len)) {
+        return build_error_frame(req, out, cap, out_len, UCAN_STATUS_NO_RESOURCE,
+                                 0, s->host_rx_max_message, payload_len);
+    }
     ucan_frame_t resp;
     memset(&resp, 0, sizeof(resp));
     resp.major = UCAN_PROTOCOL_MAJOR;
@@ -679,12 +944,6 @@ static int response_ok(ucan_session_t *s, const ucan_frame_t *req, uint8_t *out,
     resp.payload_len = payload_len;
     int rc = ucan_frame_encode(&resp, out, cap, out_len);
     if (rc == 0) {
-        if (enqueue_response(s, out, *out_len) != 0) {
-            /* Response reserve exhausted (spec 8.1): refuse with BUSY. */
-            rc = build_error_frame(req, out, cap, out_len, UCAN_STATUS_BUSY, 0x0001,
-                                   0, 0);
-            return rc;
-        }
         replay_store(s, req, out, *out_len);
     }
     return rc;
@@ -725,7 +984,11 @@ static int response_error(ucan_session_t *s, const ucan_frame_t *req, uint8_t *o
                           uint16_t error_flags, uint32_t expected, uint32_t actual) {
     int rc = build_error_frame(req, out, cap, out_len, status, error_flags, expected,
                                actual);
-    if (rc == 0 && enqueue_response(s, out, *out_len) == 0) {
+    if (rc == 0 && *out_len >= UCAN_HEADER_LEN &&
+        !device_tx_payload_allowed(s, *out_len - UCAN_HEADER_LEN)) {
+        return -1;
+    }
+    if (rc == 0) {
         replay_store(s, req, out, *out_len);
     }
     return rc;
@@ -781,6 +1044,14 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
         return -1;
     }
 
+    if (s->negotiated &&
+        (req->major != UCAN_PROTOCOL_MAJOR || req->minor < s->min_minor ||
+         req->minor > s->max_minor ||
+         req->payload_len > device_max_message(s->cfg))) {
+        return response_error(s, req, out, cap, out_len,
+                              UCAN_STATUS_INCOMPATIBLE_VERSION, 0, 0, 0);
+    }
+
     if (!s->negotiated && req->message_type != UCAN_MSG_HELLO &&
         req->message_type != UCAN_MSG_GET_DEVICE_INFO) {
         /* Spec 2.2: host must HELLO first. Before negotiation only HELLO (and,
@@ -798,14 +1069,6 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
      * not silently evict a still-valid cache entry. */
     if (is_side_effect(req->message_type) && replay_cache_full_of_retention(s)) {
         return response_error(s, req, out, cap, out_len, UCAN_STATUS_BUSY, 0x0001, 0, 0);
-    }
-
-    /* Spec 8.1: a side-effect request must be refused before executing when the
-     * response reserve is exhausted, so the config/filter/arm mutation is never
-     * applied yet answered BUSY. The BUSY frame is returned synchronously. */
-    if (is_side_effect(req->message_type) &&
-        s->q_response.count >= UCAN_QUEUE_RESPONSE_CAP) {
-        return build_error_frame(req, out, cap, out_len, UCAN_STATUS_BUSY, 0x0001, 0, 0);
     }
 
     switch (req->message_type) {
@@ -834,14 +1097,22 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
         resp.major = UCAN_PROTOCOL_MAJOR;
         resp.minor = UCAN_PROTOCOL_MINOR;
         resp.session_id = s->session_id;
-        resp.max_message = 65536;
-        resp.device_features = hello.host_features & s->cfg->global_features;
+        resp.max_message = device_max_message(s->cfg);
+        /* Repeated HELLO on an active connection is an idempotent snapshot,
+         * not a renegotiation or implicit session reset. */
+        resp.device_features = s->negotiated
+                                   ? s->negotiated_features
+                                   : hello.host_features & s->cfg->global_features;
         if (ucan_encode_hello_resp(&resp, scratch, sizeof(scratch), &slen) != 0) {
             return -1;
         }
-        s->negotiated = 1;
-        s->min_minor = 0;
-        s->max_minor = 0;
+        if (!s->negotiated) {
+            s->negotiated = 1;
+            s->min_minor = 0;
+            s->max_minor = 0;
+            s->host_rx_max_message = hello.host_max_message;
+            s->negotiated_features = resp.device_features;
+        }
         return response_ok(s, req, out, cap, out_len, UCAN_MSG_HELLO, scratch, slen);
     }
     case UCAN_MSG_GET_DEVICE_INFO: {
@@ -872,8 +1143,11 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
         ucan_capabilities_t caps;
         memset(&caps, 0, sizeof(caps));
         caps.cap_generation = 1;
-        caps.max_message = 65536;
-        caps.max_rx_batch = 64;
+        caps.max_message = device_max_message(s->cfg);
+        /* Current bounded firmware path commits each eligible record
+         * immediately. Advertising one makes the count trigger immediate and
+         * keeps the 1000-us maximum-wait contract truthful. */
+        caps.max_rx_batch = 1;
         caps.tx_depth = s->cfg->tx_depth;
         caps.tick_hz = s->cfg->tick_hz;
         caps.tick_resolution_ns = s->cfg->tick_resolution_ns;
@@ -1029,6 +1303,20 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
             return response_error(s, req, out, cap, out_len,
                                   UCAN_STATUS_INVALID_ARGUMENT, 0, 0, 0);
         }
+        const ucan_channel_cap_t *cap_ch = &s->cfg->channels[cfg_req.channel];
+        if ((cap_ch->mode_mask & (uint8_t)(1u << cfg_req.mode)) == 0 ||
+            (cfg_req.mode == 0 &&
+             (cfg_req.nominal_bps != 0 || cfg_req.data_bps != 0)) ||
+            (cfg_req.mode != 0 &&
+             (cfg_req.nominal_bps < cap_ch->nominal_min ||
+              cfg_req.nominal_bps > cap_ch->nominal_max)) ||
+            (cfg_req.mode != 3 && cfg_req.data_bps != 0) ||
+            (cfg_req.mode == 3 &&
+             (cfg_req.data_bps < cap_ch->data_min ||
+              cfg_req.data_bps > cap_ch->data_max))) {
+            return response_error(s, req, out, cap, out_len,
+                                  UCAN_STATUS_INVALID_ARGUMENT, 0, 0, 0);
+        }
         if (cas_check(s, req, cfg_req.generation, out, cap, out_len)) {
             return 0;
         }
@@ -1084,12 +1372,18 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
             return response_error(s, req, out, cap, out_len,
                                   UCAN_STATUS_INVALID_ARGUMENT, 0, 0, 0);
         }
+        if ((req->message_type == UCAN_MSG_START_CAPTURE && cap_req.flags != 0x0007u) ||
+            (req->message_type == UCAN_MSG_STOP_CAPTURE && cap_req.flags != 0)) {
+            return response_error(s, req, out, cap, out_len,
+                                  UCAN_STATUS_INVALID_ARGUMENT, 0, 0, 0);
+        }
         if (cas_check(s, req, cap_req.expected_generation, out, cap, out_len)) {
             return 0;
         }
         s->config_generation = wrap_inc(s->config_generation);
         s->capture_state =
             req->message_type == UCAN_MSG_START_CAPTURE ? 1 : 0;
+        s->capture_flags = s->capture_state ? cap_req.flags : 0;
         s->capture_generation = s->config_generation;
         ucan_capture_resp_t cap_resp;
         cap_resp.applied_generation = s->config_generation;
@@ -1108,6 +1402,10 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
                                   UCAN_STATUS_INVALID_ARGUMENT, 0, 0, 0);
         }
         if (filter_req.channel >= s->cfg->channel_count) {
+            return response_error(s, req, out, cap, out_len,
+                                  UCAN_STATUS_INVALID_ARGUMENT, 0, 0, 0);
+        }
+        if (filter_req.rule_count > s->cfg->channels[filter_req.channel].max_filters) {
             return response_error(s, req, out, cap, out_len,
                                   UCAN_STATUS_INVALID_ARGUMENT, 0, 0, 0);
         }
@@ -1189,6 +1487,21 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
         }
         if (cas_check(s, req, arm_req.expected_config_generation, out, cap, out_len)) {
             return 0;
+        }
+        if (arm_req.rule_count == 0 || arm_req.max_frames_per_s == 0 ||
+            arm_req.max_bus_load_permille == 0) {
+            return response_error(s, req, out, cap, out_len,
+                                  UCAN_STATUS_INVALID_ARGUMENT, 0, 0, 0);
+        }
+        for (uint8_t i = 0; i < arm_req.rule_count; ++i) {
+            uint8_t ch = arm_req.rules[i].channel;
+            if (ch >= s->cfg->channel_count ||
+                arm_req.rules[i].max_frames_per_s == 0 ||
+                s->channels[ch].state != 2 ||
+                s->cfg->product_max_bus_load_permille[ch] == 0) {
+                return response_error(s, req, out, cap, out_len,
+                                      UCAN_STATUS_INVALID_ARGUMENT, 0, 0, 0);
+            }
         }
         s->config_generation = wrap_inc(s->config_generation);
         s->rule_count = arm_req.rule_count;
@@ -1284,6 +1597,14 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
             return response_error(s, req, out, cap, out_len,
                                   UCAN_STATUS_INVALID_ARGUMENT, 0, 0, 0);
         }
+        if (s->channels[tx_req.channel].state != 2 ||
+            ((tx_req.can_flags & 0x0004u) != 0 &&
+             s->channels[tx_req.channel].mode != 3) ||
+            ((tx_req.can_flags & 0x0004u) == 0 &&
+             s->channels[tx_req.channel].mode != 2)) {
+            return response_error(s, req, out, cap, out_len, UCAN_STATUS_BAD_STATE,
+                                  0x0002, 0, 0);
+        }
         if (tx_req.deadline_tick != 0 && tx_req.deadline_tick <= s->tick) {
             return response_error(s, req, out, cap, out_len, UCAN_STATUS_TIMEOUT, 0, 0,
                                   0);
@@ -1295,7 +1616,9 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
                        (tx_req.payload_len == 0 ||
                         memcmp(slot->payload, tx_req.payload, tx_req.payload_len) == 0) &&
                        slot->dlc == tx_req.dlc && slot->can_flags == tx_req.can_flags &&
-                       slot->channel == tx_req.channel;
+                       slot->channel == tx_req.channel &&
+                       slot->arbitration_id == tx_req.id &&
+                       slot->deadline_tick == tx_req.deadline_tick;
             if (!same) {
                 return response_error(s, req, out, cap, out_len,
                                       UCAN_STATUS_INVALID_ARGUMENT, 0, 0, 0);
@@ -1339,7 +1662,11 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
                 tx_req.payload_len);
             sum_us_rate += (uint64_t)s->rules[rule].max_frames_per_s * t;
             uint32_t permille = (uint32_t)((2 * sum_us_rate + 999) / 1000);
-            if (permille > s->max_bus_load_permille) {
+            uint16_t limit = s->max_bus_load_permille;
+            if (s->cfg->product_max_bus_load_permille[tx_req.channel] < limit) {
+                limit = s->cfg->product_max_bus_load_permille[tx_req.channel];
+            }
+            if (permille > limit) {
                 return response_error(s, req, out, cap, out_len, UCAN_STATUS_BUSY,
                                       0x0001, 0, 0);
             }
@@ -1351,6 +1678,7 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
         slot->occupied = 1;
         slot->channel = tx_req.channel;
         slot->can_flags = tx_req.can_flags;
+        slot->arbitration_id = tx_req.id;
         slot->dlc = tx_req.dlc;
         slot->payload_len = tx_req.payload_len;
         if (tx_req.payload_len != 0) {
@@ -1483,7 +1811,7 @@ int ucan_session_dequeue(ucan_session_t *s, uint8_t *out, uint32_t cap,
     case 2:
         qc->head = (uint16_t)((head + 1) % UCAN_QUEUE_CRITICAL_CAP);
         qc->count--;
-        s->event_depth = qc->count;
+        s->event_depth = qc->count + s->q_critical_pending.count;
         s->response_streak = 0;
         s->served_since_data++;
         break;

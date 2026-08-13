@@ -54,13 +54,18 @@ static int reserved_ok(const uint8_t *p, uint32_t n) {
 
 /* ---------- CRC-32C (Castagnoli), matches the Rust reference ---------- */
 
+static uint32_t crc32c_byte(uint32_t crc, uint8_t byte) {
+    crc ^= byte;
+    for (int j = 0; j < 8; ++j) {
+        crc = (crc >> 1) ^ (0x82f63b78u & (0u - (crc & 1u)));
+    }
+    return crc;
+}
+
 uint32_t ucan_crc32c(const uint8_t *data, uint32_t len) {
     uint32_t crc = 0xffffffffu;
     for (uint32_t i = 0; i < len; ++i) {
-        crc ^= data[i];
-        for (int j = 0; j < 8; ++j) {
-            crc = (crc >> 1) ^ (0x82f63b78u & (0u - (crc & 1u)));
-        }
+        crc = crc32c_byte(crc, data[i]);
     }
     return ~crc;
 }
@@ -168,28 +173,13 @@ int ucan_frame_decode(const uint8_t *bytes, uint32_t len, uint32_t max_message,
     if (rc != 0) {
         return rc;
     }
-    uint8_t canonical[UCAN_HEADER_LEN + 128u];
     /* CRC is computed over the frame with the CRC field zeroed. */
     uint32_t expected = rd_u32(bytes + 20);
-    uint32_t actual;
-    if (total <= sizeof(canonical)) {
-        memcpy(canonical, bytes, total);
-        memset(canonical + 20, 0, 4);
-        actual = ucan_crc32c(canonical, total);
-    } else {
-        /* Stream CRC over header+payload, skipping the CRC field. */
-        uint32_t crc = 0xffffffffu;
-        for (uint32_t i = 0; i < total; ++i) {
-            if (i >= 20 && i < 24) {
-                continue;
-            }
-            crc ^= bytes[i];
-            for (int j = 0; j < 8; ++j) {
-                crc = (crc >> 1) ^ (0x82f63b78u & (0u - (crc & 1u)));
-            }
-        }
-        actual = ~crc;
+    uint32_t crc = 0xffffffffu;
+    for (uint32_t i = 0; i < total; ++i) {
+        crc = crc32c_byte(crc, i >= 20 && i < 24 ? 0 : bytes[i]);
     }
+    uint32_t actual = ~crc;
     if (actual != expected) {
         return UCAN_ERR_CRC;
     }
@@ -202,6 +192,101 @@ int ucan_frame_decode(const uint8_t *bytes, uint32_t len, uint32_t max_message,
     frame->payload = payload_len == 0 ? NULL : bytes + UCAN_HEADER_LEN;
     frame->payload_len = payload_len;
     return 0;
+}
+
+/* ---------- allocation-free stream decoder ---------- */
+
+static int stream_has_magic(const uint8_t *p) {
+    return p[0] == UCAN_MAGIC0 && p[1] == UCAN_MAGIC1 &&
+           p[2] == UCAN_MAGIC2 && p[3] == UCAN_MAGIC3;
+}
+
+static void stream_discard(ucan_stream_decoder_t *decoder, uint32_t count) {
+    decoder->discarded += count;
+    decoder->length -= count;
+    memmove(decoder->buffer, decoder->buffer + count, decoder->length);
+}
+
+static void stream_align_magic(ucan_stream_decoder_t *decoder) {
+    uint32_t offset = 0;
+    while (offset + 4 <= decoder->length) {
+        if (stream_has_magic(decoder->buffer + offset)) {
+            stream_discard(decoder, offset);
+            return;
+        }
+        ++offset;
+    }
+    /* Retain only the suffix that could be a fragmented magic prefix. */
+    if (decoder->length > 3) {
+        stream_discard(decoder, decoder->length - 3);
+    }
+}
+
+int ucan_stream_decoder_init(ucan_stream_decoder_t *decoder, uint8_t *storage,
+                             uint32_t capacity, uint32_t max_message) {
+    if (decoder == NULL || storage == NULL ||
+        max_message > UINT32_MAX - UCAN_HEADER_LEN ||
+        capacity < UCAN_HEADER_LEN + max_message) {
+        return UCAN_ERR_CAPACITY;
+    }
+    decoder->buffer = storage;
+    decoder->capacity = capacity;
+    decoder->length = 0;
+    decoder->max_message = max_message;
+    decoder->emitted_len = 0;
+    decoder->discarded = 0;
+    return 0;
+}
+
+int ucan_stream_decoder_feed(ucan_stream_decoder_t *decoder, const uint8_t *data,
+                             uint32_t len, uint32_t *consumed,
+                             ucan_frame_t *frame) {
+    if (decoder == NULL || decoder->buffer == NULL || consumed == NULL ||
+        frame == NULL || (len != 0 && data == NULL)) {
+        return UCAN_ERR_BAD_VALUE;
+    }
+    *consumed = 0;
+    if (decoder->emitted_len != 0) {
+        decoder->length -= decoder->emitted_len;
+        memmove(decoder->buffer, decoder->buffer + decoder->emitted_len,
+                decoder->length);
+        decoder->emitted_len = 0;
+    }
+
+    for (;;) {
+        stream_align_magic(decoder);
+        if (decoder->length >= UCAN_HEADER_LEN) {
+            if (decoder->buffer[6] != UCAN_HEADER_LEN) {
+                stream_discard(decoder, 1);
+                continue;
+            }
+            uint32_t payload_len = rd_u32(decoder->buffer + 16);
+            if (payload_len > decoder->max_message) {
+                stream_discard(decoder, 1);
+                continue;
+            }
+            uint32_t total = UCAN_HEADER_LEN + payload_len;
+            if (decoder->length >= total) {
+                int rc = ucan_frame_decode(decoder->buffer, total,
+                                           decoder->max_message, frame);
+                if (rc == 0) {
+                    decoder->emitted_len = total;
+                    return UCAN_STREAM_FRAME;
+                }
+                stream_discard(decoder, 1);
+                continue;
+            }
+        }
+        if (*consumed == len) {
+            return UCAN_STREAM_NEED_MORE;
+        }
+        if (decoder->length == decoder->capacity) {
+            /* A valid declared frame always fits by the init contract. */
+            stream_discard(decoder, 1);
+            continue;
+        }
+        decoder->buffer[decoder->length++] = data[(*consumed)++];
+    }
 }
 
 /* ---------- payload codecs ---------- */
@@ -238,7 +323,8 @@ int ucan_encode_hello_req(const ucan_hello_req_t *v, uint8_t *out, uint32_t cap,
 
 static int hello_req_fields_valid(const ucan_hello_req_t *v) {
     return v->min_major != 0 && v->min_major <= v->max_major &&
-           v->min_minor <= v->max_minor && v->host_max_message != 0 &&
+           v->min_minor <= v->max_minor && v->host_max_message >= 256u &&
+           v->host_max_message <= 1048576u &&
            (v->host_features & ~V1_FEATURES) == 0;
 }
 
@@ -495,6 +581,10 @@ int ucan_decode_capabilities(const uint8_t *data, uint32_t len, ucan_capabilitie
 
 /* GET/RESET_DIAGNOSTICS */
 
+static int reset_diagnostics_fields_valid(uint32_t mask) {
+    return (mask & ~0x001fu) == 0;
+}
+
 int ucan_encode_diagnostics(const ucan_diagnostics_t *v, uint8_t *out, uint32_t cap,
                             uint32_t *len) {
     if (v->generation == 0 || v->session_id == 0) {
@@ -587,7 +677,7 @@ int ucan_decode_diagnostics(const uint8_t *data, uint32_t len, ucan_diagnostics_
 
 int ucan_encode_reset_diagnostics(uint32_t mask, uint8_t *out, uint32_t cap,
                                   uint32_t *len) {
-    if ((mask & ~0x001fu) != 0) {
+    if (!reset_diagnostics_fields_valid(mask)) {
         return UCAN_ERR_BAD_VALUE;
     }
     int rc = need(cap, 4);
@@ -604,9 +694,7 @@ int ucan_decode_reset_diagnostics(const uint8_t *data, uint32_t len, uint32_t *m
         return UCAN_ERR_PAYLOAD;
     }
     *mask = rd_u32(data + 0);
-    return ucan_encode_reset_diagnostics(*mask, (uint8_t *)data, 4, &len) == 0
-               ? 0
-               : UCAN_ERR_BAD_VALUE;
+    return reset_diagnostics_fields_valid(*mask) ? 0 : UCAN_ERR_BAD_VALUE;
 }
 
 /* GET_SESSION_STATE */
@@ -697,10 +785,14 @@ int ucan_decode_session_state(const uint8_t *data, uint32_t len,
 
 /* CONFIG_CHANNEL / GET_CHANNEL_CONFIG */
 
+static int channel_config_fields_valid(const ucan_channel_config_t *v) {
+    return v->mode <= 3 && (v->flags & ~0x0003u) == 0 &&
+           v->sample_permille <= 1000 && v->generation != 0;
+}
+
 int ucan_encode_channel_config(const ucan_channel_config_t *v, uint8_t *out, uint32_t cap,
                                uint32_t *len) {
-    if (v->mode > 3 || (v->flags & ~0x0003u) != 0 || v->sample_permille > 1000 ||
-        v->generation == 0) {
+    if (!channel_config_fields_valid(v)) {
         return UCAN_ERR_BAD_VALUE;
     }
     int rc = need(cap, 20);
@@ -735,8 +827,7 @@ int ucan_decode_channel_config(const uint8_t *data, uint32_t len,
     v->data_bps = rd_u32(data + 8);
     v->sample_permille = rd_u16(data + 12);
     v->generation = rd_u32(data + 16);
-    return ucan_encode_channel_config(v, (uint8_t *)data, 20, &len) == 0 ? 0
-                                                                         : UCAN_ERR_BAD_VALUE;
+    return channel_config_fields_valid(v) ? 0 : UCAN_ERR_BAD_VALUE;
 }
 
 int ucan_encode_get_channel_config(const ucan_clear_filters_req_t *v, uint8_t *out,
@@ -826,6 +917,18 @@ int ucan_decode_capture_resp(const uint8_t *data, uint32_t len, ucan_capture_res
 
 /* SET/CLEAR_FILTERS */
 
+static int set_filters_resp_fields_valid(const ucan_set_filters_resp_t *v) {
+    return v->applied_generation != 0;
+}
+
+static int clear_filters_fields_valid(const ucan_clear_filters_req_t *v) {
+    return v->expected_generation != 0;
+}
+
+static int clear_filters_resp_fields_valid(const ucan_clear_filters_resp_t *v) {
+    return v->applied_generation != 0;
+}
+
 int ucan_encode_set_filters(const ucan_set_filters_req_t *v, uint8_t *out, uint32_t cap,
                             uint32_t *len) {
     if (v->expected_generation == 0) {
@@ -898,7 +1001,7 @@ int ucan_decode_set_filters(const uint8_t *data, uint32_t len,
 
 int ucan_encode_set_filters_resp(const ucan_set_filters_resp_t *v, uint8_t *out,
                                  uint32_t cap, uint32_t *len) {
-    if (v->applied_generation == 0) {
+    if (!set_filters_resp_fields_valid(v)) {
         return UCAN_ERR_BAD_VALUE;
     }
     int rc = need(cap, 8);
@@ -923,13 +1026,12 @@ int ucan_decode_set_filters_resp(const uint8_t *data, uint32_t len,
     }
     v->applied_generation = rd_u32(data + 0);
     v->applied_count = rd_u16(data + 4);
-    return ucan_encode_set_filters_resp(v, (uint8_t *)data, 8, &len) == 0 ? 0
-                                                                          : UCAN_ERR_BAD_VALUE;
+    return set_filters_resp_fields_valid(v) ? 0 : UCAN_ERR_BAD_VALUE;
 }
 
 int ucan_encode_clear_filters(const ucan_clear_filters_req_t *v, uint8_t *out,
                               uint32_t cap, uint32_t *len) {
-    if (v->expected_generation == 0) {
+    if (!clear_filters_fields_valid(v)) {
         return UCAN_ERR_BAD_VALUE;
     }
     int rc = need(cap, 8);
@@ -956,13 +1058,12 @@ int ucan_decode_clear_filters(const uint8_t *data, uint32_t len,
     }
     v->channel = data[0];
     v->expected_generation = rd_u32(data + 4);
-    return ucan_encode_clear_filters(v, (uint8_t *)data, 8, &len) == 0 ? 0
-                                                                       : UCAN_ERR_BAD_VALUE;
+    return clear_filters_fields_valid(v) ? 0 : UCAN_ERR_BAD_VALUE;
 }
 
 int ucan_encode_clear_filters_resp(const ucan_clear_filters_resp_t *v, uint8_t *out,
                                    uint32_t cap, uint32_t *len) {
-    if (v->applied_generation == 0) {
+    if (!clear_filters_resp_fields_valid(v)) {
         return UCAN_ERR_BAD_VALUE;
     }
     int rc = need(cap, 4);
@@ -980,11 +1081,23 @@ int ucan_decode_clear_filters_resp(const uint8_t *data, uint32_t len,
         return UCAN_ERR_PAYLOAD;
     }
     v->applied_generation = rd_u32(data + 0);
-    return ucan_encode_clear_filters_resp(v, (uint8_t *)data, 4, &len) == 0 ? 0
-                                                                            : UCAN_ERR_BAD_VALUE;
+    return clear_filters_resp_fields_valid(v) ? 0 : UCAN_ERR_BAD_VALUE;
 }
 
 /* TX_ARM / TX_DISARM */
+
+static int tx_arm_resp_fields_valid(const ucan_tx_arm_resp_t *v) {
+    return v->applied_config_generation != 0 && v->arm_epoch != 0;
+}
+
+static int tx_disarm_fields_valid(const ucan_tx_disarm_req_t *v) {
+    return v->expected_config_generation != 0 && v->arm_epoch != 0 &&
+           v->reason >= 1 && v->reason <= 6;
+}
+
+static int tx_disarm_resp_fields_valid(const ucan_tx_disarm_resp_t *v) {
+    return v->applied_config_generation != 0 && v->new_arm_epoch != 0;
+}
 
 int ucan_encode_tx_arm(const ucan_tx_arm_req_t *v, uint8_t *out, uint32_t cap,
                        uint32_t *len) {
@@ -1069,7 +1182,7 @@ int ucan_decode_tx_arm(const uint8_t *data, uint32_t len, ucan_tx_arm_req_t *v,
 
 int ucan_encode_tx_arm_resp(const ucan_tx_arm_resp_t *v, uint8_t *out, uint32_t cap,
                             uint32_t *len) {
-    if (v->applied_config_generation == 0 || v->arm_epoch == 0) {
+    if (!tx_arm_resp_fields_valid(v)) {
         return UCAN_ERR_BAD_VALUE;
     }
     int rc = need(cap, 16);
@@ -1090,14 +1203,12 @@ int ucan_decode_tx_arm_resp(const uint8_t *data, uint32_t len, ucan_tx_arm_resp_
     v->applied_config_generation = rd_u32(data + 0);
     v->arm_epoch = rd_u32(data + 4);
     v->expiry_tick = rd_u64(data + 8);
-    return ucan_encode_tx_arm_resp(v, (uint8_t *)data, 16, &len) == 0 ? 0
-                                                                      : UCAN_ERR_BAD_VALUE;
+    return tx_arm_resp_fields_valid(v) ? 0 : UCAN_ERR_BAD_VALUE;
 }
 
 int ucan_encode_tx_disarm(const ucan_tx_disarm_req_t *v, uint8_t *out, uint32_t cap,
                           uint32_t *len) {
-    if (v->expected_config_generation == 0 || v->arm_epoch == 0 ||
-        v->reason < 1 || v->reason > 6) {
+    if (!tx_disarm_fields_valid(v)) {
         return UCAN_ERR_BAD_VALUE;
     }
     int rc = need(cap, 16);
@@ -1123,13 +1234,12 @@ int ucan_decode_tx_disarm(const uint8_t *data, uint32_t len, ucan_tx_disarm_req_
     v->expected_config_generation = rd_u32(data + 0);
     v->arm_epoch = rd_u32(data + 4);
     v->reason = rd_u32(data + 8);
-    return ucan_encode_tx_disarm(v, (uint8_t *)data, 16, &len) == 0 ? 0
-                                                                    : UCAN_ERR_BAD_VALUE;
+    return tx_disarm_fields_valid(v) ? 0 : UCAN_ERR_BAD_VALUE;
 }
 
 int ucan_encode_tx_disarm_resp(const ucan_tx_disarm_resp_t *v, uint8_t *out,
                                uint32_t cap, uint32_t *len) {
-    if (v->applied_config_generation == 0 || v->new_arm_epoch == 0) {
+    if (!tx_disarm_resp_fields_valid(v)) {
         return UCAN_ERR_BAD_VALUE;
     }
     int rc = need(cap, 16);
@@ -1156,13 +1266,32 @@ int ucan_decode_tx_disarm_resp(const uint8_t *data, uint32_t len,
     v->applied_config_generation = rd_u32(data + 0);
     v->new_arm_epoch = rd_u32(data + 4);
     v->cancelled_count = rd_u32(data + 8);
-    return ucan_encode_tx_disarm_resp(v, (uint8_t *)data, 16, &len) == 0 ? 0
-                                                                         : UCAN_ERR_BAD_VALUE;
+    return tx_disarm_resp_fields_valid(v) ? 0 : UCAN_ERR_BAD_VALUE;
 }
 
 /* CAN_TX / CAN_TX_CANCEL */
 
 static int can_tx_fields_valid(const ucan_can_tx_req_t *v);
+
+static int can_tx_resp_fields_valid(const ucan_can_tx_resp_t *v) {
+    if (v->queue_generation == 0 ||
+        !(v->tx_state == 1 || v->tx_state == 2)) {
+        return 0;
+    }
+    if (v->tx_state == 1) {
+        return v->final_result == 0 && v->final_tick == 0 && v->can_error == 0;
+    }
+    return v->final_result >= 1 && v->final_result <= 5 &&
+           (v->can_error & 0xfff80000u) == 0;
+}
+
+static int can_tx_cancel_fields_valid(const ucan_can_tx_cancel_req_t *v) {
+    return v->arm_epoch != 0;
+}
+
+static int can_tx_cancel_resp_fields_valid(const ucan_can_tx_cancel_resp_t *v) {
+    return v->cancel_state >= 1 && v->cancel_state <= 3;
+}
 
 static int can_payload_ok(uint8_t dlc, uint16_t flags, uint32_t payload_len) {
     if ((flags & 0x0008u) != 0 && (flags & 0x0004u) == 0) {
@@ -1245,19 +1374,8 @@ int ucan_decode_can_tx(const uint8_t *data, uint32_t len, ucan_can_tx_req_t *v) 
 
 int ucan_encode_can_tx_resp(const ucan_can_tx_resp_t *v, uint8_t *out, uint32_t cap,
                             uint32_t *len) {
-    if (v->queue_generation == 0 ||
-        !(v->tx_state == 1 || v->tx_state == 2)) {
+    if (!can_tx_resp_fields_valid(v)) {
         return UCAN_ERR_BAD_VALUE;
-    }
-    if (v->tx_state == 1) { /* PENDING: final fields must be zero */
-        if (v->final_result != 0 || v->final_tick != 0 || v->can_error != 0) {
-            return UCAN_ERR_BAD_VALUE;
-        }
-    } else { /* FINAL */
-        if (v->final_result < 1 || v->final_result > 5 ||
-            (v->can_error & 0xfff80000u) != 0) {
-            return UCAN_ERR_BAD_VALUE;
-        }
     }
     int rc = need(cap, 24);
     if (rc != 0) {
@@ -1283,13 +1401,12 @@ int ucan_decode_can_tx_resp(const uint8_t *data, uint32_t len, ucan_can_tx_resp_
     v->final_result = rd_u16(data + 10);
     v->final_tick = rd_u64(data + 12);
     v->can_error = rd_u32(data + 20);
-    return ucan_encode_can_tx_resp(v, (uint8_t *)data, 24, &len) == 0 ? 0
-                                                                      : UCAN_ERR_BAD_VALUE;
+    return can_tx_resp_fields_valid(v) ? 0 : UCAN_ERR_BAD_VALUE;
 }
 
 int ucan_encode_can_tx_cancel(const ucan_can_tx_cancel_req_t *v, uint8_t *out,
                               uint32_t cap, uint32_t *len) {
-    if (v->arm_epoch == 0) {
+    if (!can_tx_cancel_fields_valid(v)) {
         return UCAN_ERR_BAD_VALUE;
     }
     int rc = need(cap, 8);
@@ -1309,13 +1426,12 @@ int ucan_decode_can_tx_cancel(const uint8_t *data, uint32_t len,
     }
     v->arm_epoch = rd_u32(data + 0);
     v->client_tag = rd_u32(data + 4);
-    return ucan_encode_can_tx_cancel(v, (uint8_t *)data, 8, &len) == 0 ? 0
-                                                                       : UCAN_ERR_BAD_VALUE;
+    return can_tx_cancel_fields_valid(v) ? 0 : UCAN_ERR_BAD_VALUE;
 }
 
 int ucan_encode_can_tx_cancel_resp(const ucan_can_tx_cancel_resp_t *v, uint8_t *out,
                                    uint32_t cap, uint32_t *len) {
-    if (v->cancel_state < 1 || v->cancel_state > 3) {
+    if (!can_tx_cancel_resp_fields_valid(v)) {
         return UCAN_ERR_BAD_VALUE;
     }
     int rc = need(cap, 8);
@@ -1335,8 +1451,7 @@ int ucan_decode_can_tx_cancel_resp(const uint8_t *data, uint32_t len,
     }
     v->client_tag = rd_u32(data + 0);
     v->cancel_state = rd_u32(data + 4);
-    return ucan_encode_can_tx_cancel_resp(v, (uint8_t *)data, 8, &len) == 0 ? 0
-                                                                            : UCAN_ERR_BAD_VALUE;
+    return can_tx_cancel_resp_fields_valid(v) ? 0 : UCAN_ERR_BAD_VALUE;
 }
 
 /* PING */
@@ -1399,9 +1514,13 @@ int ucan_decode_ping_resp(const uint8_t *data, uint32_t len, ucan_ping_resp_t *v
 
 /* ERROR payload */
 
+static int error_payload_fields_valid(const ucan_error_payload_t *v) {
+    return (v->error_flags & ~0x0007u) == 0 && v->debug_len <= 128;
+}
+
 int ucan_encode_error_payload(const ucan_error_payload_t *v, uint8_t *out, uint32_t cap,
                               uint32_t *len) {
-    if ((v->error_flags & ~0x0007u) != 0 || v->debug_len > 128) {
+    if (!error_payload_fields_valid(v)) {
         return UCAN_ERR_BAD_VALUE;
     }
     int rc = need(cap, 20 + v->debug_len);
@@ -1442,8 +1561,7 @@ int ucan_decode_error_payload(const uint8_t *data, uint32_t len,
     v->actual = rd_u32(data + 12);
     v->debug_len = debug_len;
     v->debug = debug_len == 0 ? NULL : data + 20;
-    return ucan_encode_error_payload(v, (uint8_t *)data, len, &len) == 0 ? 0
-                                                                         : UCAN_ERR_BAD_VALUE;
+    return error_payload_fields_valid(v) ? 0 : UCAN_ERR_BAD_VALUE;
 }
 
 /* CAN_RX_BATCH */
@@ -1624,10 +1742,15 @@ int ucan_decode_can_tx_result(const uint8_t *data, uint32_t len,
 
 /* CHANNEL_STATE event */
 
+static int channel_state_fields_valid(const ucan_channel_state_event_t *v) {
+    return v->state <= 4 &&
+           ((v->reason >= 1 && v->reason <= 6) || v->reason == 16) &&
+           v->config_generation != 0;
+}
+
 int ucan_encode_channel_state(const ucan_channel_state_event_t *v, uint8_t *out,
                               uint32_t cap, uint32_t *len) {
-    if (v->state > 4 || ((v->reason < 1 || v->reason > 6) && v->reason != 16) ||
-        v->config_generation == 0) {
+    if (!channel_state_fields_valid(v)) {
         return UCAN_ERR_BAD_VALUE;
     }
     int rc = need(cap, 24);
@@ -1657,8 +1780,7 @@ int ucan_decode_channel_state(const uint8_t *data, uint32_t len,
     v->tx_error = rd_u32(data + 8);
     v->rx_error = rd_u32(data + 12);
     v->device_tick = rd_u64(data + 16);
-    return ucan_encode_channel_state(v, (uint8_t *)data, 24, &len) == 0 ? 0
-                                                                        : UCAN_ERR_BAD_VALUE;
+    return channel_state_fields_valid(v) ? 0 : UCAN_ERR_BAD_VALUE;
 }
 
 /* FLOW_CONTROL event */
@@ -1693,11 +1815,15 @@ int ucan_decode_flow_control(const uint8_t *data, uint32_t len,
 
 /* DATA_LOSS event */
 
+static int data_loss_fields_valid(const ucan_data_loss_event_t *v) {
+    return v->sequence_domain >= 1 && v->sequence_domain <= 2 &&
+           v->source >= 1 && v->source <= 4 && v->reason >= 1 &&
+           v->reason <= 4 && v->config_generation != 0;
+}
+
 int ucan_encode_data_loss(const ucan_data_loss_event_t *v, uint8_t *out, uint32_t cap,
                           uint32_t *len) {
-    if (v->sequence_domain < 1 || v->sequence_domain > 2 || v->source == 0 ||
-        v->source > 4 || v->reason == 0 || v->reason > 4 ||
-        v->config_generation == 0) {
+    if (!data_loss_fields_valid(v)) {
         return UCAN_ERR_BAD_VALUE;
     }
     int rc = need(cap, 40);
@@ -1745,6 +1871,5 @@ int ucan_decode_data_loss(const uint8_t *data, uint32_t len, ucan_data_loss_even
     v->last_dropped_sequence = rd_u32(data + 16);
     v->dropped_count = rd_u64(data + 24);
     v->device_tick = rd_u64(data + 32);
-    return ucan_encode_data_loss(v, (uint8_t *)data, 40, &len) == 0 ? 0
-                                                                    : UCAN_ERR_BAD_VALUE;
+    return data_loss_fields_valid(v) ? 0 : UCAN_ERR_BAD_VALUE;
 }

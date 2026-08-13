@@ -10,9 +10,12 @@
 #include "ucan_codec.h"
 
 #include <dirent.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
+#include <unistd.h>
 
 /* All payload structs share offset 0 in the union, so a single address is
  * valid for every typed decode/encode wrapper below. */
@@ -376,6 +379,37 @@ static void run_vector(const char *dir, const vector_entry_t *e) {
     }
     check_field_vectors(e, &ctx);
 
+    /* Decode the exact same vector from an OS-enforced read-only mapping. */
+    long page_size = sysconf(_SC_PAGESIZE);
+    int zero = open("/dev/zero", O_RDWR);
+    void *mapping = MAP_FAILED;
+    if (page_size > 0 && zero >= 0) {
+        mapping = mmap(NULL, (size_t)page_size, PROT_READ | PROT_WRITE,
+                       MAP_PRIVATE, zero, 0);
+    }
+    if (zero >= 0) {
+        close(zero);
+    }
+    check(mapping != MAP_FAILED && original_len <= (uint32_t)page_size,
+          "immutable mapping setup", e->name);
+    if (mapping != MAP_FAILED && original_len <= (uint32_t)page_size) {
+        memcpy(mapping, original, original_len);
+        check(mprotect(mapping, (size_t)page_size, PROT_READ) == 0,
+              "immutable mapping protect", e->name);
+        ucan_frame_t immutable_frame;
+        test_ctx_t immutable_ctx;
+        memset(&immutable_ctx, 0, sizeof(immutable_ctx));
+        rc = ucan_frame_decode((const uint8_t *)mapping, original_len, 65536u,
+                               &immutable_frame);
+        check(rc == 0, "immutable frame decode", e->name);
+        if (rc == 0) {
+            rc = e->dec(immutable_frame.payload, immutable_frame.payload_len,
+                        &immutable_ctx);
+            check(rc == 0, "immutable payload decode", e->name);
+        }
+        munmap(mapping, (size_t)page_size);
+    }
+
     uint8_t encoded[512];
     uint32_t payload_len = 0;
     rc = e->enc(&ctx.u, encoded, sizeof(encoded), &payload_len);
@@ -397,6 +431,76 @@ static void run_vector(const char *dir, const vector_entry_t *e) {
     check(reframe_len == original_len &&
               memcmp(reframe, original, original_len) == 0,
           "frame byte parity", e->name);
+}
+
+static void run_stream_tests(const char *dir) {
+    uint8_t wire[512];
+    uint32_t wire_len = 0;
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/%s", dir, "hello-request.hex");
+    check(parse_hex_file(path, wire, sizeof(wire), &wire_len) == 0,
+          "stream vector setup", NULL);
+    if (wire_len == 0) {
+        return;
+    }
+
+    uint8_t storage[128];
+    ucan_stream_decoder_t decoder;
+    ucan_frame_t frame;
+    uint32_t consumed = 0;
+    check(ucan_stream_decoder_init(&decoder, storage, sizeof(storage), 64) == 0,
+          "stream init", NULL);
+    check(ucan_stream_decoder_feed(&decoder, wire, 7, &consumed, &frame) ==
+                  UCAN_STREAM_NEED_MORE &&
+              consumed == 7,
+          "stream fragmented prefix", NULL);
+    check(ucan_stream_decoder_feed(&decoder, wire + 7, wire_len - 7, &consumed,
+                                   &frame) == UCAN_STREAM_FRAME &&
+              consumed == wire_len - 7 && frame.message_type == UCAN_MSG_HELLO,
+          "stream fragmented completion", NULL);
+
+    uint8_t coalesced[1024];
+    memcpy(coalesced, wire, wire_len);
+    memcpy(coalesced + wire_len, wire, wire_len);
+    check(ucan_stream_decoder_init(&decoder, storage, sizeof(storage), 64) == 0,
+          "stream coalesced init", NULL);
+    check(ucan_stream_decoder_feed(&decoder, coalesced, wire_len * 2, &consumed,
+                                   &frame) == UCAN_STREAM_FRAME &&
+              consumed == wire_len,
+          "stream coalesced first", NULL);
+    uint32_t consumed2 = 0;
+    check(ucan_stream_decoder_feed(&decoder, coalesced + consumed,
+                                   wire_len * 2 - consumed, &consumed2,
+                                   &frame) == UCAN_STREAM_FRAME &&
+              consumed2 == wire_len,
+          "stream coalesced second", NULL);
+
+    uint8_t corrupt[1100];
+    uint32_t offset = 0;
+    const uint8_t noise[] = {0x55, 0x00, 0x55, 0x43, 0x41, 0x00};
+    memcpy(corrupt + offset, noise, sizeof(noise));
+    offset += sizeof(noise);
+    memcpy(corrupt + offset, wire, wire_len);
+    corrupt[offset + 20] ^= 1; /* CRC failure */
+    offset += wire_len;
+    memcpy(corrupt + offset, wire, wire_len);
+    corrupt[offset + 16] = 0xff; /* impossible payload length */
+    corrupt[offset + 17] = 0xff;
+    corrupt[offset + 18] = 0xff;
+    corrupt[offset + 19] = 0x7f;
+    offset += wire_len;
+    memcpy(corrupt + offset, wire, wire_len);
+    offset += wire_len;
+    check(ucan_stream_decoder_init(&decoder, storage, sizeof(storage), 64) == 0,
+          "stream recovery init", NULL);
+    check(ucan_stream_decoder_feed(&decoder, corrupt, offset, &consumed,
+                                   &frame) == UCAN_STREAM_FRAME &&
+              consumed == offset && frame.sequence == 1,
+          "stream magic crc length recovery", NULL);
+
+    check(ucan_stream_decoder_init(&decoder, storage, UCAN_HEADER_LEN + 63, 64) ==
+              UCAN_ERR_CAPACITY,
+          "stream bounded storage rejected", NULL);
 }
 
 static void run_negative_tests(void) {
@@ -483,6 +587,7 @@ int main(int argc, char **argv) {
         run_vector(dir, &VECTORS[i]);
     }
     run_negative_tests();
+    run_stream_tests(dir);
     printf("%s: %zu vectors + negative suite, %d failures\n",
            failures == 0 ? "PASS" : "FAIL", count, failures);
     return failures == 0 ? 0 : 1;
