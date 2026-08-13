@@ -9,8 +9,10 @@
 ## 1. 传输与会话
 
 - USB bulk 是可靠字节流，不能把一个 USB transfer 当成一个完整协议 message；
-- host 连接后首先发送 `HELLO`，设备返回选定版本、session id 和最大 message；
-- 每次 USB reset/re-enumeration 创建新 session，旧 request/sequence 全部失效；
+- host 连接后首先发送 `HELLO`，设备返回选定版本、session id 和 host→device
+  最大 message；`HELLO.host_max_message` 则约束 device→host 方向，详见 §4；
+- 每次 USB reset/re-enumeration、物理 disconnect 或成功的新 `HELLO` 都使旧
+  session 的 request/sequence 全部失效；完整状态转换见 §5.4；
 - endpoint：
   - Bulk OUT：host → device commands / CAN TX；
   - Bulk IN：device → host responses / events / CAN RX batch；
@@ -35,10 +37,12 @@ v1 固定 24-byte header：
 
 约束：
 
-- `payload_len <= negotiated_max_message`；
+- `payload_len` 必须满足发送方向的 negotiated limit，不能用一个对称
+  `negotiated_max_message` 代替两方向限制；
 - parser 必须能跨 USB transfer 拼包、拆包并在 magic/length 错误后有界重同步；
 - wire codec 必须逐字段编码/解码，禁止直接发送或 `memcpy` 编译器布局的 C struct；
-- 未知 `minor` 扩展按 length 跳过；未知 mandatory flag 返回错误；
+- 建立 session 后，双方只能发送已选定 minor 的 wire shape；该 minor 定义的尾部
+  扩展按 length 解析，不能发送更高 minor 的字段、flag 或 enum；
 - `major` 不兼容时只允许 `HELLO`/`GET_DEVICE_INFO`；
 - CRC32C 不是为替代 USB CRC，而是保护跨队列、记录和重同步边界。
 
@@ -70,7 +74,15 @@ v1 固定 24-byte header：
 - `HELLO` request 宣告 `min_major/max_major/min_minor/max_minor`。设备只在 major
   交集内选择最高 major，再选双方支持的最高 minor；v1 只有 major 1。无交集返回
   `INCOMPATIBLE_VERSION`，并只允许重新 `HELLO` 或 `GET_DEVICE_INFO`；
-- minor 未知字段只允许追加到已有 payload 尾部；接收方以 payload length 跳过。
+- 成功 `HELLO` 后，每个 message header 的 `major/minor` 必须等于该 session
+  选定值，否则返回 `INCOMPATIBLE_VERSION`；无法安全关联的 event/message 丢弃并计数；
+- minor 扩展只能在已有 payload 尾部追加字段，或分配新的 message/capability 值，
+  不得改变既有字段的 offset、大小或语义。双方按选定 minor 发送：较新实现选择
+  较旧 minor 时必须发送较旧的精确 schema，而不是发送尾部字段并假设对方会忽略；
+- 对已选 minor 中已知 message，接收方必须接受该 minor 定义的长度，并忽略其支持
+  prefix 之后、由该 minor 明确定义为可忽略的尾部；长度短于 required prefix 必须
+  `INVALID_ARGUMENT`。未知 request type 返回 `UNSUPPORTED`；未知 response/event type
+  以 envelope length 跳过并计数。reserved bit/field 不属于可忽略扩展，仍须为 0。
 
 ### 2.3 Message type 与 status 数值
 
@@ -165,6 +177,30 @@ golden corpus 还必须包含完整 HELLO frame 的逐字节 CRC。
 
 Host 不得通过产品型号猜测 capability。
 
+### 4.1 Directional message limits
+
+v1.0 不增加 HELLO 字段，而使用现有两个 `max_message` 字段形成方向性约束：
+
+- `HELLO.host_max_message` 是 host 能接收的最大 **payload** 字节数，约束
+  device→host；`HELLO` response 的 `max_message` 是 device 能接收的最大 payload
+  字节数，约束 host→device。24-byte envelope 不计入该数值；
+- device 使用单一静态 `device_message_limit` 作为其 encoder/decoder 实现上限。
+  HELLO response `max_message=device_message_limit`；`GET_CAPABILITIES.max_message`
+  必须返回同一值。device→host 的有效上限为
+  `min(host_max_message, device_message_limit)`，host→device 的有效上限为
+  `device_message_limit`；发送方还可受自身更小的本地 encoder 上限约束，但不能
+  要求 peer 推断该本地限制；
+- `host_max_message` 与 `device_message_limit` 均必须在 `256..1048576`。超出范围的
+  HELLO 返回 `INVALID_ARGUMENT`。device 的静态 limit 必须容纳其全部 mandatory
+  response/event schema、完整 capability response，以及至少一条最大 64-byte data
+  的 `CAN_RX_BATCH`；不能因当前 host limit 太小而截断一个 message；
+- 若 host 宣告的 device→host limit 无法容纳 HELLO response 或该 device 的完整
+  mandatory `GET_CAPABILITIES` response，HELLO 返回 `NO_RESOURCE`，不创建 session。
+  session 建立后，任何超出接收方向上限的 envelope 在读取 payload 前拒绝并计数；
+- direction limit 在 session 内冻结。capability runtime 变化不得改变它；需要改变
+  limit 时必须重新 HELLO。实现可以用更小 batch/chunk 满足限值，但不得截断或拆分
+  没有规范化 chunk schema 的单个 response/event。
+
 ## 5. Control messages
 
 ### Required for MVP
@@ -240,7 +276,9 @@ response 的 header `status` 是机器结果；成功 response payload 如下：
 Numeric registries：
 
 - CONFIG flags：`AUTO_RECOVER_BOUNDED=0x0001,TIMESTAMP_ENABLE=0x0002`；
-- capture flags：`RX=0x0001,ERROR=0x0002,TX_RESULT=0x0004`；
+- capture flags：`RX=0x0001,ERROR=0x0002,TX_RESULT=0x0004`。为保持 v1.0
+  状态查询无歧义，`START_CAPTURE.flags` 必须恰为三者 OR（`0x00000007`），
+  `STOP_CAPTURE.flags` 必须为 0；其他值返回 `INVALID_ARGUMENT`；
 - capture state：`STOPPED=0,STARTED=1`；
 - filter flags：`EXT_ONLY=0x0001,RTR_ONLY=0x0002,INVERT=0x0004`；
 - diagnostic mask：`USB=0x00000001,CAN0=0x00000002,CAN2=0x00000004,
@@ -303,6 +341,42 @@ u16 reserved,u32 arm_epoch,u64 arm_expiry_tick,u32 aggregate_max_frames_per_s`�
 `filter_crc32c` 对 canonical little-endian filter records 计算，空集合也有固定 CRC。
 `tx_armed=0` 时 `arm_expiry_tick=0`，但 `arm_epoch` 保留最近一次非零 epoch。
 
+#### Capture flag 与 critical event 规则
+
+- v1.0 `START_CAPTURE` 原子启用 `RX|ERROR|TX_RESULT` 固定 profile，不支持选择性
+  capture；因此 `GET_SESSION_STATE.capture_state` 足以恢复状态，未增加 wire 字段。
+  `RX` 控制普通 CAN record，`ERROR` 控制带 batch `ERROR=0x0020` 的 CAN error record，
+  `TX_RESULT` 表示 capture 文件应收录 TX result；
+- `STOP_CAPTURE` 必须先封口当前 partial batch，将其排队或按 §8 显式记为 loss，
+  再将 state 改为 STOPPED，最后返回成功 response；该 response 表示不会再创建包含
+  STOP cutover 前 record 的新 batch，不保证此前已排队的 batch 已到达 host。STOP
+  不停止 CAN channel、不取消 TX，也不清除 filters；
+- `CAN_TX_RESULT`、`CHANNEL_STATE`、`FLOW_CONTROL`、`DATA_LOSS` 是控制/安全事件，
+  不由 capture state 或 flags 抑制。特别是 STOPPED 后，已 accepted TX 的唯一 final
+  result、bus-off/disarm 和反压/丢失 notice 仍必须投递。capture state 只决定新的
+  `CAN_RX_BATCH`/capture-file 数据，不是 event subscription 或安全权限。
+
+#### Filter matching contract
+
+- filters 按 `SET_FILTERS` payload 中的 record index `0..count-1` 保存并按该顺序
+  求值；response 的 `applied_count` 及 `filter_hit` index 均使用这个顺序，device
+  不得因硬件表布局而重排可观察优先级；
+- 对普通 CAN frame，record 的 base match 精确定义为
+  `(frame_id & mask) == (id & mask)`，并且 `EXT_ONLY` 未设置或 frame 为 EXT，且
+  `RTR_ONLY` 未设置或 frame 为 RTR。比较前 standard frame 的 id/mask 只使用低
+  11 bit，extended frame 只使用低 29 bit；SET_FILTERS 对 id/mask 的 bit 29..31
+  必须返回 `INVALID_ARGUMENT`，不能静默截断；
+- `INVERT` 是该 record 的 **reject action**，不是对布尔表达式逐 bit 取反。
+  第一个 base-match record 决定结果：无 `INVERT` 时接受并令 `filter_hit=index`；
+  有 `INVERT` 时丢弃。后续 record 不再求值，因此 allow/deny 冲突由显式顺序解决；
+- 若没有 record base-match：只要集合中存在至少一条非-INVERT（allow）record 就
+  丢弃；若集合为空或只含 INVERT（deny）record 则接受并令 `filter_hit=0xFF`。
+  因此 CLEAR_FILTERS/空集合精确定义为 pass-all，而不是 drop-all；
+- 带 batch `ERROR=0x0020` 的 error record 不参与 ID filter，capture STARTED 时按固定 ERROR
+  profile 直接接受且 `filter_hit=0xFF`。filters 只控制 CAN_RX_BATCH record；不得
+  抑制 `CHANNEL_STATE`、`DATA_LOSS` 或任何其他 critical event。被 filter 丢弃只
+  增加 `filtered` counter，不分配 `channel_sequence`，也不计为 DATA_LOSS。
+
 CAN_TX response `tx_state`：`PENDING=1,FINAL=2`。PENDING 时
 `final_result/final_tick/can_error=0`；FINAL 时 `final_result` 使用
 CAN_TX_RESULT enum。首次 accepted response 通常为 PENDING；相同 CAN_TX bytes
@@ -338,9 +412,10 @@ PENDING/FINAL 状态，不产生第二个 TX 副作用或第二个语义结果�
   每次成功 TX_ARM/TX_DISARM 都 +1 并按 wrap 跳过 0。是否 armed 只由显式
   `tx_armed` 表示，0 不再兼作 disarmed。TX_DISARM response 返回推进后的 epoch；
 - `cap_generation` 每次 boot 从 1 开始，只有 runtime capability 集合改变时推进；
-  diagnostics `generation` 每次 RESET_DIAGNOSTICS 成功时推进；`queue_generation`
-  每次 accepted/cancel/completion/disarm flush 后推进。上述 generation 均为
-  session-local u32，0 保留，wrap 跳过 0；
+  diagnostics `generation` 每次 RESET_DIAGNOSTICS 成功时推进；两者均为
+  boot-lifetime u32 并跨 USB session 保留。`queue_generation` 是 session-local，
+  每次 accepted/cancel/completion/disarm flush 后推进。三者均保留 0 并在 wrap 时
+  跳过 0；
 - CAN_TX `deadline_tick=0` 表示 immediate；非零表示 device monotonic absolute
   deadline，接收时已过期则同步返回 `TIMEOUT` 且不入队；
 - device 保留最近 `replay_cache_entries` 个 completed request，至少
@@ -373,6 +448,34 @@ PENDING/FINAL 状态，不产生第二个 TX 副作用或第二个语义结果�
   u32 last_dropped_sequence,u32 reserved2,u64 dropped_count,u64 device_tick`（40 B）。
   `sequence_domain`：`EVENT=1,CHANNEL=2`；`loss_flags` v1 必须为 0。
 
+### 5.4 Lifecycle and reset matrix
+
+`session_id` 是设备为每个成功 HELLO 创建的随机非零 `u32`，在同一
+`boot_epoch` 内不得复用；它用于隔离状态和去重，不是认证 token。设备在没有 active
+session 时只接受 HELLO/GET_DEVICE_INFO，其他 request 返回 `BAD_STATE`。
+
+| Trigger | `boot_epoch` / monotonic tick | Session identity | Channel/config/filter/capture | TX arm and immediate TX | Replay, sequences and queues |
+|---|---|---|---|---|---|
+| Power boot | 生成新非零 `boot_epoch`；tick 从 0 重新开始 | 无 session，直到成功 HELLO | 硬件 channel 为 DISABLED；无 session-local generation | disarmed；hardware TX 与 software TX queue 为空 | 所有 replay/result ledger、event/RX/USB queue 为空；boot-lifetime diagnostics 从 0 开始 |
+| Watchdog reset | 等同新 power boot：必须更换 `boot_epoch`，tick 可重新从 0 开始 | 旧 session 立即失效 | DISABLED；旧 config/filter/capture 全部丢弃 | 自动 disarm；pending TX 不得在 reboot 后发送 | 清空全部 session cache/ledger/queue；无法投递的旧 event 不跨 boot 补发 |
+| USB bus reset / re-enumeration | `boot_epoch` 不变；tick 连续 | 旧 session 立即失效；须新 HELLO 生成新 `session_id` | 立即进入产品声明的安全非发送初始模式（优先 DISABLED；只读分析器可为 LISTEN_ONLY）；丢弃 config/filters；capture STOPPED | 自动 disarm；清空 pending/hardware TX request | 清 replay/result ledger、event/RX/USB queue 和 sequence state；transport 恢复后不补发旧 session 消息 |
+| Physical USB disconnect | `boot_epoch` 不变；tick 连续 | detection 后旧 session 立即失效；reconnect 后须新 HELLO | 与 USB reset 相同；不得等待 reconnect timeout 才停止 capture/channel | detection 后自动 disarm 并清 TX | 与 USB reset 相同；仅 boot-lifetime diagnostics counter 保留 |
+| Active connection 上重复 HELLO | `boot_epoch`、tick 和当前 session 均不变 | byte-identical request/sequence 可重放原 HELLO response；使用新 sequence 的 HELLO 返回当前协商快照，不隐式创建或重置 session | 当前 channel/config/filter/capture 保持 | 当前 arm/TX 保持 | replay/ledger/queue/sequence 保持；需要新 session 必须先执行 USB reset/re-enumeration |
+
+每个成功 HELLO 建立的初始状态固定为：`config_generation=1`、
+`capture_generation=1` 且 `capture_state=STOPPED`，所有 channel 处于 capability 声明的
+安全非发送初始模式（DISABLED 或 LISTEN_ONLY），所有 filter
+集合为空且 `filter_generation=1`，`tx_armed=0`、`arm_epoch=1`、
+`arm_expiry_tick=0`，`queue_generation=1`，request replay/result ledger 为空，下一条
+device event sequence 和每通道下一条 `channel_sequence` 均为 1。session queue depth
+均为 0；boot-lifetime diagnostics 与 `cap_generation` 在 USB session 切换时保留。
+所有 session-local generation/epoch/sequence 按 §5.2 的跳零 wrap 规则推进。
+
+reset/disconnect 无可用 transport 时，“清空”优先于投递 final result；host 必须把
+旧 session 内尚未收到 final result 的 TX 记录为 session-terminated/unknown，不能在
+新 session 中假定 SENT 或重用旧 ledger。device 必须在 reset handler 中禁止旧 TX
+descriptor 到达 MCAN owner，随后才允许新 session TX_ARM。
+
 ## 6. CAN RX batch
 
 v1 采用**混合通道 batch**；batch header 不再包含 channel：
@@ -399,16 +502,34 @@ v1 采用**混合通道 batch**；batch header 不再包含 channel：
 规则：
 
 - v1 支持 Classic CAN 和最多 64-byte CAN-FD payload；
-- batch 同时受 `max_message`、最大等待时间和最大 record count 约束；
-- 低流量不能因等待填满 batch 产生无界延迟；
+- batch 同时受 device→host direction limit、`max_rx_batch` 和固定最大等待时间
+  约束。`GET_CAPABILITIES.max_rx_batch` 精确定义为单个 batch 的最大
+  `record_count`，必须为 `1..65535`；实际 count 还必须使完整 payload 不超过
+  direction limit；
+- 为保持 v1.0 wire layout，v1.0 的隐式 capability
+  `max_batch_wait_us=1000`，不另加字段。计时从空 batch 接收第一条 eligible record
+  时开始；达到 1000 µs、count 达到 `max_rx_batch`、下一条 record 将超出 direction
+  limit、`config_generation` 将变化或 STOP_CAPTURE 时，以最先发生者立即封包入
+  data queue。该期限约束进入有界 data queue 的时间，不保证 stalled USB endpoint
+  上的 host 到达时间；
+- future minor 若要提供不同等待值，必须在 GET_CAPABILITIES 尾部追加显式
+  `u32 max_batch_wait_us` 并只在协商到该 minor 后发送；未协商该字段始终采用
+  v1.0 固定 1000 µs，不能通过产品型号或未协商 capability bit 猜测；
 - device drop counter 的变化必须在下一可用 event/batch 中上报；
 - host 必须检测 event/batch sequence gap 并写入 capture metadata。
 - 一个 batch 只能包含同一 `config_generation`；generation 变化立即 flush。
-  每通道 `channel_sequence` 在 ISR 观察到 frame、尝试写入 CAN ring **之前**分配，
-  从 1 单调递增并按 u32 wrap 跳过 0，因此 ring overflow 也能以 CHANNEL domain
-  精确表达。mixed-channel merge
+- 每通道 `channel_sequence` 在 frame 通过 §5.1 filter、尝试写入 CAN ring
+  **之前**分配，从 1 单调递增并按 u32 wrap 跳过 0；被 filter 丢弃不产生 gap，
+  ring overflow 则能以 CHANNEL domain 精确表达。mixed-channel merge
   排序为 `(timestamp, channel_id, channel_sequence)`，同 tick 时 channel 小者先；
   host 用 event sequence + channel sequence 检测全局和每通道 gap。
+- 若产品的物理 CAN/ISR ring 位于协议 filter 之前，ring overflow 时设备无法知道
+  已丢原始 frame 最终是否会通过 filter。此类丢失不是“已判定的 filter drop”，必须
+  保守地为每个原始丢失项分配 `channel_sequence`，以 `source=CAN_RING`、
+  `sequence_domain=CHANNEL` 上报 `DATA_LOSS`；host 将其解释为 eligibility unknown 的
+  上游观测缺口。只有实际执行 filter 后明确拒绝的 frame 才适用“不分配 sequence”
+  规则。产品若需要精确区分，必须把 filter 前移到该 ring 之前，或在上游 drop ledger
+  保留足够的 ID/flags 元数据。
 
 ## 7. CAN TX / TX result
 
@@ -468,8 +589,10 @@ fill=`max_frames_per_s`、capacity=`max(1,ceil(fill/10))`；每个 accepted fram
 
 ### 8.1 单 Bulk IN 的 control-plane QoS
 
-- 三个独立 bounded queue：response、critical event、CAN data；容量由 capability
-  返回，response capacity 必须 ≥ `max(4, outstanding_limit)`；
+- 三个逻辑独立的 bounded queue/reserve：response、critical event、CAN data；容量由
+  capability 返回，response capacity 必须 ≥ `outstanding_limit` 且至少为 1。
+  单 outstanding 实现可以用一个专用、可重试的 response reserve，而不必实现额外
+  FIFO；多 outstanding 实现必须保持 response FIFO 和 sequence 对应关系；
 - scheduler 使用 priority + weighted round robin：response 优先，但连续发送
   8 个 response 后若 critical event 等待则至少服务 1 个；CAN data 每 16 个
   control/critical message 至少服务 1 batch，除非 endpoint stalled；
@@ -503,15 +626,18 @@ fill=`max_frames_per_s`、capacity=`max(1,ceil(fill/10))`；每个 accepted fram
 
 - 设备提供 64-bit 单调 tick/微秒时间；
 - `GET_CAPABILITIES` 返回频率与分辨率；
-- boot/reset 产生新的 session/epoch；
+- power boot/watchdog reset 产生新 boot epoch；USB reset/disconnect 只终止 session，
+  不改变仍在运行的 monotonic tick/boot epoch；
 - host 使用多次 ping 样本估算 offset/RTT，不把 USB 到达时间当 CAN 接收时间；
 - 多设备绝对同步不属于 v1 保证，后续可增加硬件/协议同步。
 
 ## 10. Compatibility policy
 
 - Major：wire incompatibility；
-- Minor：只新增可忽略字段/message/capability；
-- length-delimited payload 支持旧 host 跳过尾部；
+- Minor：只新增可忽略的尾部字段、新 message 或 capability；不能改变 v1.0
+  required prefix、registry 数值或默认行为；
+- length-delimited payload 是同一已协商 minor 内的解析机制，不代表较低 minor
+  peer 必须接受较高 minor wire shape；发送方始终按 HELLO 选定 minor 编码；
 - firmware 在发布后至少保留当前 major 的最近两个 minor；
 - golden vectors 按 `protocol/v1/<minor>/` 归档；
 - capture 文件记录 protocol、firmware、board、capability snapshot。
@@ -519,6 +645,19 @@ fill=`max_frames_per_s`、capacity=`max(1,ceil(fill/10))`；每个 accepted fram
 ## 11. Security and safety boundaries
 
 - USB 被视为本地但不可信输入；所有 length/count/flag/enum 都要验证；
+- v1.0 wire protocol **没有 host authentication、authorization、confidentiality 或
+  anti-replay security**。session id、boot epoch、sequence、CRC 和 TX_ARM 都不是
+  credentials 或 cryptographic protection；任何能打开 vendor bulk interface 的
+  process 都能读取 capture、修改 channel/config 并尝试 TX_ARM/CAN_TX；
+- 产品 trust boundary 固定在本地 host OS 的 device-node/driver access control：部署
+  必须只把接口权限授予获准的本地 analyzer service/user。不得把 raw USB interface
+  转发给不可信 VM/container/network client；若必须跨该边界，须在协议外使用经过
+  认证和授权的代理。CLI confirmation、serial number 和 HIL 白名单不能替代 OS
+  authorization；
+- firmware 对所有 caller 一视同仁并始终执行本节 safety limit；v1.0 不声称抵御
+  已获得 raw interface 权限的恶意本地 caller。需要 device-side host identity 或
+  encrypted transport 时必须定义新的 capability-gated security addendum/major，
+  不能复用 reserved flag 暗示认证；
 - parser 不动态递归、不基于未验证长度分配大块内存；
 - CAN TX 默认关闭；firmware 实现 session-scoped `TX_ARM`，带 generation/expiry；
 - firmware（而非仅 HIL/CLI）强制 channel、ID/mask、DLC/flags、bitrate、queue、
