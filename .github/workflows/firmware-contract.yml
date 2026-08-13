@@ -1,0 +1,40 @@
+name: Firmware Contract
+
+on:
+  push:
+    paths:
+      - "CMakeLists.txt"
+      - "USER/**"
+      - "config/**"
+      - "scripts/phase2/**"
+      - "scripts/phase3/**"
+      - "tests/phase2/**"
+      - "tests/phase3/**"
+      - ".github/workflows/firmware-contract.yml"
+  pull_request:
+    paths:
+      - "CMakeLists.txt"
+      - "USER/**"
+      - "config/**"
+      - "scripts/phase2/**"
+      - "scripts/phase3/**"
+      - "tests/phase2/**"
+      - "tests/phase3/**"
+      - ".github/workflows/firmware-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run firmware source contracts
+        run: >-
+          python3 -m unittest
+          tests.phase2.test_bsp_banner_contract
+          tests.phase2.test_rtos_advanced_contract
+          tests.phase3.test_mcan0_owner_contract
+          tests.phase3.test_usb_owner_contract
