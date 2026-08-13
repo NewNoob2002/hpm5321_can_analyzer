@@ -15,7 +15,7 @@
 #include "task.h"
 
 #define APP_MCAN0_OWNER_STACK_WORDS (configMINIMAL_STACK_SIZE + 384U)
-#define APP_MCAN0_OWNER_TASK_PRIORITY (4U)
+#define APP_MCAN0_OWNER_TASK_PRIORITY (3U)
 #define APP_MCAN0_OWNER_IDLE_POLL_MS (100U)
 #define APP_MCAN0_OWNER_FAULT_MASK                                      \
     (MCAN_EVENT_ERROR | MCAN_INT_ACCESS_TO_RESERVED_ADDR |             \
