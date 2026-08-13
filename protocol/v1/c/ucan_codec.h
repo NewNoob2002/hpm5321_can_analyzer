@@ -119,6 +119,35 @@ int ucan_frame_encode(const ucan_frame_t *frame, uint8_t *out, uint32_t cap,
 int ucan_frame_decode(const uint8_t *bytes, uint32_t len, uint32_t max_message,
                       ucan_frame_t *frame);
 
+/*
+ * Allocation-free byte-stream decoder. The caller owns `storage`, which must
+ * be at least UCAN_HEADER_LEN + max_message bytes. A returned frame points into
+ * that storage and remains valid until the next feed call.
+ *
+ * feed() consumes at most the bytes through one valid frame. Call it again
+ * with data + *consumed to continue. Malformed input is discarded
+ * with bounded magic resynchronization rather than surfaced as a fatal error.
+ */
+enum {
+    UCAN_STREAM_NEED_MORE = 0,
+    UCAN_STREAM_FRAME = 1,
+};
+
+typedef struct {
+    uint8_t *buffer;
+    uint32_t capacity;
+    uint32_t length;
+    uint32_t max_message;
+    uint32_t emitted_len;
+    uint64_t discarded;
+} ucan_stream_decoder_t;
+
+int ucan_stream_decoder_init(ucan_stream_decoder_t *decoder, uint8_t *storage,
+                             uint32_t capacity, uint32_t max_message);
+int ucan_stream_decoder_feed(ucan_stream_decoder_t *decoder, const uint8_t *data,
+                             uint32_t len, uint32_t *consumed,
+                             ucan_frame_t *frame);
+
 /* ---- Payload structs (spec 5.1/5.3/6) ---- */
 
 typedef struct {
