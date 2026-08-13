@@ -17,6 +17,8 @@ pub enum TransportError {
     Timeout,
     /// Backend-specific I/O failure.
     Io(String),
+    /// A syntactically framed response violated the negotiated protocol.
+    Protocol(String),
     /// The backend does not implement the requested operation.
     Unsupported(String),
 }
@@ -29,6 +31,7 @@ impl fmt::Display for TransportError {
             Self::Frame(error) => write!(f, "frame error: {error}"),
             Self::Timeout => write!(f, "transport timeout"),
             Self::Io(error) => write!(f, "io error: {error}"),
+            Self::Protocol(error) => write!(f, "protocol error: {error}"),
             Self::Unsupported(what) => write!(f, "unsupported: {what}"),
         }
     }

@@ -8,7 +8,11 @@
 use std::collections::VecDeque;
 use std::time::Duration;
 
-use hpm_usb_can_protocol::{Frame, StreamDecoder};
+use hpm_usb_can_protocol::{
+    Frame, PROTOCOL_MAJOR, PROTOCOL_MINOR, StreamDecoder, flags, msg,
+    payload::{HelloRequest, HelloResponse},
+    validate_negotiated_version,
+};
 
 use crate::transport::{Transport, TransportError};
 
@@ -28,6 +32,9 @@ pub struct UsbTransport {
     /// read can carry multiple frames; draining in arrival order keeps the
     /// response/event ordering identical to the fake backend.
     pending: VecDeque<Frame>,
+    tx_max_message: usize,
+    rx_max_message: usize,
+    negotiated_version: Option<(u8, u8)>,
     id: String,
 }
 
@@ -45,12 +52,95 @@ impl UsbTransport {
             handle,
             decoder: StreamDecoder::new(MAX_MESSAGE),
             pending: VecDeque::new(),
+            tx_max_message: MAX_MESSAGE,
+            rx_max_message: MAX_MESSAGE,
+            negotiated_version: None,
             id,
         })
     }
 
     pub fn open_default() -> Result<Self, TransportError> {
         Self::open(DEFAULT_VID, DEFAULT_PID)
+    }
+
+    /// Perform HELLO and atomically install the directional limits/version.
+    /// A new negotiation discards buffered frames from any prior USB session.
+    pub fn negotiate(
+        &mut self,
+        sequence: u32,
+        request: &HelloRequest,
+        timeout: Duration,
+    ) -> Result<HelloResponse, TransportError> {
+        if self.negotiated_version.is_some() {
+            return Err(TransportError::Protocol(
+                "USB session is already negotiated; reconnect before changing limits".into(),
+            ));
+        }
+        let rx_limit = usize::try_from(request.host_max_message)
+            .map_err(|_| TransportError::Protocol("host_max_message does not fit usize".into()))?;
+        if !(256..=MAX_MESSAGE).contains(&rx_limit) {
+            return Err(TransportError::Protocol(format!(
+                "host receive limit {rx_limit} is outside USB backend bounds"
+            )));
+        }
+        self.pending.clear();
+        self.decoder = StreamDecoder::new(rx_limit);
+        self.rx_max_message = rx_limit;
+        self.tx_max_message = MAX_MESSAGE;
+        self.negotiated_version = None;
+
+        let hello = Frame {
+            major: PROTOCOL_MAJOR,
+            minor: PROTOCOL_MINOR,
+            flags: flags::REQUEST,
+            message_type: msg::HELLO,
+            status: 0,
+            sequence,
+            payload: request
+                .encode()
+                .map_err(|error| TransportError::Protocol(error.to_string()))?,
+        };
+        self.write_frame(&hello)?;
+        let response = self.read_frame(timeout)?;
+        if response.flags != flags::RESPONSE
+            || response.message_type != msg::HELLO
+            || response.sequence != sequence
+            || response.status != 0
+        {
+            return Err(TransportError::Protocol(
+                "invalid HELLO response envelope".into(),
+            ));
+        }
+        let selected = HelloResponse::decode(&response.payload)
+            .map_err(|error| TransportError::Protocol(error.to_string()))?;
+        if selected.major < request.min_major
+            || selected.major > request.max_major
+            || selected.minor < request.min_minor
+            || selected.minor > request.max_minor
+        {
+            return Err(TransportError::Protocol(
+                "device selected a version outside the offered range".into(),
+            ));
+        }
+        let tx_limit = usize::try_from(selected.max_message).map_err(|_| {
+            TransportError::Protocol("device max_message does not fit usize".into())
+        })?;
+        if !(256..=MAX_MESSAGE).contains(&tx_limit) {
+            return Err(TransportError::Protocol(format!(
+                "device receive limit {tx_limit} is outside USB backend bounds"
+            )));
+        }
+        self.tx_max_message = tx_limit;
+        self.negotiated_version = Some((selected.major, selected.minor));
+        Ok(selected)
+    }
+
+    pub fn max_message(&self) -> usize {
+        self.tx_max_message
+    }
+
+    pub fn receive_max_message(&self) -> usize {
+        self.rx_max_message
     }
 }
 
@@ -60,7 +150,16 @@ impl Transport for UsbTransport {
     }
 
     fn write_frame(&mut self, frame: &Frame) -> Result<(), TransportError> {
-        let bytes = frame.encode(MAX_MESSAGE)?;
+        if let Some((major, minor)) = self.negotiated_version {
+            validate_negotiated_version(frame, major, minor)?;
+        } else if frame.flags != flags::REQUEST
+            || !matches!(frame.message_type, msg::HELLO | msg::GET_DEVICE_INFO)
+        {
+            return Err(TransportError::Protocol(
+                "USB session is not negotiated; call UsbTransport::negotiate first".into(),
+            ));
+        }
+        let bytes = frame.encode(self.tx_max_message)?;
         let written = self
             .handle
             .write_bulk(EP_OUT, &bytes, DEFAULT_TIMEOUT)
@@ -77,6 +176,15 @@ impl Transport for UsbTransport {
     fn read_frame(&mut self, timeout: Duration) -> Result<Frame, TransportError> {
         loop {
             if let Some(frame) = self.pending.pop_front() {
+                if let Some((major, minor)) = self.negotiated_version {
+                    validate_negotiated_version(&frame, major, minor)?;
+                } else if frame.flags & flags::RESPONSE == 0
+                    || !matches!(frame.message_type, msg::HELLO | msg::GET_DEVICE_INFO)
+                {
+                    return Err(TransportError::Protocol(
+                        "received non-bootstrap frame before HELLO negotiation".into(),
+                    ));
+                }
                 return Ok(frame);
             }
             let mut buffer = vec![0u8; 4096];

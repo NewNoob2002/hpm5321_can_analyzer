@@ -1106,6 +1106,29 @@ mod tests {
     }
 
     #[test]
+    fn v1_control_payloads_reject_unnegotiated_extensions() {
+        let config = config(1);
+        let mut extended = config.encode().unwrap();
+        extended.extend_from_slice(&[0xde, 0xad]);
+        assert!(matches!(
+            ChannelConfig::decode(&extended),
+            Err(PayloadError::InvalidLength { .. })
+        ));
+
+        let filters = SetFiltersRequest {
+            channel: 0,
+            expected_generation: 1,
+            rules: vec![],
+        };
+        let mut counted = filters.encode().unwrap();
+        counted.push(0);
+        assert!(matches!(
+            SetFiltersRequest::decode(&counted),
+            Err(PayloadError::InvalidLength { .. })
+        ));
+    }
+
+    #[test]
     fn tx_arm_disarm_vectors_match_golden() {
         let arm = TxArmRequest {
             expected_config_generation: 4,
