@@ -41,6 +41,7 @@ enum {
     UCAN_MSG_GET_DIAGNOSTICS = 0x0004,
     UCAN_MSG_RESET_DIAGNOSTICS = 0x0005,
     UCAN_MSG_GET_SESSION_STATE = 0x0006,
+    UCAN_MSG_GET_MCAN_DIAGNOSTICS = 0x0007,
     UCAN_MSG_CONFIG_CHANNEL = 0x0010,
     UCAN_MSG_GET_CHANNEL_CONFIG = 0x0011,
     UCAN_MSG_START_CAPTURE = 0x0012,
@@ -239,6 +240,45 @@ typedef struct {
     const ucan_channel_diag_t *channels;
     uint8_t channel_count;
 } ucan_diagnostics_t;
+
+#define UCAN_MCAN_DIAGNOSTICS_VERSION 1u
+#define UCAN_MCAN_DIAGNOSTICS_LEN 104u
+#define UCAN_MCAN_DIAG_STATE_INITIALIZED (1u << 0)
+#define UCAN_MCAN_DIAG_STATE_ONLINE (1u << 1)
+#define UCAN_MCAN_DIAG_STATE_LISTEN_ONLY (1u << 2)
+#define UCAN_MCAN_DIAG_STATE_TX_ARMED (1u << 3)
+#define UCAN_MCAN_DIAG_STATE_WARNING (1u << 4)
+#define UCAN_MCAN_DIAG_STATE_ERROR_PASSIVE (1u << 5)
+#define UCAN_MCAN_DIAG_STATE_BUS_OFF (1u << 6)
+#define UCAN_MCAN_DIAG_STATE_MASK 0x0000007fu
+
+typedef struct {
+    uint32_t version;
+    uint32_t length;
+    uint32_t generation;
+    uint32_t state_flags;
+    uint64_t snapshot_tick;
+    uint32_t interrupt_flags;
+    uint32_t error_interrupt_flags;
+    uint32_t last_interrupt_flags;
+    uint32_t protocol_status;
+    uint32_t error_count;
+    uint32_t transmit_error_count;
+    uint32_t receive_error_count;
+    uint32_t rxfifo0_fill_level;
+    uint32_t rxfifo0_high_watermark;
+    uint32_t queue_count;
+    uint32_t queue_high_watermark;
+    uint32_t ring_count;
+    uint32_t ring_high_watermark;
+    uint32_t queue_drops;
+    uint32_t ring_drops;
+    uint32_t invalid_frames;
+    uint32_t bus_off_count;
+    uint32_t warning_count;
+    uint32_t error_passive_count;
+    uint32_t automatic_recovery_attempts;
+} ucan_mcan_diagnostics_t;
 
 typedef struct {
     uint8_t channel;
@@ -468,6 +508,10 @@ int ucan_decode_capabilities(const uint8_t *data, uint32_t len, ucan_capabilitie
 int ucan_encode_diagnostics(const ucan_diagnostics_t *v, uint8_t *out, uint32_t cap, uint32_t *len);
 int ucan_decode_diagnostics(const uint8_t *data, uint32_t len, ucan_diagnostics_t *v,
                             ucan_channel_diag_t *channels, uint8_t max_channels);
+int ucan_encode_mcan_diagnostics(const ucan_mcan_diagnostics_t *v, uint8_t *out,
+                                 uint32_t cap, uint32_t *len);
+int ucan_decode_mcan_diagnostics(const uint8_t *data, uint32_t len,
+                                 ucan_mcan_diagnostics_t *v);
 int ucan_encode_reset_diagnostics(uint32_t mask, uint8_t *out, uint32_t cap, uint32_t *len);
 int ucan_decode_reset_diagnostics(const uint8_t *data, uint32_t len, uint32_t *mask);
 int ucan_encode_session_state(const ucan_session_state_t *v, uint8_t *out, uint32_t cap, uint32_t *len);

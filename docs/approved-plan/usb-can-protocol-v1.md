@@ -94,6 +94,7 @@ v1 固定 24-byte header：
 | GET_DIAGNOSTICS | `0x0004` | request/response |
 | RESET_DIAGNOSTICS | `0x0005` | request/response |
 | GET_SESSION_STATE | `0x0006` | request/response |
+| GET_MCAN_DIAGNOSTICS | `0x0007` | request/response |
 | CONFIG_CHANNEL | `0x0010` | request/response |
 | GET_CHANNEL_CONFIG | `0x0011` | request/response |
 | START_CAPTURE | `0x0012` | request/response |
@@ -211,6 +212,7 @@ v1.0 不增加 HELLO 字段，而使用现有两个 `max_message` 字段形成�
 - `GET_DIAGNOSTICS`
 - `RESET_DIAGNOSTICS`
 - `GET_SESSION_STATE`
+- `GET_MCAN_DIAGNOSTICS`
 - `CONFIG_CHANNEL`
 - `GET_CHANNEL_CONFIG`
 - `START_CAPTURE`
@@ -259,6 +261,7 @@ response 的 header `status` 是机器结果；成功 response payload 如下：
 | GET_CAPABILITIES | empty | 60 B fixed header + `channel_count` × 24 B channel record（如下） |
 | GET/RESET_DIAGNOSTICS | RESET: `u32 mask` | 40 B global diagnostics + `channel_count` × 52 B channel diagnostics |
 | GET_SESSION_STATE | empty | 28 B fixed state + `channel_count` × 12 B filter-state record（如下） |
+| GET_MCAN_DIAGNOSTICS | empty | 104 B fixed MCAN owner atomic diagnostics snapshot（如下） |
 | CONFIG_CHANNEL | `u8 channel,u8 mode,u16 flags,u32 nominal_bps,u32 data_bps,u16 sample_permille,u16 reserved,u32 expected_generation`（20 B） | same fields with applied generation |
 | GET_CHANNEL_CONFIG | `u8 channel,u8 reserved[3]` | CONFIG_CHANNEL applied schema |
 | START/STOP_CAPTURE | `u32 expected_generation,u32 flags` | `u32 applied_generation,u32 state` |
@@ -292,6 +295,11 @@ Numeric registries：
   `USB_EVENT_QUEUE=4`；
   loss reason：`OVERFLOW=1,ADMISSION=2,ENDPOINT_STALL=3,
   STORAGE_UNAVAILABLE=4`。
+- MCAN ISR diagnostic-work queue overflow 与有界 state-edge ring overflow 映射为
+  `channel=0xFF,source=USB_EVENT_QUEUE,sequence_domain=EVENT,reason=OVERFLOW`。
+  这类丢失只分配 device event-sequence，不得分配 CAN `channel_sequence`，也不得增加
+  channel CAN-frame `dropped` counter。MCAN RX-work queue 与 RX ring overflow 仍映射为
+  `source=CAN_RING,sequence_domain=CHANNEL,reason=OVERFLOW`。
 - CAN flags 共用：`EXT=0x0001,RTR=0x0002,FD=0x0004,BRS=0x0008,
   ESI=0x0010,ERROR_FRAME=0x0020`；CAN_TX 只允许前四项，ESI/ERROR_FRAME 必须为 0；
 - batch flags：`DROP_SNAPSHOT_CHANGED=0x0001`；其余为 0；
@@ -326,6 +334,56 @@ HW_TIMESTAMP=0x0020,ERROR_EVENT=0x0040`。未列 bit 为 0。
 u32 pool_high_water,u64 usb_rx_bytes,u64 usb_tx_bytes`。每通道 52 B：
 `u8 channel,u8 state,u16 reserved,u32 rx_depth,u32 tx_depth,u64 rx_frames,
 u64 tx_frames,u64 filtered,u64 dropped,u32 bus_off_count,u32 error_count`。
+
+`GET_MCAN_DIAGNOSTICS` 成功响应是 MCAN sole-owner 在临界区内复制的固定 104 B
+快照。request payload 必须为空；response 使用以下 little-endian 布局：
+
+| Offset | Field |
+|---:|---|
+| 0 | `u32 version=1` |
+| 4 | `u32 length=104` |
+| 8 | `u32 generation` |
+| 12 | `u32 state_flags` |
+| 16 | `u64 snapshot_tick` |
+| 24 | `u32 interrupt_flags` |
+| 28 | `u32 error_interrupt_flags` |
+| 32 | `u32 last_interrupt_flags` |
+| 36 | `u32 protocol_status` |
+| 40 | `u32 error_count` |
+| 44 | `u32 transmit_error_count` |
+| 48 | `u32 receive_error_count` |
+| 52 | `u32 rxfifo0_fill_level` |
+| 56 | `u32 rxfifo0_high_watermark` |
+| 60 | `u32 queue_count` |
+| 64 | `u32 queue_high_watermark` |
+| 68 | `u32 ring_count` |
+| 72 | `u32 ring_high_watermark` |
+| 76 | `u32 queue_drops` |
+| 80 | `u32 ring_drops` |
+| 84 | `u32 invalid_frames` |
+| 88 | `u32 bus_off_count` |
+| 92 | `u32 warning_count` |
+| 96 | `u32 error_passive_count` |
+| 100 | `u32 automatic_recovery_attempts` |
+
+MCAN owner 内部复制的是独立的 120 B
+`app_mcan0_diagnostics_t` 快照；其中 `snapshot_length=120`，并额外保留
+`rx_queue_drops`、`diagnostic_queue_drops`、`state_edge_drops` 三个只供设备内部
+对账的计数器。该结构不得直接作为 payload 序列化。USB owner 必须逐字段投影到
+104 B `ucan_mcan_diagnostics_t`，并在 wire 字段中写入 `length=104`。
+
+`state_flags` registry：
+`INITIALIZED=0x00000001,ONLINE=0x00000002,LISTEN_ONLY=0x00000004,
+TX_ARMED=0x00000008,WARNING=0x00000010,ERROR_PASSIVE=0x00000020,
+BUS_OFF=0x00000040`。接收方必须要求 payload 精确为 104 B、`version=1`、
+`length=104`、`generation!=0`，并拒绝任何未定义的 state bit。
+
+该命令是 host 按需拉取的诊断面，不定义设备周期推送或 subscription。瞬态
+error-passive、bus-off、恢复边沿继续由 `CHANNEL_STATE` 投递，queue/ring drop
+由 `DATA_LOSS` 投递，因此 1 Hz HIL polling 不承担捕获瞬态边沿的职责。当前产品
+仍固定 listen-only 且 TX 禁止，`TX_ARMED` 必须为 0；
+`automatic_recovery_attempts` 必须为 0，自动 bus-off recovery 留待授权 TX
+策略完成后另行定义。
 
 16 B TX arm rule：
 `u8 channel,u8 allowed_flag_mask,u16 reserved,u32 id,u32 id_mask,

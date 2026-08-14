@@ -162,6 +162,7 @@ static uint32_t find_tag_slot_any(const ucan_session_t *s, uint32_t client_tag) 
 static int build_error_frame(const ucan_frame_t *req, uint8_t *out, uint32_t cap,
                              uint32_t *out_len, uint16_t status,
                              uint16_t error_flags, uint32_t expected, uint32_t actual);
+static void disarm_tx(ucan_session_t *s);
 
 static uint32_t alloc_event_sequence(ucan_session_t *s) {
     s->device_event_sequence = wrap_inc(s->device_event_sequence);
@@ -313,16 +314,17 @@ static int filter_match_index(const ucan_session_channel_t *c,
     return has_allow ? -2 : -1;
 }
 
-static void emit_channel_state(ucan_session_t *s, uint8_t channel, uint8_t state,
-                               uint16_t reason) {
+static int emit_channel_state(ucan_session_t *s, uint8_t channel, uint8_t state,
+                              uint16_t reason, uint32_t tx_error,
+                              uint32_t rx_error, uint64_t device_tick) {
     ucan_channel_state_event_t ev;
     ev.channel = channel;
     ev.state = state;
     ev.reason = reason;
     ev.config_generation = s->config_generation;
-    ev.tx_error = 0;
-    ev.rx_error = 0;
-    ev.device_tick = s->tick;
+    ev.tx_error = tx_error;
+    ev.rx_error = rx_error;
+    ev.device_tick = device_tick;
     uint8_t buf[64];
     uint32_t len = 0;
     if (ucan_encode_channel_state(&ev, buf, sizeof(buf), &len) == 0) {
@@ -334,10 +336,7 @@ static void emit_channel_state(ucan_session_t *s, uint8_t channel, uint8_t state
         f.flags = UCAN_FLAG_EVENT;
         f.message_type = UCAN_MSG_CHANNEL_STATE;
         if (!critical_capacity_available(s)) {
-            s->pending_channel_state_valid[channel] = 1;
-            s->pending_channel_state[channel] = state;
-            s->pending_channel_reason[channel] = reason;
-            return;
+            return -1;
         }
         uint32_t seq = alloc_event_sequence(s);
         f.sequence = seq;
@@ -345,14 +344,45 @@ static void emit_channel_state(ucan_session_t *s, uint8_t channel, uint8_t state
         f.payload_len = len;
         uint32_t flen = 0;
         if (ucan_frame_encode(&f, frame, sizeof(frame), &flen) == 0) {
-            if (enqueue_critical(s, frame, flen, seq) == 0) {
-                s->pending_channel_state_valid[channel] = 0;
-            } else {
-                s->pending_channel_state_valid[channel] = 1;
-                s->pending_channel_state[channel] = state;
-                s->pending_channel_reason[channel] = reason;
-            }
+            return enqueue_critical(s, frame, flen, seq);
         }
+    }
+    return -1;
+}
+
+static int queue_pending_channel_state(ucan_session_t *s, uint8_t channel,
+                                       uint8_t state, uint16_t reason,
+                                       uint32_t tx_error, uint32_t rx_error,
+                                       uint64_t device_tick) {
+    ucan_q_pending_channel_state_t *q = &s->q_pending_channel_state;
+    if (q->count >= UCAN_PENDING_CHANNEL_STATE_CAP) {
+        return -1;
+    }
+    uint16_t tail = (uint16_t)((q->head + q->count) %
+                               UCAN_PENDING_CHANNEL_STATE_CAP);
+    ucan_pending_channel_state_t *pending = &q->items[tail];
+    pending->channel = channel;
+    pending->state = state;
+    pending->reason = reason;
+    pending->tx_error = tx_error;
+    pending->rx_error = rx_error;
+    pending->device_tick = device_tick;
+    q->count++;
+    return 0;
+}
+
+static void persist_channel_state(ucan_session_t *s, uint8_t channel,
+                                  uint8_t state, uint16_t reason,
+                                  uint32_t tx_error, uint32_t rx_error,
+                                  uint64_t device_tick) {
+    /* Once a state edge is pending, later edges join the same FIFO even if a
+     * critical slot transiently opens. This prevents a later bus-off edge
+     * from overtaking an earlier error-passive edge. */
+    if (s->q_pending_channel_state.count != 0 ||
+        emit_channel_state(s, channel, state, reason, tx_error, rx_error,
+                           device_tick) != 0) {
+        (void)queue_pending_channel_state(s, channel, state, reason, tx_error,
+                                          rx_error, device_tick);
     }
 }
 
@@ -465,11 +495,18 @@ static void flush_pending(ucan_session_t *s) {
             emit_can_tx_result(s, slot);
         }
     }
-    for (uint8_t i = 0; i < s->cfg->channel_count; ++i) {
-        if (s->pending_channel_state_valid[i]) {
-            emit_channel_state(s, i, s->pending_channel_state[i],
-                               s->pending_channel_reason[i]);
+    while (s->q_pending_channel_state.count != 0 &&
+           critical_capacity_available(s)) {
+        ucan_q_pending_channel_state_t *q = &s->q_pending_channel_state;
+        ucan_pending_channel_state_t *pending = &q->items[q->head];
+        if (emit_channel_state(s, pending->channel, pending->state,
+                               pending->reason, pending->tx_error,
+                               pending->rx_error, pending->device_tick) != 0) {
+            break;
         }
+        q->head = (uint16_t)((q->head + 1) %
+                             UCAN_PENDING_CHANNEL_STATE_CAP);
+        q->count--;
     }
     if (s->flow_control_pending) {
         emit_flow_control(s);
@@ -625,6 +662,7 @@ int ucan_session_on_rx(ucan_session_t *s, uint8_t channel,
     /* Allocate only after capture/filter admission, but before the bounded
      * protocol ring admission attempt. Intentional filtering therefore does
      * not create a host-visible channel gap, while overflow still does. */
+    rec->filter_hit = filter_result < 0 ? 0xffu : (uint8_t)filter_result;
     rec->channel_sequence = wrap_inc(s->next_channel_sequence[channel]);
     s->next_channel_sequence[channel] = rec->channel_sequence;
     if (c->rx_depth >= (uint32_t)s->cfg->tx_depth) {
@@ -652,6 +690,45 @@ void ucan_session_note_rx_ring_loss(ucan_session_t *s, uint8_t channel,
     }
 }
 
+void ucan_session_note_event_queue_loss(ucan_session_t *s, uint32_t count) {
+    if (s == NULL || count == 0) {
+        return;
+    }
+    for (uint32_t i = 0; i < count; ++i) {
+        uint32_t sequence = alloc_event_sequence(s);
+        accumulate_loss(s, 0xffu, 4 /* USB_EVENT_QUEUE */, 1 /* EVENT */,
+                        1 /* OVERFLOW */, sequence);
+    }
+}
+
+void ucan_session_note_channel_state(ucan_session_t *s, uint8_t channel,
+                                     uint8_t state, uint16_t reason,
+                                     uint32_t tx_error, uint32_t rx_error,
+                                     uint64_t device_tick) {
+    if (s == NULL || channel >= s->cfg->channel_count || state > 4 ||
+        !((reason >= 1 && reason <= 6) || reason == 16)) {
+        return;
+    }
+
+    ucan_session_channel_t *c = &s->channels[channel];
+    if (c->state == state) {
+        return;
+    }
+    c->state = state;
+    if (state == 3 || state == 4) {
+        c->error_count++;
+    }
+    if (state == 4) {
+        c->bus_off_count++;
+        disarm_tx(s);
+    }
+    if (!s->negotiated) {
+        return;
+    }
+    persist_channel_state(s, channel, state, reason, tx_error, rx_error,
+                          device_tick);
+}
+
 void ucan_session_poll_flow_control(ucan_session_t *s) {
     if (s == NULL || !s->negotiated) {
         return;
@@ -672,37 +749,56 @@ void ucan_session_poll_flow_control(ucan_session_t *s) {
     }
 }
 
-static int emit_rx_batch_with_base(ucan_session_t *s, uint8_t channel,
-                                   const ucan_can_rx_record_t *rec,
-                                   uint64_t base_timestamp,
-                                   uint32_t encoded_delta) {
-    if (channel >= s->cfg->channel_count || s->capture_state != 1) {
+static void release_rx_depth(ucan_session_t *s, uint8_t channel,
+                             uint16_t record_count) {
+    if (s->channels[channel].rx_depth >= record_count) {
+        s->channels[channel].rx_depth -= record_count;
+    } else {
+        s->channels[channel].rx_depth = 0;
+    }
+}
+
+int ucan_session_emit_rx_batch_records_at(
+    ucan_session_t *s, uint8_t channel,
+    const ucan_can_rx_record_t *records, uint16_t record_count,
+    uint64_t base_timestamp) {
+    if (s == NULL || records == NULL || channel >= s->cfg->channel_count ||
+        s->capture_state != 1 || record_count == 0 ||
+        record_count > UCAN_SESSION_MAX_RX_BATCH) {
         return 1;
     }
-    ucan_can_rx_record_t captured = *rec;
-    int hit = filter_match_index(&s->channels[channel], rec);
-    if ((((rec->flags & 0x0020u) != 0) ? (s->capture_flags & 0x0002u) == 0
-                                       : (s->capture_flags & 0x0001u) == 0) ||
-        ((rec->flags & 0x0020u) == 0 && hit <= -2)) {
-        return 1;
+    for (uint16_t i = 0; i < record_count; ++i) {
+        if (records[i].channel != channel ||
+            (i != 0 && records[i].delta_tick < records[i - 1].delta_tick)) {
+            release_rx_depth(s, channel, record_count);
+            return 1;
+        }
     }
-    captured.filter_hit = hit < 0 ? 0xffu : (uint8_t)hit;
-    captured.delta_tick = encoded_delta;
     ucan_can_rx_batch_t batch;
     batch.flags = 0;
     batch.base_timestamp = base_timestamp;
     batch.device_drop_total = s->channels[channel].dropped;
     batch.config_generation = s->config_generation;
-    batch.record_count = 1;
-    batch.records = &captured;
-    uint8_t buf[256];
+    batch.record_count = record_count;
+    batch.records = records;
+    /* Allocate after record validation but before every delivery step (spec
+     * 8.1). Any subsequent failure is therefore visible as one dropped
+     * CAN_RX_BATCH message in the EVENT sequence domain. */
+    uint32_t seq = alloc_event_sequence(s);
+    uint8_t buf[UCAN_QUEUE_FRAME_BYTES - UCAN_HEADER_LEN];
     uint32_t len = 0;
     if (ucan_encode_can_rx_batch(&batch, buf, sizeof(buf), &len) != 0) {
+        accumulate_loss(s, 0xff, 2 /* USB_DATA_QUEUE */, 1 /* EVENT */,
+                        2 /* ADMISSION */, seq);
+        release_rx_depth(s, channel, record_count);
         return 1;
     }
-    /* Allocate the event sequence before data-queue admission (spec 8.1):
-     * even a dropped batch consumes a sequence so the host can account it. */
-    uint32_t seq = alloc_event_sequence(s);
+    if (s->host_rx_max_message != 0 && len > s->host_rx_max_message) {
+        accumulate_loss(s, 0xff, 2 /* USB_DATA_QUEUE */, 1 /* EVENT */,
+                        2 /* ADMISSION */, seq);
+        release_rx_depth(s, channel, record_count);
+        return 1;
+    }
     uint8_t frame[512];
     ucan_frame_t f;
     memset(&f, 0, sizeof(f));
@@ -715,32 +811,34 @@ static int emit_rx_batch_with_base(ucan_session_t *s, uint8_t channel,
     f.payload_len = len;
     uint32_t flen = 0;
     if (ucan_frame_encode(&f, frame, sizeof(frame), &flen) != 0) {
+        accumulate_loss(s, 0xff, 2 /* USB_DATA_QUEUE */, 1 /* EVENT */,
+                        2 /* ADMISSION */, seq);
+        release_rx_depth(s, channel, record_count);
         return 1;
     }
     if (enqueue_data(s, frame, flen, seq) != 0) {
         /* USB data queue full: EVENT-domain loss, channel 0xFF. */
         accumulate_loss(s, 0xff, 2 /* USB_DATA_QUEUE */, 1 /* EVENT */,
                         1 /* OVERFLOW */, seq);
-        if (s->channels[channel].rx_depth > 0) {
-            s->channels[channel].rx_depth--;
-        }
+        release_rx_depth(s, channel, record_count);
         return 1;
     }
-    if (s->channels[channel].rx_depth > 0) {
-        s->channels[channel].rx_depth--;
-    }
+    release_rx_depth(s, channel, record_count);
     return 0;
 }
 
 int ucan_session_emit_rx_batch(ucan_session_t *s, uint8_t channel,
                                const ucan_can_rx_record_t *rec) {
-    return emit_rx_batch_with_base(s, channel, rec, s->tick, rec->delta_tick);
+    return ucan_session_emit_rx_batch_records_at(s, channel, rec, 1, s->tick);
 }
 
 int ucan_session_emit_rx_batch_at(ucan_session_t *s, uint8_t channel,
                                   const ucan_can_rx_record_t *rec,
                                   uint64_t base_timestamp) {
-    return emit_rx_batch_with_base(s, channel, rec, base_timestamp, 0);
+    ucan_can_rx_record_t captured = *rec;
+    captured.delta_tick = 0;
+    return ucan_session_emit_rx_batch_records_at(
+        s, channel, &captured, 1, base_timestamp);
 }
 
 void ucan_session_can_tx_complete(ucan_session_t *s, uint32_t client_tag,
@@ -1144,10 +1242,7 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
         memset(&caps, 0, sizeof(caps));
         caps.cap_generation = 1;
         caps.max_message = device_max_message(s->cfg);
-        /* Current bounded firmware path commits each eligible record
-         * immediately. Advertising one makes the count trigger immediate and
-         * keeps the 1000-us maximum-wait contract truthful. */
-        caps.max_rx_batch = 1;
+        caps.max_rx_batch = UCAN_SESSION_MAX_RX_BATCH;
         caps.tx_depth = s->cfg->tx_depth;
         caps.tick_hz = s->cfg->tick_hz;
         caps.tick_resolution_ns = s->cfg->tick_resolution_ns;
@@ -1293,6 +1388,30 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
         return response_ok(s, req, out, cap, out_len, UCAN_MSG_GET_SESSION_STATE,
                            scratch, slen);
     }
+    case UCAN_MSG_GET_MCAN_DIAGNOSTICS: {
+        ucan_mcan_diagnostics_t diagnostics;
+        if (ucan_decode_empty(req->payload, req->payload_len) != 0) {
+            return response_error(s, req, out, cap, out_len,
+                                  UCAN_STATUS_INVALID_ARGUMENT, 0, 0, 0);
+        }
+        if (s->cfg->get_mcan_diagnostics == NULL) {
+            return response_error(s, req, out, cap, out_len,
+                                  UCAN_STATUS_UNSUPPORTED, 0, 0, 0);
+        }
+        memset(&diagnostics, 0, sizeof(diagnostics));
+        if (s->cfg->get_mcan_diagnostics(
+                s->cfg->mcan_diagnostics_context, &diagnostics) != 0) {
+            return response_error(s, req, out, cap, out_len,
+                                  UCAN_STATUS_INTERNAL_ERROR, 0, 0, 0);
+        }
+        if (ucan_encode_mcan_diagnostics(&diagnostics, scratch,
+                                         sizeof(scratch), &slen) != 0) {
+            return response_error(s, req, out, cap, out_len,
+                                  UCAN_STATUS_INTERNAL_ERROR, 0, 0, 0);
+        }
+        return response_ok(s, req, out, cap, out_len,
+                           UCAN_MSG_GET_MCAN_DIAGNOSTICS, scratch, slen);
+    }
     case UCAN_MSG_CONFIG_CHANNEL: {
         ucan_channel_config_t cfg_req;
         if (ucan_decode_channel_config(req->payload, req->payload_len, &cfg_req) != 0) {
@@ -1336,7 +1455,8 @@ int ucan_session_handle_frame(ucan_session_t *s, const ucan_frame_t *req,
         if (ucan_encode_channel_config(&applied, scratch, sizeof(scratch), &slen) != 0) {
             return -1;
         }
-        emit_channel_state(s, cfg_req.channel, c->state, 16 /* CONFIG_APPLIED */);
+        persist_channel_state(s, cfg_req.channel, c->state,
+                              16 /* CONFIG_APPLIED */, 0, 0, s->tick);
         return response_ok(s, req, out, cap, out_len, UCAN_MSG_CONFIG_CHANNEL, scratch,
                            slen);
     }
@@ -1774,27 +1894,38 @@ int ucan_session_dequeue(ucan_session_t *s, uint8_t *out, uint32_t cap,
     ucan_queue_item_t *item = NULL;
     uint16_t head = 0;
     int kind = 0; /* 1 response, 2 critical, 3 data */
-    if (qd->count != 0 &&
-        ((qr->count == 0 && qc->count == 0) || s->served_since_data >= 16)) {
-        head = qd->head;
-        item = &qd->items[head];
-        kind = 3;
-    } else if (qc->count != 0 && s->response_streak >= 8) {
-        head = qc->head;
-        item = &qc->items[head];
-        kind = 2;
-    } else if (qr->count != 0) {
+    if (qr->count != 0 && s->response_streak < 8) {
         head = qr->head;
         item = &qr->items[head];
         kind = 1;
+    } else if (qc->count != 0 && qd->count != 0) {
+        /* Critical and data frames share the EVENT sequence domain, so a
+         * later critical event may not overtake older queued data. The signed
+         * difference is wrap-safe because both bounded queues are far smaller
+         * than half of the nonzero 32-bit sequence space. */
+        const uint32_t critical_sequence = qc->items[qc->head].evt_seq;
+        const uint32_t data_sequence = qd->items[qd->head].evt_seq;
+        if ((int32_t)(critical_sequence - data_sequence) < 0) {
+            head = qc->head;
+            item = &qc->items[head];
+            kind = 2;
+        } else {
+            head = qd->head;
+            item = &qd->items[head];
+            kind = 3;
+        }
     } else if (qc->count != 0) {
         head = qc->head;
         item = &qc->items[head];
         kind = 2;
-    } else {
+    } else if (qd->count != 0) {
         head = qd->head;
         item = &qd->items[head];
         kind = 3;
+    } else {
+        head = qr->head;
+        item = &qr->items[head];
+        kind = 1;
     }
     if (item->len > cap) {
         return -1; /* frame preserved; caller must provide more space */

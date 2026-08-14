@@ -550,6 +550,35 @@ fn diagnostics_counters_track_capture() {
 }
 
 #[test]
+fn mcan_diagnostics_are_fixed_layout_and_tx_stays_disarmed() {
+    let mut transport = FakeTransport::new(FakeDevice::new());
+    let mut counter = 1;
+    transport.write_frame(&hello_request(&mut counter)).unwrap();
+    read_ok(&mut transport);
+    transport.tick(1234);
+
+    transport
+        .write_frame(&request(
+            msg::GET_MCAN_DIAGNOSTICS,
+            seq(&mut counter),
+            vec![],
+        ))
+        .unwrap();
+    let response = read_ok(&mut transport);
+    let diagnostics = payload_control::McanDiagnostics::decode(&response.payload).unwrap();
+    assert_eq!(diagnostics.snapshot_tick, 1234);
+    assert_ne!(
+        diagnostics.state_flags & payload_control::McanDiagnostics::STATE_LISTEN_ONLY,
+        0
+    );
+    assert_eq!(
+        diagnostics.state_flags & payload_control::McanDiagnostics::STATE_TX_ARMED,
+        0
+    );
+    assert!(!transport.device().tx_armed());
+}
+
+#[test]
 fn data_loss_notice_arrives() {
     let mut transport = FakeTransport::new(FakeDevice::new());
     transport.inject_loss();

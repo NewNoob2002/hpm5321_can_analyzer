@@ -17,8 +17,9 @@ use hpm_usb_can_protocol::payload::{
 use hpm_usb_can_protocol::payload_control::{
     self, CanTxCancelRequest, CanTxCancelResponse, CanTxRequest, CanTxResponse, CaptureRequest,
     CaptureResponse, ChannelConfig, ClearFiltersRequest, ClearFiltersResponse, Diagnostics,
-    FilterRule, GetChannelConfigRequest, ResetDiagnosticsRequest, SessionState, SetFiltersRequest,
-    SetFiltersResponse, TxArmRequest, TxArmResponse, TxDisarmRequest, TxDisarmResponse,
+    FilterRule, GetChannelConfigRequest, McanDiagnostics, ResetDiagnosticsRequest, SessionState,
+    SetFiltersRequest, SetFiltersResponse, TxArmRequest, TxArmResponse, TxDisarmRequest,
+    TxDisarmResponse,
 };
 use hpm_usb_can_protocol::payload_events::{
     CanRxBatch, CanRxRecord, CanTxResultEvent, ChannelStateEvent, DataLossEvent,
@@ -467,6 +468,7 @@ impl FakeDevice {
             msg::GET_DEVICE_INFO => self.handle_device_info(frame),
             msg::GET_CAPABILITIES => self.handle_capabilities(frame),
             msg::GET_DIAGNOSTICS => self.handle_diagnostics(frame),
+            msg::GET_MCAN_DIAGNOSTICS => self.handle_mcan_diagnostics(frame),
             msg::RESET_DIAGNOSTICS => self.handle_reset_diagnostics(frame),
             msg::GET_SESSION_STATE => self.handle_session_state(frame),
             msg::CONFIG_CHANNEL => self.handle_config_channel(frame),
@@ -685,6 +687,45 @@ impl FakeDevice {
 
     fn handle_diagnostics(&mut self, frame: &Frame) -> Vec<u8> {
         self.ok_response(frame, self.diagnostics_payload())
+    }
+
+    fn handle_mcan_diagnostics(&mut self, frame: &Frame) -> Vec<u8> {
+        if payload_control::decode_empty(&frame.payload).is_err() {
+            return self.error_response(frame, STATUS_INVALID_ARGUMENT, 0, 0, 0);
+        }
+        let diagnostics = McanDiagnostics {
+            version: McanDiagnostics::VERSION,
+            length: McanDiagnostics::LEN as u32,
+            generation: 1,
+            state_flags: McanDiagnostics::STATE_INITIALIZED
+                | McanDiagnostics::STATE_ONLINE
+                | McanDiagnostics::STATE_LISTEN_ONLY,
+            snapshot_tick: self.tick,
+            interrupt_flags: 0,
+            error_interrupt_flags: 0,
+            last_interrupt_flags: 0,
+            protocol_status: 0,
+            error_count: 0,
+            transmit_error_count: 0,
+            receive_error_count: 0,
+            rxfifo0_fill_level: 0,
+            rxfifo0_high_watermark: 0,
+            queue_count: 0,
+            queue_high_watermark: 0,
+            ring_count: 0,
+            ring_high_watermark: 0,
+            queue_drops: 0,
+            ring_drops: self.dropped.min(u64::from(u32::MAX)) as u32,
+            invalid_frames: 0,
+            bus_off_count: 0,
+            warning_count: 0,
+            error_passive_count: 0,
+            automatic_recovery_attempts: 0,
+        };
+        self.ok_response(
+            frame,
+            diagnostics.encode().expect("MCAN diagnostics encode"),
+        )
     }
 
     fn handle_reset_diagnostics(&mut self, frame: &Frame) -> Vec<u8> {

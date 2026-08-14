@@ -74,7 +74,9 @@ class UsbOwnerContractTests(unittest.TestCase):
         self.assertIn("ucan_session_handle_frame", source)
         self.assertIn("ucan_session_dequeue", source)
         self.assertIn("ucan_session_on_rx", source)
-        self.assertIn("ucan_session_emit_rx_batch", source)
+        self.assertIn("ucan_session_emit_rx_batch_records_at", source)
+        self.assertIn("APP_UCAN_RX_BATCH_MAX_RECORDS", source)
+        self.assertIn("APP_UCAN_RX_BATCH_WAIT_US", source)
         self.assertIn("APP_USB_EVENT_CAN_RX_READY", source)
         self.assertIn("can_rx_event_pending", source)
         self.assertIn("app_usb_owner_signal_can_rx", header)
@@ -89,11 +91,89 @@ class UsbOwnerContractTests(unittest.TestCase):
         dispatch = loop.index("process_event(&event);")
         self.assertLess(clock, dispatch)
 
+    def test_owner_uses_level_safe_rx_drain_with_bounded_batch_poll(self):
+        source = (USER / "src/app_usb_owner.c").read_text()
+        drain = source[
+            source.index("static void complete_can_rx_drain(void)") :
+            source.index("static uint32_t read_irq_priority")
+        ]
+        loop = source[source.index("while (1) {") :]
+
+        self.assertIn(
+            "mcan_rx_batch_count != 0U || app_mcan0_owner_rx_pending()",
+            source,
+        )
+        self.assertNotIn("can_rx_drain_ack_pending", source)
+        self.assertIn("complete_can_rx_drain();", source)
+        self.assertIn("can_rx_event_pending = false", drain)
+        self.assertIn("app_mcan0_owner_rx_pending()", drain)
+        self.assertIn("app_usb_owner_signal_can_rx();", drain)
+        self.assertNotIn("return;", drain)
+        self.assertLess(
+            loop.index("publish_mcan_rx();"),
+            loop.index("complete_can_rx_drain();"),
+        )
+        self.assertNotIn(
+            "ucan_session.capture_state != 0U || mcan_rx_batch_count != 0U",
+            source,
+        )
+
+    def test_owner_splits_nonmonotonic_timestamp_batches_and_checks_emit(self):
+        source = (USER / "src/app_usb_owner.c").read_text()
+
+        self.assertIn("source.timestamp_tick < previous_timestamp", source)
+        self.assertIn(
+            "mcan_rx_batch_records[mcan_rx_batch_count - 1U]",
+            source,
+        )
+        self.assertRegex(
+            source,
+            r"if \(ucan_session_emit_rx_batch_records_at\([\s\S]*?\) != 0\)",
+        )
+
+    def test_read_only_requests_do_not_force_rx_batch_flush(self):
+        source = (USER / "src/app_usb_owner.c").read_text()
+        dispatch = source[
+            source.index("static void dispatch_usb_chunk(void)") :
+            source.index("static uint8_t mcan_channel_state")
+        ]
+        rx_case = source[
+            source.index("case APP_USB_EVENT_RX_COMPLETE:") :
+            source.index("case APP_USB_EVENT_TX_COMPLETE:")
+        ]
+
+        self.assertIn("request_is_mcan_batch_boundary(request.message_type)", dispatch)
+        self.assertIn("case UCAN_MSG_START_CAPTURE:", source)
+        self.assertIn("case UCAN_MSG_STOP_CAPTURE:", source)
+        self.assertNotIn("flush_mcan_rx_batch();", rx_case)
+
     def test_owner_advertises_extended_id_capture(self):
         source = (USER / "src/app_usb_owner.c").read_text()
 
-        self.assertIn("ucan_config.channels[0].feature_bits = 0x0039U", source)
+        self.assertIn("ucan_config.channels[0].feature_bits = 0x0079U", source)
         self.assertIn("source.use_ext_id ? 0x0001U : 0U", source)
+
+    def test_mcan_diagnostics_projects_internal_snapshot_to_wire_contract(self):
+        source = (USER / "src/app_usb_owner.c").read_text()
+        codec = (ROOT / "protocol/v1/c/ucan_codec.c").read_text()
+
+        self.assertIn(
+            "snapshot.snapshot_length != APP_MCAN0_DIAGNOSTICS_SNAPSHOT_LEN",
+            source,
+        )
+        self.assertIn(
+            "diagnostics->length = UCAN_MCAN_DIAGNOSTICS_LEN",
+            source,
+        )
+        self.assertNotIn("diagnostics->length = snapshot.", source)
+        self.assertIn(
+            "_Static_assert(sizeof(ucan_mcan_diagnostics_t)",
+            codec,
+        )
+        self.assertIn(
+            "offsetof(ucan_mcan_diagnostics_t, ring_drops) == 80U",
+            codec,
+        )
 
     def test_owner_preserves_protocol_tx_buffer_until_in_completion(self):
         source = (USER / "src/app_usb_owner.c").read_text()
@@ -113,6 +193,59 @@ class UsbOwnerContractTests(unittest.TestCase):
         )
         self.assertIn("stale_events", source)
         self.assertIn("generation", source)
+
+    def test_owner_batches_rx_and_coalesces_usb_in_frames(self):
+        source = (USER / "src/app_usb_owner.c").read_text()
+
+        self.assertRegex(
+            source,
+            r"usb_in_buffer\[APP_USB_OWNER_TRANSFER_SIZE\]",
+        )
+        self.assertIn(
+            "#define APP_USB_OWNER_IN_AGGREGATE_MAX "
+            "APP_USB_OWNER_TRANSFER_SIZE",
+            source,
+        )
+        self.assertIn(
+            "APP_USB_OWNER_IN_AGGREGATE_MAX - length >=",
+            source,
+        )
+        self.assertIn("flush_mcan_rx_batch", source)
+        self.assertIn("mcan_rx_batch_record_bytes", source)
+        self.assertIn("UCAN_SESSION_MAX_RX_BATCH", source)
+        self.assertIn(
+            "ucan_session_dequeue(&ucan_session, usb_in_buffer + length",
+            source,
+        )
+        self.assertIn("mcan_rx_batch_payload_limit", source)
+        self.assertIn("ucan_session.host_rx_max_message", source)
+
+    def test_usb_in_exact_mps_aggregate_uses_retryable_zlp(self):
+        source = (USER / "src/app_usb_owner.c").read_text()
+
+        self.assertIn("usb_in_zlp_pending", source)
+        self.assertIn("usb_in_zlp_in_flight", source)
+        self.assertIn("usbd_get_ep_mps", source)
+        self.assertRegex(
+            source,
+            r"event->length\s*%\s*endpoint_mps\s*==\s*0U"
+            r"[\s\S]*?usb_in_zlp_pending\s*=\s*true",
+        )
+        zlp_branch = source[
+            source.index("if (usb_in_zlp_pending) {"):
+            source.index("uint32_t length = 0U;")
+        ]
+        self.assertIn(
+            "usbd_ep_start_write(APP_USB_BUS_ID, APP_USB_OWNER_IN_EP, "
+            "NULL, 0U)",
+            zlp_branch,
+        )
+        self.assertRegex(
+            zlp_branch,
+            r"usbd_ep_start_write[\s\S]*?!=\s*0[\s\S]*?return false;"
+            r"[\s\S]*?usb_in_zlp_pending\s*=\s*false",
+        )
+        self.assertIn("usb_in_zlp_in_flight = false", source)
 
     def test_usb_owner_is_a_required_watchdog_voter(self):
         watchdog = (USER / "inc/app_watchdog.h").read_text()
