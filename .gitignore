@@ -1,6 +1,7 @@
 build/
 /host/target/
 /host/spike/rust/target/
+/artifacts/
 
 # Build outputs and generated reports
 .omx/

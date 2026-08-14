@@ -1,5 +1,6 @@
 #include "app_mcan0_owner.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #include "FreeRTOS.h"
@@ -34,11 +35,22 @@ typedef enum {
 typedef struct {
     uint32_t type;
     uint32_t interrupt_flags;
+    uint32_t protocol_status;
+    uint32_t error_count;
     uint64_t timestamp_tick;
     mcan_rx_message_t frame;
 } app_mcan0_event_t;
 
 APP_IRQ_ASSERT_FREERTOS_API_PRIORITY(APP_MCAN0_OWNER_ISR_PRIORITY);
+_Static_assert(sizeof(app_mcan0_diagnostics_t) ==
+                   APP_MCAN0_DIAGNOSTICS_SNAPSHOT_LEN,
+               "internal MCAN diagnostics snapshot size changed");
+_Static_assert(offsetof(app_mcan0_diagnostics_t, snapshot_tick) == 16U,
+               "internal MCAN diagnostics timestamp layout changed");
+_Static_assert(offsetof(app_mcan0_diagnostics_t, rx_queue_drops) == 80U,
+               "internal MCAN diagnostics drop layout changed");
+_Static_assert(offsetof(app_mcan0_diagnostics_t, ring_drops) == 92U,
+               "internal MCAN diagnostics wire projection layout changed");
 
 static StaticTask_t mcan0_owner_task_tcb;
 static StackType_t mcan0_owner_task_stack[APP_MCAN0_OWNER_STACK_WORDS];
@@ -52,6 +64,14 @@ static app_mcan0_owner_rx_record_t
 static uint32_t mcan0_rx_ring_head;
 static uint32_t mcan0_rx_ring_tail;
 static uint32_t mcan0_rx_ring_count;
+static app_mcan0_owner_state_edge_t
+    mcan0_state_edge_ring[APP_MCAN0_OWNER_STATE_EDGE_CAPACITY];
+static uint32_t mcan0_state_edge_head;
+static uint32_t mcan0_state_edge_tail;
+static uint32_t mcan0_state_edge_count;
+static uint32_t mcan0_diagnostics_generation;
+static uint32_t mcan0_error_state_flags;
+static uint8_t mcan0_edge_channel_state;
 
 #if defined(MCAN_SOC_MSG_BUF_IN_AHB_RAM) && (MCAN_SOC_MSG_BUF_IN_AHB_RAM == 1)
 ATTR_PLACE_AT(".ahb_sram")
@@ -74,6 +94,27 @@ static uint32_t read_irq_priority(uint32_t irq)
     return *(volatile const uint32_t *)address;
 }
 
+static void update_queue_depth_from_isr(void)
+{
+    const uint32_t depth = (uint32_t)uxQueueMessagesWaitingFromISR(
+        mcan0_event_queue);
+
+    g_app_mcan0_owner_state.queue_count = depth;
+    if (depth > g_app_mcan0_owner_state.queue_high_watermark) {
+        g_app_mcan0_owner_state.queue_high_watermark = depth;
+    }
+}
+
+static void update_rxfifo0_fill_from_isr(void)
+{
+    const uint32_t fill = mcan_get_rxfifo_fill_level(HPM_MCAN0, 0U);
+
+    g_app_mcan0_owner_state.rxfifo0_fill_level = fill;
+    if (fill > g_app_mcan0_owner_state.rxfifo0_high_watermark) {
+        g_app_mcan0_owner_state.rxfifo0_high_watermark = fill;
+    }
+}
+
 static void enqueue_from_isr(const app_mcan0_event_t *event,
                              BaseType_t *higher_priority_task_woken)
 {
@@ -82,7 +123,13 @@ static void enqueue_from_isr(const app_mcan0_event_t *event,
         g_app_mcan0_owner_state.queue_send_count++;
     } else {
         g_app_mcan0_owner_state.queue_drops++;
+        if (event->type == APP_MCAN0_EVENT_RX) {
+            g_app_mcan0_owner_state.rx_queue_drops++;
+        } else {
+            g_app_mcan0_owner_state.diagnostic_queue_drops++;
+        }
     }
+    update_queue_depth_from_isr();
 }
 
 SDK_DECLARE_EXT_ISR_M(BOARD_CAN0_IRQn, app_mcan0_owner_isr)
@@ -91,6 +138,18 @@ void app_mcan0_owner_isr(void)
     BaseType_t higher_priority_task_woken = pdFALSE;
     const uint32_t flags = mcan_get_interrupt_flags(HPM_MCAN0);
     const uint32_t clear_flags = flags & ~MCAN_INT_RXFIFO0_NEW_MSG;
+    uint32_t fault_protocol_status = 0U;
+    uint32_t fault_error_count = 0U;
+    uint64_t fault_timestamp_tick = 0U;
+
+    if ((flags & APP_MCAN0_OWNER_FAULT_MASK) != 0U) {
+        /* Capture the error state before RX FIFO draining can delay the ISR.
+         * Error-passive/recovery transitions may otherwise collapse into the
+         * same later task-level PSR sample under sustained traffic. */
+        fault_protocol_status = HPM_MCAN0->PSR;
+        fault_error_count = HPM_MCAN0->ECR;
+        fault_timestamp_tick = app_time_now();
+    }
 
     g_app_mcan0_owner_state.interrupt_count++;
     g_app_mcan0_owner_state.interrupt_flags |= flags;
@@ -103,6 +162,7 @@ void app_mcan0_owner_isr(void)
             .interrupt_flags = flags,
         };
 
+        update_rxfifo0_fill_from_isr();
         do {
             mcan_clear_interrupt_flags(HPM_MCAN0,
                                        MCAN_INT_RXFIFO0_NEW_MSG);
@@ -114,13 +174,16 @@ void app_mcan0_owner_isr(void)
             }
         } while (mcan_is_interrupt_flag_set(HPM_MCAN0,
                                             MCAN_INT_RXFIFO0_NEW_MSG));
+        update_rxfifo0_fill_from_isr();
     }
 
     if ((flags & APP_MCAN0_OWNER_FAULT_MASK) != 0U) {
         const app_mcan0_event_t event = {
             .type = APP_MCAN0_EVENT_DIAGNOSTIC,
             .interrupt_flags = flags,
-            .timestamp_tick = app_time_now(),
+            .protocol_status = fault_protocol_status,
+            .error_count = fault_error_count,
+            .timestamp_tick = fault_timestamp_tick,
         };
         enqueue_from_isr(&event, &higher_priority_task_woken);
     }
@@ -210,6 +273,7 @@ static bool configure_controller(void)
     g_app_mcan0_owner_state.initialized = 1U;
     g_app_mcan0_owner_state.online = 1U;
     g_app_mcan0_owner_state.tx_armed = 0U;
+    mcan0_edge_channel_state = 1U;
     return true;
 }
 
@@ -268,34 +332,146 @@ static void publish_rx(const app_mcan0_event_t *event)
     }
 }
 
-static void capture_diagnostics(uint32_t interrupt_flags)
+static void update_error_state_counters(uint32_t protocol_status)
 {
-    mcan_diagnostic_snapshot_t snapshot;
+    uint32_t state_flags = 0U;
 
-    if (mcan_get_diagnostic_snapshot(HPM_MCAN0, &snapshot) !=
-        status_success) {
-        return;
+    if (MCAN_PSR_EW_GET(protocol_status) != 0U) {
+        state_flags |= APP_MCAN0_DIAG_STATE_WARNING;
     }
-    g_app_mcan0_owner_state.last_protocol_status = HPM_MCAN0->PSR;
-    g_app_mcan0_owner_state.last_error_count = HPM_MCAN0->ECR;
-    g_app_mcan0_owner_state.last_interrupt_snapshot =
-        snapshot.interrupt_flags | interrupt_flags;
-    if ((interrupt_flags & MCAN_INT_BUS_OFF_STATUS) != 0U ||
-        snapshot.protocol_status.in_bus_off_state) {
-        g_app_mcan0_owner_state.bus_off_count++;
+    if (MCAN_PSR_EP_GET(protocol_status) != 0U) {
+        state_flags |= APP_MCAN0_DIAG_STATE_ERROR_PASSIVE;
+    }
+    if (MCAN_PSR_BO_GET(protocol_status) != 0U) {
+        state_flags |= APP_MCAN0_DIAG_STATE_BUS_OFF;
         g_app_mcan0_owner_state.tx_armed = 0U;
     }
-    if ((interrupt_flags & MCAN_INT_WARNING_STATUS) != 0U ||
-        snapshot.protocol_status.in_warning_state) {
+
+    if ((state_flags & APP_MCAN0_DIAG_STATE_WARNING) != 0U &&
+        (mcan0_error_state_flags & APP_MCAN0_DIAG_STATE_WARNING) == 0U) {
         g_app_mcan0_owner_state.warning_count++;
     }
-    if ((interrupt_flags & MCAN_INT_ERROR_PASSIVE) != 0U ||
-        snapshot.protocol_status.in_error_passive_state) {
+    if ((state_flags & APP_MCAN0_DIAG_STATE_ERROR_PASSIVE) != 0U &&
+        (mcan0_error_state_flags &
+         APP_MCAN0_DIAG_STATE_ERROR_PASSIVE) == 0U) {
         g_app_mcan0_owner_state.error_passive_count++;
     }
+    if ((state_flags & APP_MCAN0_DIAG_STATE_BUS_OFF) != 0U &&
+        (mcan0_error_state_flags & APP_MCAN0_DIAG_STATE_BUS_OFF) == 0U) {
+        g_app_mcan0_owner_state.bus_off_count++;
+    }
+    mcan0_error_state_flags = state_flags;
+}
+
+static uint32_t state_flags_from_protocol_status(uint32_t protocol_status)
+{
+    uint32_t state_flags = APP_MCAN0_DIAG_STATE_INITIALIZED |
+                           APP_MCAN0_DIAG_STATE_ONLINE |
+                           APP_MCAN0_DIAG_STATE_LISTEN_ONLY;
+
+    if (MCAN_PSR_EW_GET(protocol_status) != 0U) {
+        state_flags |= APP_MCAN0_DIAG_STATE_WARNING;
+    }
+    if (MCAN_PSR_EP_GET(protocol_status) != 0U) {
+        state_flags |= APP_MCAN0_DIAG_STATE_ERROR_PASSIVE;
+    }
+    if (MCAN_PSR_BO_GET(protocol_status) != 0U) {
+        state_flags |= APP_MCAN0_DIAG_STATE_BUS_OFF;
+    }
+    return state_flags;
+}
+
+static uint8_t channel_state_from_flags(uint32_t state_flags)
+{
+    if ((state_flags & APP_MCAN0_DIAG_STATE_BUS_OFF) != 0U) {
+        return 4U;
+    }
+    if ((state_flags & APP_MCAN0_DIAG_STATE_ERROR_PASSIVE) != 0U) {
+        return 3U;
+    }
+    return 1U;
+}
+
+static void publish_state_edge(const app_mcan0_event_t *event)
+{
+    const uint32_t state_flags =
+        state_flags_from_protocol_status(event->protocol_status);
+    const uint8_t channel_state = channel_state_from_flags(state_flags);
+
+    if (channel_state == mcan0_edge_channel_state) {
+        return;
+    }
+
+    const app_mcan0_owner_state_edge_t edge = {
+        .timestamp_tick = event->timestamp_tick,
+        .state_flags = state_flags,
+        .protocol_status = event->protocol_status,
+        .error_count = event->error_count,
+        .transmit_error_count = MCAN_ECR_TEC_GET(event->error_count),
+        .receive_error_count = MCAN_ECR_REC_GET(event->error_count),
+    };
+
+    taskENTER_CRITICAL();
+    if (mcan0_state_edge_count < APP_MCAN0_OWNER_STATE_EDGE_CAPACITY) {
+        mcan0_state_edge_ring[mcan0_state_edge_head] = edge;
+        mcan0_state_edge_head =
+            (mcan0_state_edge_head + 1U) %
+            APP_MCAN0_OWNER_STATE_EDGE_CAPACITY;
+        mcan0_state_edge_count++;
+    } else {
+        /* This is diagnostic event loss, not CAN frame loss. Keep it separate
+         * so the USB layer reconciles state without allocating a channel
+         * sequence or reporting a CAN_RING DATA_LOSS event. */
+        g_app_mcan0_owner_state.state_edge_drops++;
+    }
+    taskEXIT_CRITICAL();
+    mcan0_edge_channel_state = channel_state;
+}
+
+static void capture_diagnostics(const app_mcan0_event_t *event)
+{
+    mcan_diagnostic_snapshot_t snapshot;
+    uint32_t snapshot_interrupt_flags = event->interrupt_flags;
+
+    if (mcan_get_diagnostic_snapshot(HPM_MCAN0, &snapshot) ==
+        status_success) {
+        snapshot_interrupt_flags |= snapshot.interrupt_flags;
+    }
+
+    taskENTER_CRITICAL();
+    g_app_mcan0_owner_state.last_protocol_status = event->protocol_status;
+    g_app_mcan0_owner_state.last_error_count = event->error_count;
+    g_app_mcan0_owner_state.last_interrupt_snapshot =
+        snapshot_interrupt_flags;
+    update_error_state_counters(event->protocol_status);
     /* P3B phase 1 never initiates automatic bus-off recovery. Recovery will
      * require an explicit bounded policy once authorized TX is introduced. */
     g_app_mcan0_owner_state.automatic_recovery_attempts = 0U;
+    taskEXIT_CRITICAL();
+    publish_state_edge(event);
+}
+
+static void refresh_live_diagnostics(void)
+{
+    const uint32_t protocol_status = HPM_MCAN0->PSR;
+    const uint32_t error_count = HPM_MCAN0->ECR;
+    const uint32_t rxfifo0_fill =
+        mcan_get_rxfifo_fill_level(HPM_MCAN0, 0U);
+    const uint32_t queue_count =
+        (uint32_t)uxQueueMessagesWaiting(mcan0_event_queue);
+
+    taskENTER_CRITICAL();
+    g_app_mcan0_owner_state.last_protocol_status = protocol_status;
+    g_app_mcan0_owner_state.last_error_count = error_count;
+    g_app_mcan0_owner_state.rxfifo0_fill_level = rxfifo0_fill;
+    if (rxfifo0_fill > g_app_mcan0_owner_state.rxfifo0_high_watermark) {
+        g_app_mcan0_owner_state.rxfifo0_high_watermark = rxfifo0_fill;
+    }
+    g_app_mcan0_owner_state.queue_count = queue_count;
+    if (queue_count > g_app_mcan0_owner_state.queue_high_watermark) {
+        g_app_mcan0_owner_state.queue_high_watermark = queue_count;
+    }
+    taskEXIT_CRITICAL();
 }
 
 static void mcan0_owner_task(void *context)
@@ -316,9 +492,14 @@ static void mcan0_owner_task(void *context)
             if (event.type == APP_MCAN0_EVENT_RX) {
                 publish_rx(&event);
             } else if (event.type == APP_MCAN0_EVENT_DIAGNOSTIC) {
-                capture_diagnostics(event.interrupt_flags);
+                capture_diagnostics(&event);
             }
+            taskENTER_CRITICAL();
+            g_app_mcan0_owner_state.queue_count =
+                (uint32_t)uxQueueMessagesWaiting(mcan0_event_queue);
+            taskEXIT_CRITICAL();
         }
+        refresh_live_diagnostics();
         g_app_mcan0_owner_state.stack_high_watermark =
             uxTaskGetStackHighWaterMark(NULL);
         app_watchdog_vote(APP_WATCHDOG_VOTER_MCAN0_OWNER);
@@ -358,6 +539,114 @@ bool app_mcan0_owner_pop_rx(app_mcan0_owner_rx_record_t *record)
     }
     taskEXIT_CRITICAL();
     return available;
+}
+
+bool app_mcan0_owner_rx_pending(void)
+{
+    bool pending;
+
+    taskENTER_CRITICAL();
+    pending = mcan0_rx_ring_count != 0U;
+    taskEXIT_CRITICAL();
+    return pending;
+}
+
+bool app_mcan0_owner_pop_state_edge(app_mcan0_owner_state_edge_t *edge)
+{
+    bool available = false;
+
+    if (edge == NULL) {
+        return false;
+    }
+    taskENTER_CRITICAL();
+    if (mcan0_state_edge_count != 0U) {
+        *edge = mcan0_state_edge_ring[mcan0_state_edge_tail];
+        mcan0_state_edge_tail =
+            (mcan0_state_edge_tail + 1U) %
+            APP_MCAN0_OWNER_STATE_EDGE_CAPACITY;
+        mcan0_state_edge_count--;
+        available = true;
+    }
+    taskEXIT_CRITICAL();
+    return available;
+}
+
+bool app_mcan0_owner_get_diagnostics(app_mcan0_diagnostics_t *snapshot)
+{
+    uint32_t state_flags = 0U;
+
+    if (snapshot == NULL) {
+        return false;
+    }
+
+    taskENTER_CRITICAL();
+    if (g_app_mcan0_owner_state.initialized != 0U) {
+        state_flags |= APP_MCAN0_DIAG_STATE_INITIALIZED;
+    }
+    if (g_app_mcan0_owner_state.online != 0U) {
+        state_flags |= APP_MCAN0_DIAG_STATE_ONLINE;
+    }
+    if (g_app_mcan0_owner_state.mode ==
+        APP_MCAN0_OWNER_MODE_LISTEN_ONLY) {
+        state_flags |= APP_MCAN0_DIAG_STATE_LISTEN_ONLY;
+    }
+    if (g_app_mcan0_owner_state.tx_armed != 0U) {
+        state_flags |= APP_MCAN0_DIAG_STATE_TX_ARMED;
+    }
+    if (MCAN_PSR_EW_GET(g_app_mcan0_owner_state.last_protocol_status) != 0U) {
+        state_flags |= APP_MCAN0_DIAG_STATE_WARNING;
+    }
+    if (MCAN_PSR_EP_GET(g_app_mcan0_owner_state.last_protocol_status) != 0U) {
+        state_flags |= APP_MCAN0_DIAG_STATE_ERROR_PASSIVE;
+    }
+    if (MCAN_PSR_BO_GET(g_app_mcan0_owner_state.last_protocol_status) != 0U) {
+        state_flags |= APP_MCAN0_DIAG_STATE_BUS_OFF;
+    }
+
+    snapshot->version = APP_MCAN0_DIAGNOSTICS_VERSION;
+    snapshot->snapshot_length = APP_MCAN0_DIAGNOSTICS_SNAPSHOT_LEN;
+    snapshot->generation = ++mcan0_diagnostics_generation;
+    snapshot->state_flags = state_flags;
+    snapshot->snapshot_tick = app_time_now();
+    snapshot->interrupt_flags = g_app_mcan0_owner_state.interrupt_flags;
+    snapshot->error_interrupt_flags =
+        g_app_mcan0_owner_state.error_interrupt_flags;
+    snapshot->last_interrupt_flags =
+        g_app_mcan0_owner_state.last_interrupt_snapshot;
+    snapshot->protocol_status =
+        g_app_mcan0_owner_state.last_protocol_status;
+    snapshot->error_count = g_app_mcan0_owner_state.last_error_count;
+    snapshot->transmit_error_count =
+        MCAN_ECR_TEC_GET(g_app_mcan0_owner_state.last_error_count);
+    snapshot->receive_error_count =
+        MCAN_ECR_REC_GET(g_app_mcan0_owner_state.last_error_count);
+    snapshot->rxfifo0_fill_level =
+        g_app_mcan0_owner_state.rxfifo0_fill_level;
+    snapshot->rxfifo0_high_watermark =
+        g_app_mcan0_owner_state.rxfifo0_high_watermark;
+    snapshot->queue_count = g_app_mcan0_owner_state.queue_count;
+    snapshot->queue_high_watermark =
+        g_app_mcan0_owner_state.queue_high_watermark;
+    snapshot->ring_count = g_app_mcan0_owner_state.ring_count;
+    snapshot->ring_high_watermark =
+        g_app_mcan0_owner_state.ring_high_watermark;
+    snapshot->queue_drops = g_app_mcan0_owner_state.queue_drops;
+    snapshot->rx_queue_drops =
+        g_app_mcan0_owner_state.rx_queue_drops;
+    snapshot->diagnostic_queue_drops =
+        g_app_mcan0_owner_state.diagnostic_queue_drops;
+    snapshot->state_edge_drops =
+        g_app_mcan0_owner_state.state_edge_drops;
+    snapshot->ring_drops = g_app_mcan0_owner_state.ring_drops;
+    snapshot->invalid_frames = g_app_mcan0_owner_state.invalid_frames;
+    snapshot->bus_off_count = g_app_mcan0_owner_state.bus_off_count;
+    snapshot->warning_count = g_app_mcan0_owner_state.warning_count;
+    snapshot->error_passive_count =
+        g_app_mcan0_owner_state.error_passive_count;
+    snapshot->automatic_recovery_attempts =
+        g_app_mcan0_owner_state.automatic_recovery_attempts;
+    taskEXIT_CRITICAL();
+    return true;
 }
 
 app_mcan0_owner_tx_result_t app_mcan0_owner_submit_tx(

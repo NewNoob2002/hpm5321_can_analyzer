@@ -12,4 +12,5 @@ esac
 cd "$ROOT"
 CCACHE_DISABLE=1 cmake --preset "$preset"
 CCACHE_DISABLE=1 cmake --build --preset "$preset"
+python3 "$ROOT/scripts/env/check_memory_budget.py" "$ROOT/build/$preset/output/demo.map"
 python3 "$ROOT/scripts/env/write_build_manifest.py" "$preset"

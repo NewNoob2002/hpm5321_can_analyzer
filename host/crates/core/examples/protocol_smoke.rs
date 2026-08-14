@@ -8,7 +8,7 @@ use hpm_usb_can_core::{Transport, TransportError};
 use hpm_usb_can_protocol::payload::{
     Capabilities, DeviceInfo, HelloRequest, PingRequest, PingResponse,
 };
-use hpm_usb_can_protocol::payload_control::Diagnostics;
+use hpm_usb_can_protocol::payload_control::{Diagnostics, McanDiagnostics, SessionState};
 use hpm_usb_can_protocol::{Frame, flags, msg};
 
 const TIMEOUT: Duration = Duration::from_secs(3);
@@ -70,6 +70,19 @@ fn protocol_smoke() -> Result<(), Box<dyn std::error::Error>> {
         Capabilities::decode(&transact(&mut transport, msg::GET_CAPABILITIES, 3)?.payload)?;
     let diagnostics =
         Diagnostics::decode(&transact(&mut transport, msg::GET_DIAGNOSTICS, 4)?.payload)?;
+    let session =
+        SessionState::decode(&transact(&mut transport, msg::GET_SESSION_STATE, 5)?.payload)?;
+    let mcan =
+        McanDiagnostics::decode(&transact(&mut transport, msg::GET_MCAN_DIAGNOSTICS, 6)?.payload)?;
+    let required_mcan_state = McanDiagnostics::STATE_INITIALIZED
+        | McanDiagnostics::STATE_ONLINE
+        | McanDiagnostics::STATE_LISTEN_ONLY;
+    if session.tx_armed
+        || mcan.state_flags & required_mcan_state != required_mcan_state
+        || mcan.state_flags & McanDiagnostics::STATE_TX_ARMED != 0
+    {
+        return Err("device is not in the required listen-only, TX-disarmed state".into());
+    }
     let channel = capabilities
         .channels
         .first()
@@ -83,7 +96,9 @@ fn protocol_smoke() -> Result<(), Box<dyn std::error::Error>> {
         "PASS protocol=1.0 session_id={} max_message={} firmware={} build_id={} board={} serial={} \
          usb_mode={} tick_hz={} channel={} mode_mask=0x{:02x} nominal_min={} nominal_max={} \
          diag_generation={} usb_rx_bytes={} usb_tx_bytes={} rx_frames={} tx_frames={} dropped={} \
-         bus_off_count={} error_count={}",
+         bus_off_count={} error_count={} config_generation={} capture_generation={} \
+         capture_state={} tx_armed={} mcan_wire_length={} mcan_generation={} \
+         mcan_state_flags=0x{:08x} mcan_queue_drops={} mcan_ring_drops={}",
         hello.session_id,
         hello.max_message,
         device.firmware_semver,
@@ -104,6 +119,15 @@ fn protocol_smoke() -> Result<(), Box<dyn std::error::Error>> {
         channel_diagnostics.dropped,
         channel_diagnostics.bus_off_count,
         channel_diagnostics.error_count,
+        session.config_generation,
+        session.capture_generation,
+        session.capture_state,
+        session.tx_armed,
+        mcan.length,
+        mcan.generation,
+        mcan.state_flags,
+        mcan.queue_drops,
+        mcan.ring_drops,
     );
     Ok(())
 }

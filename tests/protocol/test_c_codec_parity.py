@@ -79,7 +79,7 @@ class CCodecParityTests(unittest.TestCase):
             self.assertIn("0 failures", ran.stdout)
 
     def test_all_vectors_byte_parity(self):
-        self.assertEqual(len(list(VECTORDIR.glob("*.hex"))), 36)
+        self.assertEqual(len(list(VECTORDIR.glob("*.hex"))), 38)
         self._run_harness()
 
     def test_sanitizer_build_stays_clean(self):

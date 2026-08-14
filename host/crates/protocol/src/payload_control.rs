@@ -286,6 +286,127 @@ impl Diagnostics {
     }
 }
 
+/// Atomic diagnostics snapshot captured by the firmware's sole MCAN owner.
+///
+/// This is a fixed v1 wire layout. All fields are little-endian and offsets
+/// intentionally match `ucan_mcan_diagnostics_t` in the C codec.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct McanDiagnostics {
+    pub version: u32,
+    pub length: u32,
+    pub generation: u32,
+    pub state_flags: u32,
+    pub snapshot_tick: u64,
+    pub interrupt_flags: u32,
+    pub error_interrupt_flags: u32,
+    pub last_interrupt_flags: u32,
+    pub protocol_status: u32,
+    pub error_count: u32,
+    pub transmit_error_count: u32,
+    pub receive_error_count: u32,
+    pub rxfifo0_fill_level: u32,
+    pub rxfifo0_high_watermark: u32,
+    pub queue_count: u32,
+    pub queue_high_watermark: u32,
+    pub ring_count: u32,
+    pub ring_high_watermark: u32,
+    pub queue_drops: u32,
+    pub ring_drops: u32,
+    pub invalid_frames: u32,
+    pub bus_off_count: u32,
+    pub warning_count: u32,
+    pub error_passive_count: u32,
+    pub automatic_recovery_attempts: u32,
+}
+
+impl McanDiagnostics {
+    pub const VERSION: u32 = 1;
+    pub const LEN: usize = 104;
+    pub const STATE_INITIALIZED: u32 = 1 << 0;
+    pub const STATE_ONLINE: u32 = 1 << 1;
+    pub const STATE_LISTEN_ONLY: u32 = 1 << 2;
+    pub const STATE_TX_ARMED: u32 = 1 << 3;
+    pub const STATE_WARNING: u32 = 1 << 4;
+    pub const STATE_ERROR_PASSIVE: u32 = 1 << 5;
+    pub const STATE_BUS_OFF: u32 = 1 << 6;
+    pub const STATE_MASK: u32 = 0x0000_007f;
+
+    pub fn encode(&self) -> Result<Vec<u8>, PayloadError> {
+        if self.version != Self::VERSION
+            || self.length != Self::LEN as u32
+            || self.generation == 0
+            || self.state_flags & !Self::STATE_MASK != 0
+        {
+            return Err(PayloadError::InvalidValue("MCAN diagnostics"));
+        }
+
+        let mut bytes = Vec::with_capacity(Self::LEN);
+        for value in [self.version, self.length, self.generation, self.state_flags] {
+            bytes.extend(value.to_le_bytes());
+        }
+        bytes.extend(self.snapshot_tick.to_le_bytes());
+        for value in [
+            self.interrupt_flags,
+            self.error_interrupt_flags,
+            self.last_interrupt_flags,
+            self.protocol_status,
+            self.error_count,
+            self.transmit_error_count,
+            self.receive_error_count,
+            self.rxfifo0_fill_level,
+            self.rxfifo0_high_watermark,
+            self.queue_count,
+            self.queue_high_watermark,
+            self.ring_count,
+            self.ring_high_watermark,
+            self.queue_drops,
+            self.ring_drops,
+            self.invalid_frames,
+            self.bus_off_count,
+            self.warning_count,
+            self.error_passive_count,
+            self.automatic_recovery_attempts,
+        ] {
+            bytes.extend(value.to_le_bytes());
+        }
+        debug_assert_eq!(bytes.len(), Self::LEN);
+        Ok(bytes)
+    }
+
+    pub fn decode(bytes: &[u8]) -> Result<Self, PayloadError> {
+        exact_len(bytes, Self::LEN)?;
+        let value = Self {
+            version: u32_at(bytes, 0),
+            length: u32_at(bytes, 4),
+            generation: u32_at(bytes, 8),
+            state_flags: u32_at(bytes, 12),
+            snapshot_tick: u64_at(bytes, 16),
+            interrupt_flags: u32_at(bytes, 24),
+            error_interrupt_flags: u32_at(bytes, 28),
+            last_interrupt_flags: u32_at(bytes, 32),
+            protocol_status: u32_at(bytes, 36),
+            error_count: u32_at(bytes, 40),
+            transmit_error_count: u32_at(bytes, 44),
+            receive_error_count: u32_at(bytes, 48),
+            rxfifo0_fill_level: u32_at(bytes, 52),
+            rxfifo0_high_watermark: u32_at(bytes, 56),
+            queue_count: u32_at(bytes, 60),
+            queue_high_watermark: u32_at(bytes, 64),
+            ring_count: u32_at(bytes, 68),
+            ring_high_watermark: u32_at(bytes, 72),
+            queue_drops: u32_at(bytes, 76),
+            ring_drops: u32_at(bytes, 80),
+            invalid_frames: u32_at(bytes, 84),
+            bus_off_count: u32_at(bytes, 88),
+            warning_count: u32_at(bytes, 92),
+            error_passive_count: u32_at(bytes, 96),
+            automatic_recovery_attempts: u32_at(bytes, 100),
+        };
+        value.encode()?;
+        Ok(value)
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FilterState {
     pub channel: u8,
@@ -1369,6 +1490,43 @@ mod tests {
     }
 
     #[test]
+    fn mcan_diagnostics_fixed_layout_round_trip_and_validation() {
+        let diagnostics = mcan_diagnostics();
+        let payload = diagnostics.encode().unwrap();
+        assert_eq!(payload.len(), McanDiagnostics::LEN);
+        assert_eq!(&payload[0..4], &McanDiagnostics::VERSION.to_le_bytes());
+        assert_eq!(&payload[4..8], &(McanDiagnostics::LEN as u32).to_le_bytes());
+        assert_eq!(&payload[16..24], &diagnostics.snapshot_tick.to_le_bytes());
+        assert_eq!(
+            &payload[52..56],
+            &diagnostics.rxfifo0_fill_level.to_le_bytes()
+        );
+        assert_eq!(
+            &payload[100..104],
+            &diagnostics.automatic_recovery_attempts.to_le_bytes()
+        );
+        assert_eq!(McanDiagnostics::decode(&payload).unwrap(), diagnostics);
+
+        let mut invalid = diagnostics.clone();
+        invalid.version += 1;
+        assert!(invalid.encode().is_err());
+        invalid = diagnostics.clone();
+        invalid.length -= 1;
+        assert!(invalid.encode().is_err());
+        invalid = diagnostics.clone();
+        invalid.generation = 0;
+        assert!(invalid.encode().is_err());
+        invalid = diagnostics;
+        invalid.state_flags |= 1 << 7;
+        assert!(invalid.encode().is_err());
+
+        assert!(McanDiagnostics::decode(&[0; McanDiagnostics::LEN - 1]).is_err());
+        let mut invalid_wire = mcan_diagnostics().encode().unwrap();
+        invalid_wire[12..16].copy_from_slice(&(1u32 << 31).to_le_bytes());
+        assert!(McanDiagnostics::decode(&invalid_wire).is_err());
+    }
+
+    #[test]
     fn session_state_vectors_and_safety_constraints() {
         let request = Frame::request(0x0006, 16, vec![]);
         decode_empty(&request.payload).unwrap();
@@ -1677,6 +1835,39 @@ mod tests {
                 bus_off_count: 0,
                 error_count: 3,
             }],
+        }
+    }
+
+    fn mcan_diagnostics() -> McanDiagnostics {
+        McanDiagnostics {
+            version: McanDiagnostics::VERSION,
+            length: McanDiagnostics::LEN as u32,
+            generation: 7,
+            state_flags: McanDiagnostics::STATE_INITIALIZED
+                | McanDiagnostics::STATE_ONLINE
+                | McanDiagnostics::STATE_LISTEN_ONLY
+                | McanDiagnostics::STATE_WARNING,
+            snapshot_tick: 0x1122_3344_5566_7788,
+            interrupt_flags: 1,
+            error_interrupt_flags: 2,
+            last_interrupt_flags: 3,
+            protocol_status: 4,
+            error_count: 5,
+            transmit_error_count: 6,
+            receive_error_count: 7,
+            rxfifo0_fill_level: 8,
+            rxfifo0_high_watermark: 9,
+            queue_count: 10,
+            queue_high_watermark: 11,
+            ring_count: 12,
+            ring_high_watermark: 13,
+            queue_drops: 14,
+            ring_drops: 15,
+            invalid_frames: 16,
+            bus_off_count: 17,
+            warning_count: 18,
+            error_passive_count: 19,
+            automatic_recovery_attempts: 20,
         }
     }
 

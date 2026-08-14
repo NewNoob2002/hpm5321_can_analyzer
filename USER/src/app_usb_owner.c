@@ -27,6 +27,11 @@
 #define APP_USB_CONFIG_SIZE            (9U + 9U + 7U + 7U)
 #define APP_USB_WINUSB_VENDOR_CODE     (0x17U)
 #define APP_UCAN_MAX_PAYLOAD           (UCAN_QUEUE_FRAME_BYTES - UCAN_HEADER_LEN)
+#define APP_UCAN_RX_BATCH_MAX_RECORDS  UCAN_SESSION_MAX_RX_BATCH
+#define APP_UCAN_RX_BATCH_WAIT_US      (1000U)
+#define APP_UCAN_RX_RECORD_PREFIX_SIZE (20U)
+#define APP_UCAN_RX_BATCH_PREFIX_SIZE  (32U)
+#define APP_USB_OWNER_IN_AGGREGATE_MAX APP_USB_OWNER_TRANSFER_SIZE
 
 APP_IRQ_ASSERT_FREERTOS_API_PRIORITY(APP_USB_OWNER_ISR_PRIORITY);
 
@@ -50,22 +55,38 @@ static uint8_t usb_owner_queue_storage[APP_USB_OWNER_QUEUE_LENGTH * sizeof(app_u
 static QueueHandle_t usb_owner_queue;
 
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX static uint8_t usb_transfer_buffer[APP_USB_OWNER_TRANSFER_SIZE];
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX static uint8_t usb_in_buffer[UCAN_QUEUE_FRAME_BYTES];
+USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX static uint8_t usb_in_buffer[APP_USB_OWNER_TRANSFER_SIZE];
 static uint8_t ucan_stream_storage[UCAN_QUEUE_FRAME_BYTES];
 static ucan_stream_decoder_t ucan_stream;
 static ucan_session_t ucan_session;
 static ucan_session_config_t ucan_config;
+static ucan_can_rx_record_t mcan_rx_batch_records[APP_UCAN_RX_BATCH_MAX_RECORDS];
+static uint8_t mcan_rx_batch_payloads[APP_UCAN_RX_BATCH_MAX_RECORDS]
+                                     [APP_MCAN0_OWNER_CLASSIC_MAX_BYTES];
+static uint16_t mcan_rx_batch_count;
+static uint32_t mcan_rx_batch_record_bytes;
+static uint32_t mcan_rx_batch_config_generation;
+static uint64_t mcan_rx_batch_base_timestamp;
 static uint32_t usb_chunk_length;
 static uint32_t usb_chunk_offset;
 static uint32_t response_pending;
 static uint32_t response_pending_length;
+static uint32_t response_pending_frames;
+static volatile bool usb_in_zlp_pending;
+static volatile bool usb_in_zlp_in_flight;
 static uint32_t next_session_id;
 static uint64_t boot_epoch;
 static uint64_t last_protocol_tick;
 static volatile uint32_t protocol_reset_pending;
 static bool can_rx_event_pending;
 static uint32_t protocol_initialized;
+static uint32_t reported_mcan_rx_queue_drops;
+static uint32_t reported_mcan_diagnostic_queue_drops;
+static uint32_t reported_mcan_state_edge_drops;
 static uint32_t reported_mcan_ring_drops;
+static uint32_t reported_mcan_state_flags;
+static bool mcan_diagnostics_baseline_valid;
+static bool mcan_state_reconcile_pending;
 
 volatile app_usb_owner_state_t g_app_usb_owner_state = {
     .magic = APP_USB_OWNER_MAGIC,
@@ -182,6 +203,48 @@ static const struct usb_descriptor app_usb_descriptor = {
     .bos_descriptor = &bos_descriptor,
 };
 
+static int get_mcan_diagnostics(void *context,
+                                ucan_mcan_diagnostics_t *diagnostics) {
+    app_mcan0_diagnostics_t snapshot;
+    (void)context;
+
+    if (diagnostics == NULL ||
+        !app_mcan0_owner_get_diagnostics(&snapshot)) {
+        return -1;
+    }
+    if (snapshot.snapshot_length != APP_MCAN0_DIAGNOSTICS_SNAPSHOT_LEN) {
+        return -1;
+    }
+    diagnostics->version = snapshot.version;
+    diagnostics->length = UCAN_MCAN_DIAGNOSTICS_LEN;
+    diagnostics->generation = snapshot.generation;
+    diagnostics->state_flags = snapshot.state_flags;
+    diagnostics->snapshot_tick = snapshot.snapshot_tick;
+    diagnostics->interrupt_flags = snapshot.interrupt_flags;
+    diagnostics->error_interrupt_flags = snapshot.error_interrupt_flags;
+    diagnostics->last_interrupt_flags = snapshot.last_interrupt_flags;
+    diagnostics->protocol_status = snapshot.protocol_status;
+    diagnostics->error_count = snapshot.error_count;
+    diagnostics->transmit_error_count = snapshot.transmit_error_count;
+    diagnostics->receive_error_count = snapshot.receive_error_count;
+    diagnostics->rxfifo0_fill_level = snapshot.rxfifo0_fill_level;
+    diagnostics->rxfifo0_high_watermark =
+        snapshot.rxfifo0_high_watermark;
+    diagnostics->queue_count = snapshot.queue_count;
+    diagnostics->queue_high_watermark = snapshot.queue_high_watermark;
+    diagnostics->ring_count = snapshot.ring_count;
+    diagnostics->ring_high_watermark = snapshot.ring_high_watermark;
+    diagnostics->queue_drops = snapshot.queue_drops;
+    diagnostics->ring_drops = snapshot.ring_drops;
+    diagnostics->invalid_frames = snapshot.invalid_frames;
+    diagnostics->bus_off_count = snapshot.bus_off_count;
+    diagnostics->warning_count = snapshot.warning_count;
+    diagnostics->error_passive_count = snapshot.error_passive_count;
+    diagnostics->automatic_recovery_attempts =
+        snapshot.automatic_recovery_attempts;
+    return 0;
+}
+
 static void init_protocol_config(void) {
     memset(&ucan_config, 0, sizeof(ucan_config));
     ucan_config.fw_semver = APP_FIRMWARE_VERSION;
@@ -217,11 +280,58 @@ static void init_protocol_config(void) {
      * Classic/FD TX until that owner implements protocol-controlled modes. */
     ucan_config.channels[0].mode_mask = 0x02U;
     ucan_config.initial_mode[0] = 1U;
-    ucan_config.channels[0].feature_bits = 0x0039U;
+    ucan_config.channels[0].feature_bits = 0x0079U;
     ucan_config.channels[0].nominal_min = APP_MCAN0_OWNER_BITRATE;
     ucan_config.channels[0].nominal_max = APP_MCAN0_OWNER_BITRATE;
     ucan_config.channels[0].max_filters = UCAN_SESSION_MAX_FILTERS;
     ucan_config.product_max_bus_load_permille[0] = 0U;
+    ucan_config.get_mcan_diagnostics = get_mcan_diagnostics;
+}
+
+static void reset_mcan_rx_batch(void) {
+    mcan_rx_batch_count = 0U;
+    mcan_rx_batch_record_bytes = 0U;
+    mcan_rx_batch_config_generation = 0U;
+    mcan_rx_batch_base_timestamp = 0U;
+}
+
+static void flush_mcan_rx_batch(void) {
+    if (mcan_rx_batch_count == 0U) {
+        return;
+    }
+    if (ucan_session_emit_rx_batch_records_at(
+            &ucan_session, 0U, mcan_rx_batch_records, mcan_rx_batch_count,
+            mcan_rx_batch_base_timestamp) != 0) {
+        /* Session admission failures are loss-accounted. Also expose an
+         * unexpected builder/session contract violation locally. */
+        g_app_usb_owner_state.protocol_dispatch_errors++;
+    }
+    reset_mcan_rx_batch();
+}
+
+static uint32_t mcan_rx_batch_payload_limit(void) {
+    uint32_t limit = APP_UCAN_MAX_PAYLOAD;
+    if (ucan_session.negotiated &&
+        ucan_session.host_rx_max_message != 0U &&
+        ucan_session.host_rx_max_message < limit) {
+        limit = ucan_session.host_rx_max_message;
+    }
+    return limit;
+}
+
+static bool request_is_mcan_batch_boundary(uint16_t message_type) {
+    switch (message_type) {
+        case UCAN_MSG_CONFIG_CHANNEL:
+        case UCAN_MSG_START_CAPTURE:
+        case UCAN_MSG_STOP_CAPTURE:
+        case UCAN_MSG_SET_FILTERS:
+        case UCAN_MSG_CLEAR_FILTERS:
+        case UCAN_MSG_TX_ARM:
+        case UCAN_MSG_TX_DISARM:
+            return true;
+        default:
+            return false;
+    }
 }
 
 static void reset_protocol_session(void) {
@@ -261,6 +371,9 @@ static void reset_protocol_session(void) {
                                    APP_UCAN_MAX_PAYLOAD);
     ucan_session.tick = app_time_now();
     last_protocol_tick = ucan_session.tick;
+    mcan_diagnostics_baseline_valid = false;
+    mcan_state_reconcile_pending = false;
+    reset_mcan_rx_batch();
     protocol_reset_pending = 0U;
 }
 
@@ -298,6 +411,8 @@ static void invalidate_session(void) {
     g_app_usb_owner_state.configured = 0U;
     g_app_usb_owner_state.out_armed = 0U;
     g_app_usb_owner_state.in_flight = 0U;
+    usb_in_zlp_pending = false;
+    usb_in_zlp_in_flight = false;
     protocol_reset_pending = 1U;
 }
 
@@ -371,6 +486,17 @@ static bool start_next_in_transfer(void) {
     if (g_app_usb_owner_state.in_flight != 0U || g_app_usb_owner_state.configured == 0U) {
         return false;
     }
+    if (usb_in_zlp_pending) {
+        if (usbd_ep_start_write(APP_USB_BUS_ID, APP_USB_OWNER_IN_EP, NULL, 0U)
+            != 0) {
+            g_app_usb_owner_state.transfer_errors++;
+            return false;
+        }
+        usb_in_zlp_pending = false;
+        usb_in_zlp_in_flight = true;
+        g_app_usb_owner_state.in_flight = 1U;
+        return true;
+    }
     uint32_t length = 0U;
     uint32_t event_sequence = 0U;
     if (response_pending != 0U) {
@@ -383,6 +509,25 @@ static bool start_next_in_transfer(void) {
          * locally until the USB controller accepts the transfer. */
         response_pending = 1U;
         response_pending_length = length;
+        response_pending_frames = 1U;
+        /* Coalesce only complete protocol frames. Since every queued frame is
+         * at most UCAN_QUEUE_FRAME_BYTES, checking before dequeue also ensures
+         * a dequeued frame can never be stranded. A separate ZLP state machine
+         * terminates aggregates whose length is an exact endpoint-MPS
+         * multiple. */
+        while (APP_USB_OWNER_IN_AGGREGATE_MAX - length >=
+               UCAN_QUEUE_FRAME_BYTES) {
+            uint32_t next_length = 0U;
+            if (ucan_session_dequeue(&ucan_session, usb_in_buffer + length,
+                                     APP_USB_OWNER_IN_AGGREGATE_MAX - length,
+                                     &next_length,
+                                     &event_sequence) != 0) {
+                break;
+            }
+            length += next_length;
+            response_pending_length = length;
+            response_pending_frames++;
+        }
     }
     (void)event_sequence;
     if (usbd_ep_start_write(APP_USB_BUS_ID, APP_USB_OWNER_IN_EP, usb_in_buffer, length) != 0) {
@@ -392,7 +537,8 @@ static bool start_next_in_transfer(void) {
     g_app_usb_owner_state.in_flight = 1U;
     response_pending = 0U;
     response_pending_length = 0U;
-    g_app_usb_owner_state.protocol_frames_tx++;
+    g_app_usb_owner_state.protocol_frames_tx += response_pending_frames;
+    response_pending_frames = 0U;
     return true;
 }
 
@@ -413,6 +559,12 @@ static void dispatch_usb_chunk(void) {
             break;
         }
         g_app_usb_owner_state.protocol_frames_rx++;
+        if (request_is_mcan_batch_boundary(request.message_type)) {
+            /* Generation/state mutations are ordering boundaries. Read-only
+             * requests such as PING and diagnostics must not fragment a live
+             * CAN batch or create response-pressure loss. */
+            flush_mcan_rx_batch();
+        }
         uint32_t response_length = 0U;
         if (ucan_session_handle_frame(&ucan_session, &request, usb_in_buffer, sizeof(usb_in_buffer), &response_length)
                 != 0
@@ -422,17 +574,110 @@ static void dispatch_usb_chunk(void) {
         }
         response_pending = 1U;
         response_pending_length = response_length;
+        response_pending_frames = 1U;
         (void)start_next_in_transfer();
     }
 }
 
-static void publish_mcan_rx(void) {
-    uint32_t ring_drops = g_app_mcan0_owner_state.ring_drops;
-    uint32_t new_drops = ring_drops - reported_mcan_ring_drops;
-    if (new_drops != 0U) {
-        ucan_session_note_rx_ring_loss(&ucan_session, 0U, new_drops);
-        reported_mcan_ring_drops = ring_drops;
+static uint8_t mcan_channel_state(uint32_t state_flags) {
+    if ((state_flags & APP_MCAN0_DIAG_STATE_BUS_OFF) != 0U) {
+        return 4U;
     }
+    if ((state_flags & APP_MCAN0_DIAG_STATE_ERROR_PASSIVE) != 0U) {
+        return 3U;
+    }
+    if ((state_flags & APP_MCAN0_DIAG_STATE_LISTEN_ONLY) != 0U) {
+        return 1U;
+    }
+    return 0U;
+}
+
+static void publish_mcan_diagnostic_edges(void) {
+    app_mcan0_diagnostics_t diagnostics;
+    app_mcan0_owner_state_edge_t edge;
+
+    if (!app_mcan0_owner_get_diagnostics(&diagnostics)) {
+        return;
+    }
+    if (!mcan_diagnostics_baseline_valid || !ucan_session.negotiated) {
+        while (app_mcan0_owner_pop_state_edge(&edge)) {
+            /* Establish a fresh post-HELLO baseline without replaying
+             * historical controller transitions. */
+        }
+        reported_mcan_rx_queue_drops = diagnostics.rx_queue_drops;
+        reported_mcan_diagnostic_queue_drops =
+            diagnostics.diagnostic_queue_drops;
+        reported_mcan_state_edge_drops = diagnostics.state_edge_drops;
+        reported_mcan_ring_drops = diagnostics.ring_drops;
+        reported_mcan_state_flags = diagnostics.state_flags;
+        ucan_session.channels[0].state =
+            mcan_channel_state(diagnostics.state_flags);
+        mcan_diagnostics_baseline_valid = true;
+        mcan_state_reconcile_pending = false;
+        return;
+    }
+
+    while (app_mcan0_owner_pop_state_edge(&edge)) {
+        const uint8_t previous_state =
+            mcan_channel_state(reported_mcan_state_flags);
+        const uint8_t current_state =
+            mcan_channel_state(edge.state_flags);
+        if (current_state != previous_state) {
+            ucan_session_note_channel_state(
+                &ucan_session, 0U, current_state, 6U,
+                edge.transmit_error_count, edge.receive_error_count,
+                edge.timestamp_tick);
+        }
+        reported_mcan_state_flags = edge.state_flags;
+    }
+
+    const uint32_t rx_queue_drops =
+        diagnostics.rx_queue_drops - reported_mcan_rx_queue_drops;
+    const uint32_t diagnostic_queue_drops =
+        diagnostics.diagnostic_queue_drops -
+        reported_mcan_diagnostic_queue_drops;
+    const uint32_t state_edge_drops =
+        diagnostics.state_edge_drops - reported_mcan_state_edge_drops;
+    const uint32_t ring_drops =
+        diagnostics.ring_drops - reported_mcan_ring_drops;
+    if (diagnostic_queue_drops != 0U || state_edge_drops != 0U) {
+        /* Diagnostic work loss may have discarded a precise transition.
+         * Reconcile only after the owner queue drains, so a delayed exact edge
+         * keeps its captured tick. This must not consume channel sequence. */
+        mcan_state_reconcile_pending = true;
+    }
+    ucan_session_note_event_queue_loss(&ucan_session,
+                                       diagnostic_queue_drops);
+    ucan_session_note_event_queue_loss(&ucan_session, state_edge_drops);
+    if (mcan_state_reconcile_pending && diagnostics.queue_count == 0U) {
+        const uint8_t previous_state =
+            mcan_channel_state(reported_mcan_state_flags);
+        const uint8_t current_state =
+            mcan_channel_state(diagnostics.state_flags);
+        if (current_state != previous_state) {
+            ucan_session_note_channel_state(
+                &ucan_session, 0U, current_state, 6U,
+                diagnostics.transmit_error_count,
+                diagnostics.receive_error_count, diagnostics.snapshot_tick);
+        }
+        reported_mcan_state_flags = diagnostics.state_flags;
+        mcan_state_reconcile_pending = false;
+    }
+    if (rx_queue_drops != 0U) {
+        ucan_session_note_rx_ring_loss(&ucan_session, 0U, rx_queue_drops);
+    }
+    if (ring_drops != 0U) {
+        ucan_session_note_rx_ring_loss(&ucan_session, 0U, ring_drops);
+    }
+
+    reported_mcan_rx_queue_drops = diagnostics.rx_queue_drops;
+    reported_mcan_diagnostic_queue_drops =
+        diagnostics.diagnostic_queue_drops;
+    reported_mcan_state_edge_drops = diagnostics.state_edge_drops;
+    reported_mcan_ring_drops = diagnostics.ring_drops;
+}
+
+static void publish_mcan_rx(void) {
     app_mcan0_owner_rx_record_t source;
     while (app_mcan0_owner_pop_rx(&source)) {
         ucan_can_rx_record_t record;
@@ -448,7 +693,61 @@ static void publish_mcan_rx(void) {
         record.payload_len = source.rtr ? 0U : source.dlc;
         record.delta_tick = 0U;
         if (ucan_session_on_rx(&ucan_session, 0U, &record) == 0) {
-            (void)ucan_session_emit_rx_batch_at(&ucan_session, 0U, &record, source.timestamp_tick);
+            const uint32_t encoded_bytes =
+                APP_UCAN_RX_RECORD_PREFIX_SIZE + record.payload_len;
+            const uint32_t payload_limit = mcan_rx_batch_payload_limit();
+            const uint64_t previous_timestamp =
+                mcan_rx_batch_count == 0U
+                    ? source.timestamp_tick
+                    : mcan_rx_batch_base_timestamp +
+                          mcan_rx_batch_records[mcan_rx_batch_count - 1U]
+                              .delta_tick;
+            bool flush_before_append =
+                mcan_rx_batch_count != 0U &&
+                (mcan_rx_batch_config_generation !=
+                     ucan_session.config_generation ||
+                 source.timestamp_tick < mcan_rx_batch_base_timestamp ||
+                 source.timestamp_tick < previous_timestamp ||
+                 source.timestamp_tick - mcan_rx_batch_base_timestamp >
+                     UINT32_MAX ||
+                 mcan_rx_batch_count >= APP_UCAN_RX_BATCH_MAX_RECORDS ||
+                 APP_UCAN_RX_BATCH_PREFIX_SIZE +
+                         mcan_rx_batch_record_bytes + encoded_bytes >
+                     payload_limit);
+            if (flush_before_append) {
+                flush_mcan_rx_batch();
+            }
+            if (mcan_rx_batch_count == 0U) {
+                mcan_rx_batch_base_timestamp = source.timestamp_tick;
+                mcan_rx_batch_config_generation =
+                    ucan_session.config_generation;
+            }
+            const uint16_t index = mcan_rx_batch_count;
+            record.delta_tick =
+                (uint32_t)(source.timestamp_tick -
+                           mcan_rx_batch_base_timestamp);
+            if (record.payload_len != 0U) {
+                memcpy(mcan_rx_batch_payloads[index], source.data,
+                       record.payload_len);
+                record.payload = mcan_rx_batch_payloads[index];
+            }
+            mcan_rx_batch_records[index] = record;
+            mcan_rx_batch_count++;
+            mcan_rx_batch_record_bytes += encoded_bytes;
+            if (mcan_rx_batch_count >= APP_UCAN_RX_BATCH_MAX_RECORDS) {
+                flush_mcan_rx_batch();
+            }
+        }
+    }
+    if (mcan_rx_batch_count != 0U) {
+        const uint64_t wait_ticks =
+            ((uint64_t)ucan_config.tick_hz * APP_UCAN_RX_BATCH_WAIT_US +
+             999999U) /
+            1000000U;
+        const uint64_t now = app_time_now();
+        if (now >= mcan_rx_batch_base_timestamp &&
+            now - mcan_rx_batch_base_timestamp >= wait_ticks) {
+            flush_mcan_rx_batch();
         }
     }
 }
@@ -477,9 +776,8 @@ static void submit_pending_can_tx(void) {
 
 static void process_event(const app_usb_event_t* event) {
     if (event->type == APP_USB_EVENT_CAN_RX_READY) {
-        taskENTER_CRITICAL();
-        can_rx_event_pending = false;
-        taskEXIT_CRITICAL();
+        /* Wake hint only. The main loop drains the RX level and always closes
+         * the producer-latch race after every drain path. */
         return;
     }
     if (event->generation != g_app_usb_owner_state.generation || g_app_usb_owner_state.configured == 0U) {
@@ -494,6 +792,9 @@ static void process_event(const app_usb_event_t* event) {
             usb_chunk_offset = 0U;
             response_pending = 0U;
             response_pending_length = 0U;
+            response_pending_frames = 0U;
+            usb_in_zlp_pending = false;
+            usb_in_zlp_in_flight = false;
             g_app_usb_owner_state.in_flight = 0U;
             (void)arm_out_transfer();
             break;
@@ -513,6 +814,16 @@ static void process_event(const app_usb_event_t* event) {
             }
             break;
         case APP_USB_EVENT_TX_COMPLETE:
+            if (usb_in_zlp_in_flight) {
+                usb_in_zlp_in_flight = false;
+            } else if (event->length != 0U) {
+                const uint16_t endpoint_mps =
+                    usbd_get_ep_mps(APP_USB_BUS_ID, APP_USB_OWNER_IN_EP);
+                if (endpoint_mps != 0U &&
+                    event->length % endpoint_mps == 0U) {
+                    usb_in_zlp_pending = true;
+                }
+            }
             g_app_usb_owner_state.in_flight = 0U;
             dispatch_usb_chunk();
             submit_pending_can_tx();
@@ -527,6 +838,19 @@ static void process_event(const app_usb_event_t* event) {
         default:
             g_app_usb_owner_state.transfer_errors++;
             break;
+    }
+}
+
+static void complete_can_rx_drain(void) {
+    taskENTER_CRITICAL();
+    can_rx_event_pending = false;
+    taskEXIT_CRITICAL();
+
+    /* Also covers drains reached through non-CAN wakes or protocol reset. A
+     * stale queued CAN_RX_READY is harmless; a stranded level would otherwise
+     * wait for the 100 ms idle poll. */
+    if (app_mcan0_owner_rx_pending()) {
+        (void)app_usb_owner_signal_can_rx();
     }
 }
 
@@ -562,7 +886,16 @@ static void usb_owner_task(void* context) {
     g_app_usb_owner_state.online = 1U;
 
     while (1) {
-        if (xQueueReceive(usb_owner_queue, &event, pdMS_TO_TICKS(APP_USB_OWNER_POLL_MS)) == pdPASS) {
+        TickType_t wait_ticks = pdMS_TO_TICKS(APP_USB_OWNER_POLL_MS);
+        /* CAN_RX_READY uses a drain/clear/recheck handshake. Poll at 1 ms only
+         * while a batch deadline or already-visible ring work is pending. */
+        if (mcan_rx_batch_count != 0U || app_mcan0_owner_rx_pending()) {
+            wait_ticks = pdMS_TO_TICKS(1U);
+            if (wait_ticks == 0U) {
+                wait_ticks = 1U;
+            }
+        }
+        if (xQueueReceive(usb_owner_queue, &event, wait_ticks) == pdPASS) {
             /* Timestamp control requests, especially PING, against a protocol
              * clock refreshed after the event arrived but before dispatch.
              * Refreshing only after process_event() makes the reported device
@@ -575,6 +908,8 @@ static void usb_owner_task(void* context) {
         }
         advance_protocol_clock();
         publish_mcan_rx();
+        complete_can_rx_drain();
+        publish_mcan_diagnostic_edges();
         ucan_session_poll_flow_control(&ucan_session);
         submit_pending_can_tx();
         if (g_app_usb_owner_state.configured != 0U && g_app_usb_owner_state.in_flight == 0U) {

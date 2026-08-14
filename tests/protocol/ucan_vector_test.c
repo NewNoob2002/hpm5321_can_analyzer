@@ -25,6 +25,7 @@ typedef union {
     ucan_device_info_t device_info;
     ucan_capabilities_t capabilities;
     ucan_diagnostics_t diagnostics;
+    ucan_mcan_diagnostics_t mcan_diagnostics;
     uint32_t reset_mask;
     ucan_session_state_t session_state;
     ucan_channel_config_t channel_config;
@@ -96,6 +97,8 @@ WRAP_DEC(device_info, ucan_device_info_t)
 WRAP_ENC(device_info, ucan_device_info_t)
 WRAP_ENC(capabilities, ucan_capabilities_t)
 WRAP_ENC(diagnostics, ucan_diagnostics_t)
+WRAP_DEC(mcan_diagnostics, ucan_mcan_diagnostics_t)
+WRAP_ENC(mcan_diagnostics, ucan_mcan_diagnostics_t)
 WRAP_DEC(reset_diagnostics, uint32_t)
 static int enc_reset_diagnostics(const void *o, uint8_t *d, uint32_t c,
                                  uint32_t *l) {
@@ -204,6 +207,10 @@ static const vector_entry_t VECTORS[] = {
      enc_empty},
     {"get-diagnostics-response.hex", UCAN_MSG_GET_DIAGNOSTICS, 0, dec_diagnostics,
      enc_diagnostics},
+    {"get-mcan-diagnostics-request.hex", UCAN_MSG_GET_MCAN_DIAGNOSTICS, 0,
+     dec_empty, enc_empty},
+    {"get-mcan-diagnostics-response.hex", UCAN_MSG_GET_MCAN_DIAGNOSTICS, 0,
+     dec_mcan_diagnostics, enc_mcan_diagnostics},
     {"reset-diagnostics-request.hex", UCAN_MSG_RESET_DIAGNOSTICS, 0,
      dec_reset_diagnostics, enc_reset_diagnostics},
     {"get-session-state-request.hex", UCAN_MSG_GET_SESSION_STATE, 0, dec_empty,
@@ -316,6 +323,23 @@ static void check_field_vectors(const vector_entry_t *e, const test_ctx_t *ctx) 
               e->name);
         check(u->capabilities.channels[0].mode_mask == 0x07, "cap mode_mask",
               e->name);
+    } else if (strcmp(e->name, "get-mcan-diagnostics-response.hex") == 0) {
+        check(u->mcan_diagnostics.version == UCAN_MCAN_DIAGNOSTICS_VERSION,
+              "mcan diagnostics version", e->name);
+        check(u->mcan_diagnostics.length == UCAN_MCAN_DIAGNOSTICS_LEN,
+              "mcan diagnostics length", e->name);
+        check(u->mcan_diagnostics.generation == 7u,
+              "mcan diagnostics generation", e->name);
+        check(u->mcan_diagnostics.snapshot_tick == 0x1122334455667788ull,
+              "mcan diagnostics snapshot tick", e->name);
+        check(u->mcan_diagnostics.rxfifo0_high_watermark == 9u,
+              "mcan diagnostics fifo hwm", e->name);
+        check(u->mcan_diagnostics.queue_high_watermark == 11u,
+              "mcan diagnostics queue hwm", e->name);
+        check(u->mcan_diagnostics.ring_drops == 15u,
+              "mcan diagnostics ring drops", e->name);
+        check(u->mcan_diagnostics.automatic_recovery_attempts == 20u,
+              "mcan diagnostics recovery attempts", e->name);
     } else if (strcmp(e->name, "can-tx-request.hex") == 0) {
         check(u->can_tx.client_tag == 42u, "can_tx client_tag", e->name);
         check(u->can_tx.arm_epoch == 3u, "can_tx arm_epoch", e->name);
@@ -578,6 +602,46 @@ static void run_negative_tests(void) {
     ucan_can_rx_batch_t bad_batch = {0, 0, 0, 1, NULL, 0};
     check(ucan_encode_can_rx_batch(&bad_batch, buf, sizeof(buf), &len) == 0,
           "empty batch ok", NULL);
+
+    ucan_mcan_diagnostics_t mcan = {
+        .version = UCAN_MCAN_DIAGNOSTICS_VERSION,
+        .length = UCAN_MCAN_DIAGNOSTICS_LEN,
+        .generation = 7,
+        .state_flags = UCAN_MCAN_DIAG_STATE_INITIALIZED |
+                       UCAN_MCAN_DIAG_STATE_ONLINE |
+                       UCAN_MCAN_DIAG_STATE_LISTEN_ONLY,
+        .snapshot_tick = 0x1122334455667788ull,
+        .interrupt_flags = 1,
+        .error_interrupt_flags = 2,
+        .last_interrupt_flags = 3,
+        .protocol_status = 4,
+        .error_count = 5,
+        .transmit_error_count = 6,
+        .receive_error_count = 7,
+        .rxfifo0_fill_level = 8,
+        .rxfifo0_high_watermark = 9,
+        .queue_count = 10,
+        .queue_high_watermark = 11,
+        .ring_count = 12,
+        .ring_high_watermark = 13,
+        .queue_drops = 14,
+        .ring_drops = 15,
+        .invalid_frames = 16,
+        .bus_off_count = 17,
+        .warning_count = 18,
+        .error_passive_count = 19,
+        .automatic_recovery_attempts = 0,
+    };
+    ucan_mcan_diagnostics_t decoded_mcan;
+    check(enc_mcan_diagnostics(&mcan, buf, sizeof(buf), &len) == 0 &&
+              len == UCAN_MCAN_DIAGNOSTICS_LEN &&
+              dec_mcan_diagnostics(buf, len, &decoded_mcan) == 0 &&
+              memcmp(&mcan, &decoded_mcan, sizeof(mcan)) == 0,
+          "mcan diagnostics round trip", NULL);
+    buf[12] = 0x80;
+    check(dec_mcan_diagnostics(buf, len, &decoded_mcan) ==
+              UCAN_ERR_BAD_VALUE,
+          "mcan diagnostics unknown state rejected", NULL);
 }
 
 int main(int argc, char **argv) {

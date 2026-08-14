@@ -28,6 +28,8 @@ extern "C" {
 #define UCAN_QUEUE_CRITICAL_CAP 16
 #define UCAN_QUEUE_DATA_CAP 32
 #define UCAN_QUEUE_FRAME_BYTES 512
+#define UCAN_PENDING_CHANNEL_STATE_CAP UCAN_QUEUE_CRITICAL_CAP
+#define UCAN_SESSION_MAX_RX_BATCH 16
 
 typedef struct {
     uint8_t channel;
@@ -125,6 +127,22 @@ typedef struct {
     uint16_t count;
 } ucan_q_data_t;
 
+/* Persistent CHANNEL_STATE snapshots awaiting critical-queue capacity. */
+typedef struct {
+    uint8_t channel;
+    uint8_t state;
+    uint16_t reason;
+    uint32_t tx_error;
+    uint32_t rx_error;
+    uint64_t device_tick;
+} ucan_pending_channel_state_t;
+
+typedef struct {
+    ucan_pending_channel_state_t items[UCAN_PENDING_CHANNEL_STATE_CAP];
+    uint16_t head;
+    uint16_t count;
+} ucan_q_pending_channel_state_t;
+
 typedef struct {
     const char *fw_semver;
     const char *build_id;
@@ -156,6 +174,9 @@ typedef struct {
     /* Immutable product safety ceiling for each physical channel. A zero
      * entry disables TX on that channel. */
     uint16_t product_max_bus_load_permille[UCAN_SESSION_MAX_CHANNELS];
+    int (*get_mcan_diagnostics)(void *context,
+                                ucan_mcan_diagnostics_t *diagnostics);
+    void *mcan_diagnostics_context;
 } ucan_session_config_t;
 
 typedef struct {
@@ -201,9 +222,7 @@ typedef struct {
     uint64_t agg_last_tick;
     uint16_t served_since_data;
     uint16_t response_streak;
-    uint8_t pending_channel_state_valid[UCAN_SESSION_MAX_CHANNELS];
-    uint8_t pending_channel_state[UCAN_SESSION_MAX_CHANNELS];
-    uint16_t pending_channel_reason[UCAN_SESSION_MAX_CHANNELS];
+    ucan_q_pending_channel_state_t q_pending_channel_state;
     uint8_t flow_control_pending;
     uint64_t last_flow_control_tick;
     /* egress queues */
@@ -235,20 +254,43 @@ int ucan_session_on_rx(ucan_session_t *s, uint8_t channel,
 void ucan_session_note_rx_ring_loss(ucan_session_t *s, uint8_t channel,
                                     uint32_t count);
 
+/* Report diagnostic/control events lost before session admission. Allocates
+ * EVENT-domain sequences and emits source=USB_EVENT_QUEUE, reason=OVERFLOW,
+ * channel=0xFF DATA_LOSS without changing any CAN channel sequence/counter. */
+void ucan_session_note_event_queue_loss(ucan_session_t *s, uint32_t count);
+
+/* Report an observed hardware channel-state transition. Repeated reports of
+ * the same state are suppressed. Critical-queue retry preserves the supplied
+ * TEC/REC snapshot and hardware tick. */
+void ucan_session_note_channel_state(ucan_session_t *s, uint8_t channel,
+                                     uint8_t state, uint16_t reason,
+                                     uint32_t tx_error, uint32_t rx_error,
+                                     uint64_t device_tick);
+
 /* Emit/retry a rate-limited FLOW_CONTROL snapshot when any queue reaches 75%
  * of its advertised capacity. Safe to call from the protocol task poll loop. */
 void ucan_session_poll_flow_control(ucan_session_t *s);
 
-/* USB-task hook: move one captured frame into the data queue as a single-record
- * CAN_RX_BATCH (capture active). Returns 0 on enqueue; 1 when the data queue is
- * full (accumulates DATA_LOSS, EVENT domain, channel 0xFF). */
+/* USB-task hook: move one captured frame into the data queue as a
+ * single-record CAN_RX_BATCH (capture active). */
 int ucan_session_emit_rx_batch(ucan_session_t *s, uint8_t channel,
                                const ucan_can_rx_record_t *rec);
-/* Timestamp-preserving form for hardware RX owners. The single encoded record
- * has delta_tick=0 and base_timestamp equal to the supplied hardware tick. */
+/* Timestamp-preserving single-record compatibility form. */
 int ucan_session_emit_rx_batch_at(ucan_session_t *s, uint8_t channel,
                                   const ucan_can_rx_record_t *rec,
                                   uint64_t base_timestamp);
+
+/* Move 1..UCAN_SESSION_MAX_RX_BATCH already-admitted records into one
+ * CAN_RX_BATCH. Records must be in receive order, belong to channel, and carry
+ * nondecreasing delta_tick values relative to base_timestamp. One EVENT
+ * sequence is allocated for the entire batch. Every record's pending rx_depth
+ * is released whether enqueue succeeds or fails; any post-validation delivery
+ * failure reports one EVENT-domain USB_DATA_QUEUE loss for the dropped batch
+ * (ADMISSION before queueing, OVERFLOW when the data queue is full). */
+int ucan_session_emit_rx_batch_records_at(
+    ucan_session_t *s, uint8_t channel,
+    const ucan_can_rx_record_t *records, uint16_t record_count,
+    uint64_t base_timestamp);
 
 /* Poll one newly accepted TX exactly once for submission to the CAN owner.
  * Returns 0 and fills tx, or 1 when no unsubmitted TX is pending. The payload

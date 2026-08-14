@@ -8,8 +8,20 @@ allocated `health_task`, USB owner and MCAN0 owner tasks, bounded queues/ring
 and software timer; a stable high-low-high sampled 64-bit MCHTMR timebase;
 fault hooks; clock snapshots; health-only LED writes; raw vendor Bulk echo; and
 timestamped Classic-CAN RX publication with explicit loss/error diagnostics.
-It does **not** yet implement the USB-CAN data plane, protocol wiring,
-authorized product TX, hardware-watchdog feeding or product CLI.
+The single-channel read-only USB-CAN wiring is now implemented in source:
+HELLO/capability/session handling, `GET_MCAN_DIAGNOSTICS`, bounded CAN RX
+batches, state edges and explicit drop accounting are connected through the
+vendor Bulk transport. This wiring is **implemented but still requires a
+complete current-image HIL qualification** before it is promoted as qualified
+evidence. A 2026-08-14 minimal rerun on release ELF
+`0687f3cd009e411461c12b5b2e7ac9eb4d9e42872783bf8d950a090fcbbb6770`
+passed protocol negotiation, the 104-byte `GET_MCAN_DIAGNOSTICS` wire decode,
+listen-only/TX-disarmed checks, a 15-second host-read pause and USB reset
+session replacement. The CAN measurement received 0 frames because no
+external traffic source was present, so the throughput and loaded
+state/drop-reconciliation gates remain open. The
+firmware does **not** yet implement authorized product TX,
+hardware-watchdog feeding or the product CLI.
 The Rust protocol,
 device-session model, transport abstraction, fake backend and USB smoke tool
 are implemented and tested, but are not yet a complete analyzer application.
@@ -46,13 +58,20 @@ It drains RXFIFO0 through a bounded ISR queue into a 64-record timestamped
 consumer ring, records queue/ring loss separately, snapshots error state, votes
 the watchdog and never performs automatic bus-off recovery. Its TX entry point
 is present only as a fail-closed boundary and always rejects while disarmed.
+The read-only MCAN0-to-USB protocol wiring is implemented, including the
+104-byte wire diagnostics projection from the owner's distinct 120-byte
+internal snapshot. That implementation status is not a P3B completion claim.
 
 The software/build boundary is recorded in
-`docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md`. P3B still
-needs product-image target/listen-only proof, external RX/timing correlation,
-the 30-minute `BP-CAN-MVP-v1` run and bounded bus-off policy evidence. Protocol
-arm/expiry/rate admission, TX result/cancel and USB disconnect/reset disarm
-belong to the P4E integration step and must land before product TX is enabled.
+`docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md`. The minimal
+current-image HIL now confirms diagnostics, unloaded USB backpressure and USB
+reset session cleanup. P3B still needs 1 Mbit/s receive at `>=6000` frame/s,
+backpressure under CAN load, state-edge/drop reconciliation and a physical
+disconnect check. It also still needs the 30-minute
+`BP-CAN-MVP-v1` run, non-intrusive capture-stop observation and bounded
+bus-off/fault-injection evidence. Protocol arm/expiry/rate admission,
+TX result/cancel and the authorization policy remain future P4E work and must
+land before product TX is enabled.
 
 ## Phase 2
 

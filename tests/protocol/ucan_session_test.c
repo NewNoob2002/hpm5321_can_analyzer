@@ -159,6 +159,176 @@ static void queue_critical_fixture(ucan_q_critical_t *q, uint32_t sequence) {
     q->count++;
 }
 
+static int get_mcan_diagnostics_fixture(
+    void *context, ucan_mcan_diagnostics_t *diagnostics) {
+    uint32_t *calls = context;
+    (*calls)++;
+    memset(diagnostics, 0, sizeof(*diagnostics));
+    diagnostics->version = UCAN_MCAN_DIAGNOSTICS_VERSION;
+    diagnostics->length = UCAN_MCAN_DIAGNOSTICS_LEN;
+    diagnostics->generation = *calls;
+    diagnostics->state_flags =
+        UCAN_MCAN_DIAG_STATE_INITIALIZED |
+        UCAN_MCAN_DIAG_STATE_ONLINE |
+        UCAN_MCAN_DIAG_STATE_LISTEN_ONLY;
+    diagnostics->snapshot_tick = 123456U;
+    diagnostics->rxfifo0_fill_level = 2U;
+    diagnostics->rxfifo0_high_watermark = 8U;
+    diagnostics->queue_count = 3U;
+    diagnostics->queue_high_watermark = 9U;
+    diagnostics->ring_count = 4U;
+    diagnostics->ring_high_watermark = 10U;
+    diagnostics->queue_drops = 1U;
+    diagnostics->ring_drops = 2U;
+    return 0;
+}
+
+static void test_mcan_diagnostics(void) {
+    ucan_session_t unsupported;
+    ucan_session_init(&unsupported, &cfg);
+    hello_negotiate(&unsupported);
+    resp_t r = send(&unsupported, UCAN_MSG_GET_MCAN_DIAGNOSTICS, NULL, 0);
+    check(r.status == UCAN_STATUS_UNSUPPORTED && r.is_error,
+          "MCAN diagnostics unsupported without owner callback");
+
+    uint32_t callback_calls = 0;
+    ucan_session_config_t mcan_cfg = cfg;
+    mcan_cfg.get_mcan_diagnostics = get_mcan_diagnostics_fixture;
+    mcan_cfg.mcan_diagnostics_context = &callback_calls;
+    ucan_session_t supported;
+    ucan_session_init(&supported, &mcan_cfg);
+    hello_negotiate(&supported);
+    r = send(&supported, UCAN_MSG_GET_MCAN_DIAGNOSTICS, NULL, 0);
+    ucan_mcan_diagnostics_t diagnostics;
+    check(r.status == UCAN_STATUS_OK && !r.is_error &&
+              r.type == UCAN_MSG_GET_MCAN_DIAGNOSTICS,
+          "MCAN diagnostics request succeeds");
+    check(ucan_decode_mcan_diagnostics(r.frame.payload, r.frame.payload_len,
+                                       &diagnostics) == 0 &&
+              diagnostics.generation == 1 &&
+              diagnostics.rxfifo0_high_watermark == 8 &&
+              diagnostics.queue_high_watermark == 9 &&
+              diagnostics.ring_high_watermark == 10 &&
+              diagnostics.queue_drops == 1 &&
+              diagnostics.ring_drops == 2 &&
+              callback_calls == 1,
+          "MCAN diagnostics response carries owner snapshot");
+
+    uint8_t nonempty = 0;
+    r = send(&supported, UCAN_MSG_GET_MCAN_DIAGNOSTICS, &nonempty, 1);
+    check(r.status == UCAN_STATUS_INVALID_ARGUMENT && r.is_error &&
+              callback_calls == 1,
+          "MCAN diagnostics rejects nonempty request");
+}
+
+static void test_hardware_edge_events(void) {
+    ucan_session_t s;
+    uint8_t frame_bytes[512];
+    uint32_t frame_len = 0;
+    uint32_t event_sequence = 0;
+    ucan_frame_t frame;
+    ucan_channel_state_event_t state_event;
+    ucan_data_loss_event_t loss_event;
+
+    ucan_session_init(&s, &cfg);
+    hello_negotiate(&s);
+    s.channels[0].state = 1;
+
+    ucan_session_note_channel_state(&s, 0, 3, 6, 128, 7, 111);
+    ucan_session_note_channel_state(&s, 0, 3, 6, 129, 8, 112);
+    check(ucan_session_dequeue(&s, frame_bytes, sizeof(frame_bytes),
+                               &frame_len, &event_sequence) == 0 &&
+              ucan_frame_decode(frame_bytes, frame_len, cfg.max_message,
+                                &frame) == 0 &&
+              frame.message_type == UCAN_MSG_CHANNEL_STATE &&
+              ucan_decode_channel_state(frame.payload, frame.payload_len,
+                                        &state_event) == 0 &&
+              state_event.state == 3 && state_event.reason == 6 &&
+              state_event.tx_error == 128 && state_event.rx_error == 7 &&
+              state_event.device_tick == 111,
+          "error-passive rising edge emits one exact snapshot");
+    check(ucan_session_dequeue(&s, frame_bytes, sizeof(frame_bytes),
+                               &frame_len, &event_sequence) == 1,
+          "repeated error-passive state is suppressed");
+
+    ucan_session_note_channel_state(&s, 0, 4, 6, 255, 9, 222);
+    check(ucan_session_dequeue(&s, frame_bytes, sizeof(frame_bytes),
+                               &frame_len, &event_sequence) == 0 &&
+              ucan_frame_decode(frame_bytes, frame_len, cfg.max_message,
+                                &frame) == 0 &&
+              ucan_decode_channel_state(frame.payload, frame.payload_len,
+                                        &state_event) == 0 &&
+              state_event.state == 4 && state_event.tx_error == 255 &&
+              state_event.rx_error == 9 && state_event.device_tick == 222 &&
+              s.channels[0].bus_off_count == 1,
+          "bus-off rising edge emits and increments once");
+
+    ucan_session_note_channel_state(&s, 0, 1, 6, 0, 0, 333);
+    check(ucan_session_dequeue(&s, frame_bytes, sizeof(frame_bytes),
+                               &frame_len, &event_sequence) == 0 &&
+              ucan_frame_decode(frame_bytes, frame_len, cfg.max_message,
+                                &frame) == 0 &&
+              ucan_decode_channel_state(frame.payload, frame.payload_len,
+                                        &state_event) == 0 &&
+              state_event.state == 1 && state_event.device_tick == 333,
+          "bus-off recovery edge emits listen-only state");
+
+    s.q_critical.count = UCAN_QUEUE_CRITICAL_CAP;
+    s.q_critical_pending.count = UCAN_QUEUE_CRITICAL_CAP;
+    s.q_response.count = UCAN_QUEUE_RESPONSE_CAP;
+    s.event_depth = 2 * UCAN_QUEUE_CRITICAL_CAP;
+    s.response_depth = UCAN_QUEUE_RESPONSE_CAP;
+    ucan_session_note_channel_state(&s, 0, 3, 6, 130, 11, 444);
+    ucan_session_note_channel_state(&s, 0, 4, 6, 255, 12, 445);
+    check(s.q_pending_channel_state.count == 2 &&
+              s.q_pending_channel_state.items[0].state == 3 &&
+              s.q_pending_channel_state.items[0].tx_error == 130 &&
+              s.q_pending_channel_state.items[0].rx_error == 11 &&
+              s.q_pending_channel_state.items[0].device_tick == 444 &&
+              s.q_pending_channel_state.items[1].state == 4 &&
+              s.q_pending_channel_state.items[1].tx_error == 255 &&
+              s.q_pending_channel_state.items[1].rx_error == 12 &&
+              s.q_pending_channel_state.items[1].device_tick == 445,
+          "pending channel-state retry preserves TEC REC and tick");
+    s.q_critical.count = 0;
+    s.q_critical_pending.count = 0;
+    s.q_response.count = 0;
+    s.event_depth = 0;
+    s.response_depth = 0;
+    check(ucan_session_dequeue(&s, frame_bytes, sizeof(frame_bytes),
+                               &frame_len, &event_sequence) == 0 &&
+              ucan_frame_decode(frame_bytes, frame_len, cfg.max_message,
+                                &frame) == 0 &&
+              ucan_decode_channel_state(frame.payload, frame.payload_len,
+                                        &state_event) == 0 &&
+              state_event.state == 3 && state_event.tx_error == 130 &&
+              state_event.rx_error == 11 && state_event.device_tick == 444,
+          "first saturated channel-state retry emits preserved snapshot");
+    check(ucan_session_dequeue(&s, frame_bytes, sizeof(frame_bytes),
+                               &frame_len, &event_sequence) == 0 &&
+              ucan_frame_decode(frame_bytes, frame_len, cfg.max_message,
+                                &frame) == 0 &&
+              ucan_decode_channel_state(frame.payload, frame.payload_len,
+                                        &state_event) == 0 &&
+              state_event.state == 4 && state_event.tx_error == 255 &&
+              state_event.rx_error == 12 && state_event.device_tick == 445 &&
+              s.q_pending_channel_state.count == 0,
+          "consecutive saturated channel-state edges deliver in order");
+
+    ucan_session_note_rx_ring_loss(&s, 0, 3);
+    check(ucan_session_dequeue(&s, frame_bytes, sizeof(frame_bytes),
+                               &frame_len, &event_sequence) == 0 &&
+              ucan_frame_decode(frame_bytes, frame_len, cfg.max_message,
+                                &frame) == 0 &&
+              frame.message_type == UCAN_MSG_DATA_LOSS &&
+              ucan_decode_data_loss(frame.payload, frame.payload_len,
+                                    &loss_event) == 0 &&
+              loss_event.channel == 0 && loss_event.source == 1 &&
+              loss_event.sequence_domain == 2 &&
+              loss_event.reason == 1 && loss_event.dropped_count == 3,
+          "upstream queue or ring drops emit contiguous DATA_LOSS");
+}
+
 static void test_version_and_identity(void) {
     ucan_session_t s;
     ucan_session_init(&s, &cfg);
@@ -245,6 +415,8 @@ static void test_version_and_identity(void) {
           "capabilities decode");
     check(c.tick_hz == 1000000u && c.usb_mode == 2, "capabilities tick/usb");
     check(c.channel_count == 1 && c.tx_depth == 32, "capabilities channels");
+    check(c.max_rx_batch == UCAN_SESSION_MAX_RX_BATCH,
+          "capabilities advertise bounded multi-record RX batches");
     check(c.arm_timeout_min_ms == 100 && c.arm_timeout_max_ms == 60000,
           "capabilities arm range");
 
@@ -271,6 +443,45 @@ static void test_version_and_identity(void) {
     check(r.status == UCAN_STATUS_UNSUPPORTED && r.is_error,
           "v1.1 reserved message unsupported");
     drain_all(&s, NULL, NULL, 0, &(uint32_t){0});
+}
+
+static void test_diagnostic_event_loss(void) {
+    ucan_session_t s;
+    ucan_session_init(&s, &cfg);
+    hello_negotiate(&s);
+
+    const uint32_t channel_sequence = s.next_channel_sequence[0];
+    const uint64_t channel_dropped = s.channels[0].dropped;
+    const uint32_t first_lost_event = s.device_event_sequence + 1;
+    ucan_session_note_event_queue_loss(&s, 2);
+
+    check(s.next_channel_sequence[0] == channel_sequence &&
+              s.channels[0].dropped == channel_dropped,
+          "diagnostic event loss leaves CAN sequence and dropped unchanged");
+
+    uint8_t frame_bytes[512];
+    uint32_t frame_len = 0;
+    uint32_t event_sequence = 0;
+    ucan_frame_t frame;
+    ucan_data_loss_event_t loss;
+    check(ucan_session_dequeue(&s, frame_bytes, sizeof(frame_bytes),
+                               &frame_len, &event_sequence) == 0 &&
+              ucan_frame_decode(frame_bytes, frame_len, cfg.max_message,
+                                &frame) == 0 &&
+              frame.message_type == UCAN_MSG_DATA_LOSS &&
+              ucan_decode_data_loss(frame.payload, frame.payload_len,
+                                    &loss) == 0 &&
+              loss.channel == 0xff && loss.source == 4 &&
+              loss.sequence_domain == 1 && loss.reason == 1 &&
+              loss.first_dropped_sequence == first_lost_event &&
+              loss.last_dropped_sequence == first_lost_event + 1 &&
+              loss.dropped_count == 2 &&
+              frame.sequence == first_lost_event + 2 &&
+              event_sequence == frame.sequence,
+          "diagnostic loss emits USB_EVENT_QUEUE EVENT-domain DATA_LOSS");
+    check(s.next_channel_sequence[0] == channel_sequence &&
+              s.channels[0].dropped == channel_dropped,
+          "diagnostic DATA_LOSS delivery leaves CAN accounting unchanged");
 }
 
 static void test_cas_and_capture(void) {
@@ -761,6 +972,97 @@ static void test_loss_and_queues(void) {
     check(f.message_type == UCAN_MSG_CAN_RX_BATCH, "dequeued rx batch");
     check(evt != 0, "batch event sequence allocated");
 
+    /* Multiple admitted records share one batch/event sequence while keeping
+     * channel sequence, timestamp delta, filter-hit and payload order exact. */
+    ucan_can_rx_record_t batch_records[8];
+    uint8_t batch_payloads[8][8];
+    const uint32_t event_sequence_before = s3.device_event_sequence;
+    for (uint32_t i = 0; i < 8; ++i) {
+        memset(&batch_records[i], 0, sizeof(batch_records[i]));
+        memset(batch_payloads[i], (int)(0x20U + i), sizeof(batch_payloads[i]));
+        batch_records[i].arbitration_id = 0x200U + i;
+        batch_records[i].channel = 0;
+        batch_records[i].dlc = 8;
+        batch_records[i].payload = batch_payloads[i];
+        batch_records[i].payload_len = 8;
+        batch_records[i].delta_tick = i * 167U;
+        check(ucan_session_on_rx(&s3, 0, &batch_records[i]) == 0,
+              "multi-record ring admit");
+    }
+    check(ucan_session_emit_rx_batch_records_at(
+              &s3, 0, batch_records, 8, 123456789U) == 0,
+          "multi-record batch enqueue");
+    check(s3.device_event_sequence ==
+              (event_sequence_before == UINT32_MAX
+                   ? 1U
+                   : event_sequence_before + 1U),
+          "multi-record batch consumes one event sequence");
+    check(s3.channels[0].rx_depth == 0,
+          "multi-record batch releases every admitted RX depth");
+    check(ucan_session_dequeue(&s3, out, sizeof(out), &olen, &evt) == 0,
+          "dequeue multi-record batch");
+    check(ucan_frame_decode(out, olen, 65536, &f) == 0 &&
+              f.message_type == UCAN_MSG_CAN_RX_BATCH,
+          "multi-record frame decodes");
+    ucan_can_rx_batch_t decoded_batch;
+    ucan_can_rx_record_t decoded_records[8];
+    check(ucan_decode_can_rx_batch(f.payload, f.payload_len, &decoded_batch,
+                                   decoded_records, 8) == 0 &&
+              decoded_batch.record_count == 8 &&
+              decoded_batch.base_timestamp == 123456789U,
+          "multi-record batch header preserved");
+    for (uint32_t i = 0; i < 8; ++i) {
+        check(decoded_records[i].arbitration_id == 0x200U + i &&
+                  decoded_records[i].delta_tick == i * 167U &&
+                  decoded_records[i].channel_sequence == i + 2U &&
+                  decoded_records[i].filter_hit == 0xffU &&
+                  decoded_records[i].payload_len == 8 &&
+                  memcmp(decoded_records[i].payload, batch_payloads[i], 8) == 0,
+              "multi-record batch order and fields preserved");
+    }
+
+    /* A negotiated 256-byte host payload ceiling cannot carry nine Classic
+     * DLC8 records (32 + 9 * 28 = 284). The session must release all admitted
+     * depth and report the dropped batch instead of silently discarding it. */
+    ucan_can_rx_record_t oversized_records[9];
+    const uint32_t oversized_sequence_before = s3.device_event_sequence;
+    s3.host_rx_max_message = 256U;
+    for (uint32_t i = 0; i < 9; ++i) {
+        memset(&oversized_records[i], 0, sizeof(oversized_records[i]));
+        oversized_records[i].arbitration_id = 0x300U + i;
+        oversized_records[i].channel = 0;
+        oversized_records[i].dlc = 8;
+        oversized_records[i].payload = batch_payloads[i % 8U];
+        oversized_records[i].payload_len = 8;
+        oversized_records[i].delta_tick = i * 167U;
+        check(ucan_session_on_rx(&s3, 0, &oversized_records[i]) == 0,
+              "oversized batch record admitted");
+    }
+    check(ucan_session_emit_rx_batch_records_at(
+              &s3, 0, oversized_records, 9, 123460000U) != 0,
+          "oversized negotiated-host batch rejected");
+    check(s3.channels[0].rx_depth == 0,
+          "oversized batch releases every admitted RX depth");
+    check(ucan_session_dequeue(&s3, out, sizeof(out), &olen, &evt) == 0 &&
+              ucan_frame_decode(out, olen, 65536, &f) == 0 &&
+              f.message_type == UCAN_MSG_DATA_LOSS,
+          "oversized batch emits host-visible DATA_LOSS");
+    ucan_data_loss_event_t oversized_loss;
+    check(ucan_decode_data_loss(f.payload, f.payload_len, &oversized_loss) == 0 &&
+              oversized_loss.channel == 0xffU &&
+              oversized_loss.source == 2U &&
+              oversized_loss.sequence_domain == 1U &&
+              oversized_loss.reason == 2U &&
+              oversized_loss.first_dropped_sequence ==
+                  (oversized_sequence_before == UINT32_MAX
+                       ? 1U
+                       : oversized_sequence_before + 1U) &&
+              oversized_loss.last_dropped_sequence ==
+                  oversized_loss.first_dropped_sequence &&
+              oversized_loss.dropped_count == 1U,
+          "oversized batch DATA_LOSS identifies one EVENT admission failure");
+    s3.host_rx_max_message = cfg.max_message;
+
     /* Fill the data queue, then overflow -> EVENT-domain DATA_LOSS. */
     for (uint32_t i = 0; i < 33; ++i) {
         rec.channel_sequence = i + 2;
@@ -812,6 +1114,45 @@ static void test_scheduler_and_reserve(void) {
     check(ucan_session_dequeue(&s, out, sizeof(out), &olen, &evt) == 1,
           "sync responses absent from dequeue");
     drain_all(&s, NULL, NULL, 0, &(uint32_t){0});
+
+    /* Critical events may not overtake older data events because both share
+     * one EVENT sequence domain. Queue a CAN batch, then create a later
+     * DATA_LOSS notice, and require monotonic wire delivery. */
+    ucan_session_t ordered;
+    ucan_session_init(&ordered, &cfg);
+    hello_negotiate(&ordered);
+    uint8_t ordered_start[8] = {1, 0, 0, 0, 7, 0, 0, 0};
+    check(send(&ordered, UCAN_MSG_START_CAPTURE, ordered_start,
+               sizeof(ordered_start)).status == UCAN_STATUS_OK,
+          "ordered-event capture starts");
+    drain_all(&ordered, NULL, NULL, 0, &(uint32_t){0});
+    uint8_t ordered_payload[1] = {0x5a};
+    ucan_can_rx_record_t ordered_record;
+    memset(&ordered_record, 0, sizeof(ordered_record));
+    ordered_record.channel = 0;
+    ordered_record.dlc = 1;
+    ordered_record.payload = ordered_payload;
+    ordered_record.payload_len = sizeof(ordered_payload);
+    ordered_record.arbitration_id = 0x123;
+    check(ucan_session_on_rx(&ordered, 0, &ordered_record) == 0 &&
+              ucan_session_emit_rx_batch_at(&ordered, 0, &ordered_record,
+                                            100U) == 0,
+          "older CAN batch queued");
+    ucan_session_note_rx_ring_loss(&ordered, 0, 1);
+    uint16_t ordered_types[2] = {0, 0};
+    uint32_t ordered_sequences[2] = {0, 0};
+    uint32_t ordered_count = 0;
+    drain_all(&ordered, ordered_types, ordered_sequences, 2,
+              &ordered_count);
+    check(ordered_count == 2 &&
+              ordered_types[0] == UCAN_MSG_CAN_RX_BATCH &&
+              ordered_types[1] == UCAN_MSG_DATA_LOSS &&
+              ordered_sequences[0] != 0 &&
+              ordered_sequences[1] ==
+                  (ordered_sequences[0] == UINT32_MAX
+                       ? 1U
+                       : ordered_sequences[0] + 1U),
+          "EVENT queues dequeue in allocation order");
 
     /* Frame-time formula sanity (spec 7.1). */
     uint64_t t = ucan_frame_time_us(500000, 0, 8, 0, 8);
@@ -940,6 +1281,9 @@ static void test_capture_filter_and_critical_contract(void) {
 }
 
 int main(void) {
+    test_mcan_diagnostics();
+    test_hardware_edge_events();
+    test_diagnostic_event_loss();
     test_version_and_identity();
     test_cas_and_capture();
     test_tx_lifecycle();

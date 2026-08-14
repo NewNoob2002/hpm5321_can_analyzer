@@ -12,7 +12,18 @@
 #endif
 #define APP_MCAN0_OWNER_EVENT_QUEUE_LENGTH (64U)
 #define APP_MCAN0_OWNER_RX_RING_CAPACITY (64U)
+#define APP_MCAN0_OWNER_STATE_EDGE_CAPACITY (16U)
 #define APP_MCAN0_OWNER_CLASSIC_MAX_BYTES (8U)
+#define APP_MCAN0_DIAGNOSTICS_VERSION (1U)
+#define APP_MCAN0_DIAGNOSTICS_SNAPSHOT_LEN (120U)
+
+#define APP_MCAN0_DIAG_STATE_INITIALIZED (1UL << 0)
+#define APP_MCAN0_DIAG_STATE_ONLINE (1UL << 1)
+#define APP_MCAN0_DIAG_STATE_LISTEN_ONLY (1UL << 2)
+#define APP_MCAN0_DIAG_STATE_TX_ARMED (1UL << 3)
+#define APP_MCAN0_DIAG_STATE_WARNING (1UL << 4)
+#define APP_MCAN0_DIAG_STATE_ERROR_PASSIVE (1UL << 5)
+#define APP_MCAN0_DIAG_STATE_BUS_OFF (1UL << 6)
 
 typedef enum {
     APP_MCAN0_OWNER_MODE_OFFLINE = 0,
@@ -45,6 +56,15 @@ typedef struct {
 } app_mcan0_owner_rx_record_t;
 
 typedef struct {
+    uint64_t timestamp_tick;
+    uint32_t state_flags;
+    uint32_t protocol_status;
+    uint32_t error_count;
+    uint32_t transmit_error_count;
+    uint32_t receive_error_count;
+} app_mcan0_owner_state_edge_t;
+
+typedef struct {
     uint32_t magic;
     uint32_t version;
     uint32_t mode;
@@ -65,6 +85,13 @@ typedef struct {
     uint32_t invalid_frames;
     uint32_t queue_send_count;
     uint32_t queue_drops;
+    uint32_t rx_queue_drops;
+    uint32_t diagnostic_queue_drops;
+    uint32_t state_edge_drops;
+    uint32_t queue_count;
+    uint32_t queue_high_watermark;
+    uint32_t rxfifo0_fill_level;
+    uint32_t rxfifo0_high_watermark;
     uint32_t ring_count;
     uint32_t ring_drops;
     uint32_t ring_high_watermark;
@@ -83,10 +110,44 @@ typedef struct {
     uint64_t last_rx_tick;
 } app_mcan0_owner_state_t;
 
+typedef struct {
+    uint32_t version;
+    uint32_t snapshot_length;
+    uint32_t generation;
+    uint32_t state_flags;
+    uint64_t snapshot_tick;
+    uint32_t interrupt_flags;
+    uint32_t error_interrupt_flags;
+    uint32_t last_interrupt_flags;
+    uint32_t protocol_status;
+    uint32_t error_count;
+    uint32_t transmit_error_count;
+    uint32_t receive_error_count;
+    uint32_t rxfifo0_fill_level;
+    uint32_t rxfifo0_high_watermark;
+    uint32_t queue_count;
+    uint32_t queue_high_watermark;
+    uint32_t ring_count;
+    uint32_t ring_high_watermark;
+    uint32_t queue_drops;
+    uint32_t rx_queue_drops;
+    uint32_t diagnostic_queue_drops;
+    uint32_t state_edge_drops;
+    uint32_t ring_drops;
+    uint32_t invalid_frames;
+    uint32_t bus_off_count;
+    uint32_t warning_count;
+    uint32_t error_passive_count;
+    uint32_t automatic_recovery_attempts;
+} app_mcan0_diagnostics_t;
+
 extern volatile app_mcan0_owner_state_t g_app_mcan0_owner_state;
 
 bool app_mcan0_owner_start(void);
 bool app_mcan0_owner_pop_rx(app_mcan0_owner_rx_record_t *record);
+bool app_mcan0_owner_rx_pending(void);
+bool app_mcan0_owner_pop_state_edge(app_mcan0_owner_state_edge_t *edge);
+bool app_mcan0_owner_get_diagnostics(app_mcan0_diagnostics_t *snapshot);
 app_mcan0_owner_tx_result_t app_mcan0_owner_submit_tx(
     const app_mcan0_owner_tx_request_t *request);
 

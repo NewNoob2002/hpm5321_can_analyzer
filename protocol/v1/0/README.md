@@ -13,6 +13,8 @@ will later be consumed by the firmware C codec tests.
 - `config-channel-*` / `get-channel-config-request.hex`: channel configuration CAS examples.
 - `start-capture-*` / `stop-capture-*`: capture generation and state transitions.
 - `get-diagnostics-*` / `reset-diagnostics-request.hex`: global and channel counters.
+- `get-mcan-diagnostics-*`: atomic MCAN owner snapshot including controller,
+  FIFO, queue, ring and error counters.
 - `get-session-state-*`: capture, TX-arm and filter-generation snapshot.
 - `set-filters-*` / `clear-filters-*`: filter rules with INVERT/EXT_ONLY and
   CAS generation.

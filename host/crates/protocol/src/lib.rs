@@ -19,6 +19,7 @@ pub mod msg {
     pub const GET_DIAGNOSTICS: u16 = 0x0004;
     pub const RESET_DIAGNOSTICS: u16 = 0x0005;
     pub const GET_SESSION_STATE: u16 = 0x0006;
+    pub const GET_MCAN_DIAGNOSTICS: u16 = 0x0007;
     pub const CONFIG_CHANNEL: u16 = 0x0010;
     pub const GET_CHANNEL_CONFIG: u16 = 0x0011;
     pub const START_CAPTURE: u16 = 0x0012;

@@ -5,7 +5,21 @@
  */
 #include "ucan_codec.h"
 
+#include <stddef.h>
 #include <string.h>
+
+_Static_assert(sizeof(ucan_mcan_diagnostics_t) ==
+                   UCAN_MCAN_DIAGNOSTICS_LEN,
+               "MCAN diagnostics wire model size changed");
+_Static_assert(offsetof(ucan_mcan_diagnostics_t, snapshot_tick) == 16U,
+               "MCAN diagnostics timestamp wire offset changed");
+_Static_assert(offsetof(ucan_mcan_diagnostics_t, queue_drops) == 76U,
+               "MCAN diagnostics drop wire offset changed");
+_Static_assert(offsetof(ucan_mcan_diagnostics_t, ring_drops) == 80U,
+               "MCAN diagnostics ring-drop wire offset changed");
+_Static_assert(offsetof(ucan_mcan_diagnostics_t,
+                        automatic_recovery_attempts) == 100U,
+               "MCAN diagnostics tail wire offset changed");
 
 /* ---------- little-endian helpers ---------- */
 
@@ -670,6 +684,87 @@ int ucan_decode_diagnostics(const uint8_t *data, uint32_t len, ucan_diagnostics_
     v->channel_count = channel_count;
     v->channels = channels;
     if (v->generation == 0 || v->session_id == 0) {
+        return UCAN_ERR_BAD_VALUE;
+    }
+    return 0;
+}
+
+int ucan_encode_mcan_diagnostics(const ucan_mcan_diagnostics_t *v, uint8_t *out,
+                                 uint32_t cap, uint32_t *len) {
+    if (v == NULL || out == NULL || len == NULL) {
+        return UCAN_ERR_BAD_VALUE;
+    }
+    if (v->version != UCAN_MCAN_DIAGNOSTICS_VERSION ||
+        v->length != UCAN_MCAN_DIAGNOSTICS_LEN || v->generation == 0 ||
+        (v->state_flags & ~UCAN_MCAN_DIAG_STATE_MASK) != 0) {
+        return UCAN_ERR_BAD_VALUE;
+    }
+    int rc = need(cap, UCAN_MCAN_DIAGNOSTICS_LEN);
+    if (rc != 0) {
+        return rc;
+    }
+    wr_u32(out + 0, v->version);
+    wr_u32(out + 4, v->length);
+    wr_u32(out + 8, v->generation);
+    wr_u32(out + 12, v->state_flags);
+    wr_u64(out + 16, v->snapshot_tick);
+    wr_u32(out + 24, v->interrupt_flags);
+    wr_u32(out + 28, v->error_interrupt_flags);
+    wr_u32(out + 32, v->last_interrupt_flags);
+    wr_u32(out + 36, v->protocol_status);
+    wr_u32(out + 40, v->error_count);
+    wr_u32(out + 44, v->transmit_error_count);
+    wr_u32(out + 48, v->receive_error_count);
+    wr_u32(out + 52, v->rxfifo0_fill_level);
+    wr_u32(out + 56, v->rxfifo0_high_watermark);
+    wr_u32(out + 60, v->queue_count);
+    wr_u32(out + 64, v->queue_high_watermark);
+    wr_u32(out + 68, v->ring_count);
+    wr_u32(out + 72, v->ring_high_watermark);
+    wr_u32(out + 76, v->queue_drops);
+    wr_u32(out + 80, v->ring_drops);
+    wr_u32(out + 84, v->invalid_frames);
+    wr_u32(out + 88, v->bus_off_count);
+    wr_u32(out + 92, v->warning_count);
+    wr_u32(out + 96, v->error_passive_count);
+    wr_u32(out + 100, v->automatic_recovery_attempts);
+    *len = UCAN_MCAN_DIAGNOSTICS_LEN;
+    return 0;
+}
+
+int ucan_decode_mcan_diagnostics(const uint8_t *data, uint32_t len,
+                                 ucan_mcan_diagnostics_t *v) {
+    if (data == NULL || v == NULL || len != UCAN_MCAN_DIAGNOSTICS_LEN) {
+        return UCAN_ERR_PAYLOAD;
+    }
+    v->version = rd_u32(data + 0);
+    v->length = rd_u32(data + 4);
+    v->generation = rd_u32(data + 8);
+    v->state_flags = rd_u32(data + 12);
+    v->snapshot_tick = rd_u64(data + 16);
+    v->interrupt_flags = rd_u32(data + 24);
+    v->error_interrupt_flags = rd_u32(data + 28);
+    v->last_interrupt_flags = rd_u32(data + 32);
+    v->protocol_status = rd_u32(data + 36);
+    v->error_count = rd_u32(data + 40);
+    v->transmit_error_count = rd_u32(data + 44);
+    v->receive_error_count = rd_u32(data + 48);
+    v->rxfifo0_fill_level = rd_u32(data + 52);
+    v->rxfifo0_high_watermark = rd_u32(data + 56);
+    v->queue_count = rd_u32(data + 60);
+    v->queue_high_watermark = rd_u32(data + 64);
+    v->ring_count = rd_u32(data + 68);
+    v->ring_high_watermark = rd_u32(data + 72);
+    v->queue_drops = rd_u32(data + 76);
+    v->ring_drops = rd_u32(data + 80);
+    v->invalid_frames = rd_u32(data + 84);
+    v->bus_off_count = rd_u32(data + 88);
+    v->warning_count = rd_u32(data + 92);
+    v->error_passive_count = rd_u32(data + 96);
+    v->automatic_recovery_attempts = rd_u32(data + 100);
+    if (v->version != UCAN_MCAN_DIAGNOSTICS_VERSION ||
+        v->length != UCAN_MCAN_DIAGNOSTICS_LEN || v->generation == 0 ||
+        (v->state_flags & ~UCAN_MCAN_DIAG_STATE_MASK) != 0) {
         return UCAN_ERR_BAD_VALUE;
     }
     return 0;
