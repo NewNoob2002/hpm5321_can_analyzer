@@ -1,0 +1,196 @@
+{
+  "schema": 1,
+  "phase": "P3B",
+  "purpose": "active_bus_off_hil_preflight_only",
+  "decision": "BLOCKED_FOR_HIL_PREFLIGHT",
+  "approved": false,
+  "hardware_execution_authorized": false,
+  "software_identity": {
+    "source_commit": "a4e310f79c40d1324a642c76d46403b927aa2a07",
+    "source_dirty": false,
+    "sdk_commit": "88b01b43900d8c30844a1e5cdd3f3b7aff6db40e",
+    "toolchain": "riscv32-unknown-elf-gcc (gc891d8dc23e) 13.2.0",
+    "cmake_preset": "hpm5321-ram-debug-bus-off",
+    "build_options": {
+      "CMAKE_BUILD_TYPE": "Debug",
+      "HPM_BUILD_TYPE": "ram",
+      "APP_MCAN0_BUS_OFF_TEST_HOOK": true,
+      "APP_FAULT_INJECT_REASON": 0,
+      "APP_MCAN_BITRATE": 1000000
+    },
+    "selected_load_artifact": "ELF",
+    "debug_elf_sha256": "880993181c64c5ede0dfd2d79a1a6d67f8257affae11f297cb6ecbf1a6ed64be",
+    "debug_bin_sha256": "36c9d9b8ae4e2ed1f8430a66d5f61580e15d86887d48704d2fad1223ffe02b87",
+    "debug_map_sha256": "d5ffa8d400634ae36741ad31d9e58dd22f324904ca99ff332cbb85bec4a36bea",
+    "debug_manifest_sha256": "04fa7b72af3d465055b31a9e4a2647614b508ccad1c68f21f6f7c7a6000277ba",
+    "same_sha_ci_complete": true
+  },
+  "ci": [
+    {
+      "workflow": "Planning Contract",
+      "run_id": 31952850072,
+      "head_sha": "a4e310f79c40d1324a642c76d46403b927aa2a07",
+      "event": "push",
+      "conclusion": "success"
+    },
+    {
+      "workflow": "C Protocol",
+      "run_id": 31953321449,
+      "head_sha": "a4e310f79c40d1324a642c76d46403b927aa2a07",
+      "event": "workflow_dispatch",
+      "conclusion": "success"
+    },
+    {
+      "workflow": "Host Rust",
+      "run_id": 31953322054,
+      "head_sha": "a4e310f79c40d1324a642c76d46403b927aa2a07",
+      "event": "workflow_dispatch",
+      "conclusion": "success"
+    },
+    {
+      "workflow": "Firmware Contract",
+      "run_id": 31953325395,
+      "head_sha": "a4e310f79c40d1324a642c76d46403b927aa2a07",
+      "event": "workflow_dispatch",
+      "conclusion": "success"
+    }
+  ],
+  "bench": {
+    "isolated_bench_confirmed": false,
+    "vehicle_connected": null,
+    "production_gateway_connected": null,
+    "emergency_stop_or_power_cut_method": null
+  },
+  "dut": {
+    "model": null,
+    "hardware_revision": null,
+    "serial_number": null,
+    "target_voltage_v": null
+  },
+  "debug_probe": {
+    "model": null,
+    "serial_number": null,
+    "firmware_version": null
+  },
+  "can_analyzer": {
+    "model": null,
+    "serial_number": null,
+    "firmware_or_software_version": null,
+    "mode": null,
+    "timestamp_resolution": null
+  },
+  "active_fault_injector": {
+    "present": false,
+    "model": null,
+    "serial_number": null,
+    "firmware_or_software_version": null,
+    "supported_injection_types": [],
+    "selected_injection_type": null,
+    "operating_limits": null,
+    "emergency_stop_condition": null
+  },
+  "bus": {
+    "bitrate_bits_per_second": null,
+    "sample_point_percent": null,
+    "fd_enabled": null,
+    "termination_ohms": null,
+    "common_ground_confirmed": false,
+    "measured_idle_voltage": null
+  },
+  "execution": {
+    "independent_runs": 3,
+    "reboot_or_power_cycle_between_runs": true,
+    "unique_nonce_per_run": true,
+    "unique_log_directory_per_run": true,
+    "same_firmware_sha_for_all_runs": true,
+    "post_latch_observation_seconds": null,
+    "cleanup_required_per_run": true,
+    "cleanup_confirmed_per_run": false,
+    "raw_gdb_capture_available": false,
+    "raw_analyzer_capture_available": false
+  },
+  "runs": [
+    {
+      "run_id": null,
+      "nonce": null,
+      "log_directory": null,
+      "gdb_transcript": null,
+      "analyzer_raw_file": null,
+      "wiring_record": null,
+      "equipment_identity_record": null,
+      "started_at_utc": null,
+      "ended_at_utc": null,
+      "pre_run_reboot_or_power_cycle_required": true,
+      "pre_run_reboot_or_power_cycle_confirmed": false,
+      "firmware_elf_sha256": "880993181c64c5ede0dfd2d79a1a6d67f8257affae11f297cb6ecbf1a6ed64be",
+      "firmware_bin_sha256": "36c9d9b8ae4e2ed1f8430a66d5f61580e15d86887d48704d2fad1223ffe02b87",
+      "trigger_verified": false,
+      "latch_verified": false,
+      "no_recovery_verified": false,
+      "cleanup_verified": false,
+      "retrigger_rejection_verified": false
+    },
+    {
+      "run_id": null,
+      "nonce": null,
+      "log_directory": null,
+      "gdb_transcript": null,
+      "analyzer_raw_file": null,
+      "wiring_record": null,
+      "equipment_identity_record": null,
+      "started_at_utc": null,
+      "ended_at_utc": null,
+      "pre_run_reboot_or_power_cycle_required": true,
+      "pre_run_reboot_or_power_cycle_confirmed": false,
+      "firmware_elf_sha256": "880993181c64c5ede0dfd2d79a1a6d67f8257affae11f297cb6ecbf1a6ed64be",
+      "firmware_bin_sha256": "36c9d9b8ae4e2ed1f8430a66d5f61580e15d86887d48704d2fad1223ffe02b87",
+      "trigger_verified": false,
+      "latch_verified": false,
+      "no_recovery_verified": false,
+      "cleanup_verified": false,
+      "retrigger_rejection_verified": false
+    },
+    {
+      "run_id": null,
+      "nonce": null,
+      "log_directory": null,
+      "gdb_transcript": null,
+      "analyzer_raw_file": null,
+      "wiring_record": null,
+      "equipment_identity_record": null,
+      "started_at_utc": null,
+      "ended_at_utc": null,
+      "pre_run_reboot_or_power_cycle_required": true,
+      "pre_run_reboot_or_power_cycle_confirmed": false,
+      "firmware_elf_sha256": "880993181c64c5ede0dfd2d79a1a6d67f8257affae11f297cb6ecbf1a6ed64be",
+      "firmware_bin_sha256": "36c9d9b8ae4e2ed1f8430a66d5f61580e15d86887d48704d2fad1223ffe02b87",
+      "trigger_verified": false,
+      "latch_verified": false,
+      "no_recovery_verified": false,
+      "cleanup_verified": false,
+      "retrigger_rejection_verified": false
+    }
+  ],
+  "operator": {
+    "identity": null,
+    "approval": false
+  },
+  "independent_reviewer": {
+    "identity": null,
+    "approval": false,
+    "distinct_from_operator": false
+  },
+  "blockers": [
+    "isolated bench and vehicle/gateway disconnection are not confirmed",
+    "emergency stop or power-cut method is not approved",
+    "DUT identity and target voltage are missing",
+    "debug probe identity and firmware version are missing",
+    "CAN analyzer identity, mode, version, and timestamp resolution are missing",
+    "active fault injector identity, supported injection type, operating limits, and stop condition are missing",
+    "bus sample point, mode, termination, common ground, and idle voltage are not confirmed",
+    "post-latch observation duration is not approved",
+    "three independent run IDs, nonces, paths, wiring records, and equipment records are not assigned",
+    "raw GDB and analyzer capture availability is not confirmed",
+    "operator and distinct independent reviewer approvals are missing"
+  ]
+}
