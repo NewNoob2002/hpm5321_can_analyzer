@@ -18,9 +18,13 @@ Both builds disable automatic retransmission and publish the volatile
 firmware.
 
 The retained reproducible artifact is historical evidence. Its attestation
-pins a Git source commit and canonical manifest; `rebuild_current_artifact.sh`
-extracts that archived commit before rebuilding, so later planning or product
-CMake changes do not invalidate the evidence or get mistaken for tested input.
+pins a Git source commit, canonical source manifest, and the versioned
+`docs/evidence/phase0/T-CAN-TX-current-artifact.zip` package. The package
+contains the attested ELF plus an immutable build manifest, so validation does
+not depend on an ignored local build tree. `rebuild_current_artifact.sh`
+extracts the archived commit before rebuilding and regenerates the package, so
+later planning or product CMake changes do not invalidate the evidence or get
+mistaken for tested input.
 
 The result ABI is version 5 and includes the run nonce plus post-cleanup CCCR, IOC FUNC_CTL,
 GPIO OE, and GPIOM snapshots. DONE requires the cleanup readback to pass.

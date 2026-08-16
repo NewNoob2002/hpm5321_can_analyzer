@@ -1,4 +1,5 @@
 {
+  "schema": 1,
   "artifact": "build/review-mcan-tx/output/demo.elf",
   "elf_sha256": "3dd776cc8ef54db777fe9cfeab7d161c355d3cddd290652a6b126c4e43906268",
   "source_manifest": "docs/evidence/phase0/T-CAN-EXT-source-manifest.sha256",

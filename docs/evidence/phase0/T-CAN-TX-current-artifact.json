@@ -1,6 +1,9 @@
 {
-  "artifact": "build/review-mcan-tx/output/demo.elf",
-  "elf_sha256": "47dfb2405a0db2894901bb2273dd7e8bae6b65cbb31c1c4bfde3e05b1cf9ef8e",
+  "schema": 2,
+  "artifact_package": "docs/evidence/phase0/T-CAN-TX-current-artifact.zip",
+  "artifact_package_sha256": "d89f981eb3ad98130e5d37ac4a2f180e4974a80fee7fed362415a610060c021e",
+  "artifact": "output/demo.elf",
+  "elf_sha256": "bfd96070d9dfb7575aee9b31361dd69746d8baa466e3b63b6d6b1d2f6cb10cc0",
   "source_manifest": "docs/evidence/phase0/T-CAN-EXT-source-manifest.sha256",
   "source_manifest_sha256": "522194632841040fb392fbf2f00453f2bf7da2f9ea109bff5e4a10d22ea6361c",
   "source_commit": "db53b2ca15c76ba9963ee8f2c3c36d2f36a75567",
