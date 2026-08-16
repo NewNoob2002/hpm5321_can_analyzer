@@ -1,0 +1,68 @@
+SEGGER J-Link Commander V9.66 (Compiled Aug  5 2026 12:26:11)
+DLL version V9.66, compiled Aug  5 2026 12:25:25
+
+
+J-Link Command File read successfully.
+Processing script file...
+J-Link>device HPM5321xCFx
+J-Link connection not established yet but required for command.
+Connecting to J-Link ...O.K.
+Firmware: J-Link Pro V4 V11 PLUS Dec compiled 9 2041 12:59:59
+Hardware version: V11.00
+J-Link uptime (since boot): 0d 13h 30m 15s
+S/N: 607000454
+License(s): RDI,FlashBP,FlashDL,JFlash,GDB
+USB speed mode: High speed (480 MBit/s)
+IP-Addr: 255.255.255.255 (DHCP)
+VTref=3.309V
+J-Link>si JTAG
+Selecting JTAG as current target interface.
+J-Link>speed 4000
+Selecting 4000 kHz as target interface speed
+J-Link>jtagconf -1,-1
+J-Link>connect
+Device "HPM5321XCFX" selected.
+
+
+Connecting to target via JTAG
+TotalIRLen = 5, IRPrint = 0x01
+JTAG chain detection found 1 devices:
+ #0 Id: 0x1000563D, IRLen: 05, RV32
+Assuming RISC-V TAP with JTAG-DTM setup
+DTM architecture:
+  RISC-V JTAG-DTM version: 0.13
+  AddrBits: 7
+  DataBits: 32
+  IdleClks: 7
+RISC-V Debug Spec. Version: 0.13
+Memory access:
+  Via system bus: Yes (8/16/32-bit accesses are supported)
+  Via ProgBuf: Yes (8 ProgBuf entries)
+  Via abstract command (AAM): May be tried as last resort
+DataBuf: 4 entries
+  autoexec[0] implemented: Yes
+Detected: RV32 core
+RISC-V: The connected J-Link (S/N 607000454) uses an old firmware module V4 with known problems / limitations.
+Temp. halting CPU for feature detection...
+HW instruction/data BPs: 8
+Support set/clr BPs while running: No
+HW data BPs trigger before execution of inst
+CSR access via abs. commands: Yes
+Compressed instruction support: Yes
+Feature detection done. Restarting core...
+BG memory access support: Via SBA
+Memory zones:
+  Zone: "Default" Description: Default access mode
+RISC-V identified.
+J-Link>r
+Reset delay: 0 ms
+Reset type: Normal (https://kb.segger.com/J-Link_Reset_Strategies)
+RISC-V: Performing reset via <ndmreset>
+J-Link>g
+Memory map 'after startup completion point' is active
+J-Link>sleep 1500
+Sleep(1500)
+J-Link>exit
+
+Script processing completed.
+

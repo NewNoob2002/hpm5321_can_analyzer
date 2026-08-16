@@ -1,0 +1,83 @@
+{
+  "captured_at_utc": "2026-08-14T15:44:04Z",
+  "evidence_boundary": {
+    "pending": [
+      "1 Mbit/s external CAN generator run at >=6000 frame/s for 1800 seconds",
+      "independent analyzer timestamp and bit-timing reconciliation",
+      "USB backpressure under CAN load",
+      "state-edge/drop reconciliation",
+      "physical USB disconnect/reconnect",
+      "bus-off/manual fault injection"
+    ],
+    "statement": "No-load USB checks passed, but they do not satisfy CAN-load backpressure or any external-analyzer acceptance criterion."
+  },
+  "evidence_id": "P3B-HIL-execution-status-2026-08-14",
+  "firmware_evidence": {
+    "path": "docs/evidence/phase3/P3B-HIL-firmware-evidence-2026-08-14.json",
+    "sha256": "aa2d08e431ae27534963359150981bfd038b1085dcaab7175d011f5a8da01d19"
+  },
+  "frozen_profile": {
+    "acceptance": {
+      "channel_sequence_gaps": 0,
+      "clock_fit_residual_p95_ns_max": 1000000,
+      "device_drops": 0,
+      "event_sequence_gaps": 0,
+      "latency_p95_ns_max": 5000000,
+      "minimum_frames_per_second": 6000,
+      "queue_drops": 0,
+      "ring_drops": 0
+    },
+    "blocked_reason": "The 5-second preflight observed zero CAN frames; starting the 1800-second qualification run would not exercise the frozen profile.",
+    "long_run_started": false,
+    "required_command": "cd host && cargo run -p hpm-usb-can-core --release --example can_hil_capture -- 60 1800 ../artifacts/hil-2026-08-14/T-CAN-1M-30MIN"
+  },
+  "hardware_inventory": {
+    "independent_analyzer_evidence": null,
+    "path": "docs/evidence/phase3/P3B-external-hardware-inventory-2026-08-14.txt",
+    "sha256": "418effd41ea91962cfceab74865d443dabbe5abdff213fa36a9f0f508110b646",
+    "socketcan_interfaces": [],
+    "unclassified_serial_nodes": [
+      "/dev/ttyACM0"
+    ]
+  },
+  "no_can_load_baselines": {
+    "usb_backpressure": {
+      "scope": "15-second host read pause without CAN traffic",
+      "status": "PASS",
+      "transcript": {
+        "path": "docs/evidence/phase3/P3B-USB-backpressure-no-can-load-2026-08-14.txt",
+        "sha256": "a1f7b021c8d2514040a7ea0d2b9f53f969b72ae41eb206dbaba7920b8fbd958f"
+      }
+    },
+    "usb_ping_soak": {
+      "scope": "60-second protocol ping soak without CAN traffic",
+      "status": "PASS",
+      "transcript": {
+        "path": "docs/evidence/phase3/P3B-USB-ping-soak-no-can-load-2026-08-14.txt",
+        "sha256": "a2579961d93f4a20d57315041885d45067e28bf1774b7bf40cbb785d2a4d9377"
+      }
+    }
+  },
+  "p4e_gate": "BLOCKED",
+  "phase": "P3B",
+  "preflight": {
+    "command": "cd host && cargo run -p hpm-usb-can-core --release --example can_hil_capture -- 1 5 ../artifacts/hil-2026-08-14/T-CAN-1M-PREFLIGHT-5S",
+    "observed_frames": 0,
+    "observed_frames_per_second": 0.0,
+    "package": {
+      "members": [
+        "summary.json",
+        "diagnostics.csv",
+        "frames.csv",
+        "pings.csv"
+      ],
+      "path": "docs/evidence/phase3/P3B-HIL-preflight-no-traffic-2026-08-14.zip",
+      "sha256": "002c90210d1172f6124e0187b74287edb1834ca3c6187821ffd0b75c3abe4b64",
+      "size": 5744
+    },
+    "result": "BLOCKED_NO_EXTERNAL_CAN_TRAFFIC",
+    "summary_sha256": "fec341cb74ecd61223863b7ac6bfe81a1a5dec9c147445a35751c4a6cd9352f4"
+  },
+  "qualification_status": "PARTIAL",
+  "schema": 1
+}

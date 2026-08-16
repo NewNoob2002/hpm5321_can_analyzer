@@ -1,0 +1,18 @@
+{
+  "binary": {
+    "member": "capture/can_hil_capture",
+    "sha256": "1791cb97ea8dd37abbae04cab7bb7a8a6cb0d98898bc81637d6de7549b3e8587",
+    "size": 727744
+  },
+  "compiler": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+  "evidence_id": "P3B-capture-tool-anchor-2026-08-15",
+  "phase": "P3B",
+  "schema": 1,
+  "source": {
+    "commit": "afbf243e1b0e433deb9fad946dab7d4beb3b026a",
+    "dirty": true,
+    "member": "capture/can_hil_capture.rs",
+    "sha256": "6944d5150086a17605e37c10e4d220258eff964783ad7b9544b9c53181636541",
+    "size": 48219
+  }
+}

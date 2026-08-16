@@ -1,0 +1,93 @@
+{
+  "evidence_id": "P3B-bus-off-fault-injection-blocker-2026-08-15",
+  "evidence_boundary": {
+    "required_next_step": "Add a controlled debug-only normal-mode and fault-trigger test hook, or use a separately qualified dedicated fault-injection firmware, before claiming bus-off/manual fault-injection coverage.",
+    "statement": "The current P3B qualification firmware and host tools can observe MCAN error state but cannot safely initiate the normal-mode transmit behavior required for a controlled bus-off/manual fault-injection test.",
+    "status": "BLOCKED_BY_MISSING_TEST_HOOK"
+  },
+  "findings": [
+    {
+      "assertion": "The qualification controller is configured listen-only with TX buffers disabled and TX disarmed.",
+      "line_ranges": [
+        "195-277"
+      ],
+      "path": "USER/src/app_mcan0_owner.c",
+      "sha256": "518d263179edc522324733e826ea0fc304fb87ff9618d646387a20b6718df272"
+    },
+    {
+      "assertion": "Every product-firmware TX submission is rejected as disarmed.",
+      "line_ranges": [
+        "652-665"
+      ],
+      "path": "USER/src/app_mcan0_owner.c",
+      "sha256": "518d263179edc522324733e826ea0fc304fb87ff9618d646387a20b6718df272"
+    },
+    {
+      "assertion": "The USB owner forwards pending TX requests into the permanently disarmed MCAN owner path.",
+      "line_ranges": [
+        "755-775"
+      ],
+      "path": "USER/src/app_usb_owner.c",
+      "sha256": "04cda33d202dd766a0355eea954205c0243b6c775629742bdf56b8fd6c0ed666"
+    },
+    {
+      "assertion": "The HIL collector rejects devices that are not listen-only, TX-disarmed, and without automatic recovery attempts.",
+      "line_ranges": [
+        "453-505"
+      ],
+      "path": "host/crates/core/examples/can_hil_capture.rs",
+      "sha256": "6944d5150086a17605e37c10e4d220258eff964783ad7b9544b9c53181636541"
+    },
+    {
+      "assertion": "The protocol smoke tool also requires listen-only and TX-disarmed state.",
+      "line_ranges": [
+        "65-85"
+      ],
+      "path": "host/crates/core/examples/protocol_smoke.rs",
+      "sha256": "134ca18f1620b45f5522d346b83c5158f4ff695a1271558675d53d342f9af1c9"
+    },
+    {
+      "assertion": "Firmware diagnostics observe PSR/ECR bus state and explicitly perform no automatic bus-off recovery.",
+      "line_ranges": [
+        "335-364",
+        "431-465"
+      ],
+      "path": "USER/src/app_mcan0_owner.c",
+      "sha256": "518d263179edc522324733e826ea0fc304fb87ff9618d646387a20b6718df272"
+    },
+    {
+      "assertion": "The generic build-time fault injection covers RTOS assert, stack-overflow, and allocation failures, not MCAN faults.",
+      "line_ranges": [
+        "63-71"
+      ],
+      "path": "USER/src/freertos_hooks.c",
+      "sha256": "a55162b4baf7fba0176f4d9f619ea40695dac9c5bce9dafbbdd4c7f7ed8e83e2"
+    },
+    {
+      "assertion": "The generic build-time fault selector exposes only the three RTOS fault modes.",
+      "line_ranges": [
+        "34-39",
+        "84-92"
+      ],
+      "path": "CMakeLists.txt",
+      "sha256": "7c33b2777b06512a088d5cc1696a72408545440c99b5aa607fddd7be1afa3349"
+    },
+    {
+      "assertion": "A separate Phase 0 probe can enter normal mode for bounded TX, but it is not the P3B qualification firmware or product host path.",
+      "line_ranges": [
+        "337-365"
+      ],
+      "path": "tools/phase0/mcan0_external_probe/src/main.c",
+      "sha256": "9239b539740cdea5926d486e5e335e6d2fb82f879059c5db722336959e71898d"
+    }
+  ],
+  "p4e_gate": "BLOCKED",
+  "phase": "P3B",
+  "qualification_status": "PARTIAL",
+  "schema": 1,
+  "source": {
+    "commit": "afbf243e1b0e433deb9fad946dab7d4beb3b026a",
+    "dirty": true
+  },
+  "test": "bus-off/manual fault injection"
+}

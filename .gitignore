@@ -3,6 +3,19 @@ build/
 /host/spike/rust/target/
 /artifacts/
 
+# Raw P3B HIL captures are staged locally, then uploaded to the evidence store.
+# Repository manifests retain hashes, sizes, member tables, and key excerpts.
+/docs/evidence/phase3/P3B-HIL-10MIN-diagnostic-2026-08-15.zip
+/docs/evidence/phase3/P3B-HIL-30MIN-failure-2026-08-15.zip
+/docs/evidence/phase3/P3B-HIL-30MIN-qualified-2026-08-15.zip
+/docs/evidence/phase3/P3B-HIL-backpressure-2026-08-15.zip
+
+# Personal agent configuration is not part of the product change set.
+/.claude/
+/.codex/
+/.agents/
+/skills-lock.json
+
 # Build outputs and generated reports
 .omx/
 .codegraph/

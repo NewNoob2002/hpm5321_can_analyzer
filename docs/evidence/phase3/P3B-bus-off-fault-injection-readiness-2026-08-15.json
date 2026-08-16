@@ -1,0 +1,178 @@
+{
+  "actual_hil": {
+    "executed": true,
+    "outcome": "TIMEOUT_CLEANED_NOT_BUS_OFF",
+    "raw_evidence": {
+      "path": "docs/evidence/phase3/P3B-bus-off-attempt-2026-08-15.json",
+      "sha256": "83417a29c480a8029a8dde988c82e53797aea6bded158a891f2aaf58142345e4"
+    },
+    "status": "INCOMPLETE_PHYSICAL_FAULT_STIMULUS"
+  },
+  "assets": {
+    "arm_gdb": {
+      "path": "scripts/phase3/p3b_bus_off_arm.gdb",
+      "sha256": "57ddc43b9764993b9160da5b15a90e81e7ab5478162e90beae8baeeabb781f5d"
+    },
+    "manual_procedure": {
+      "path": "docs/development/p3b-bus-off-manual-test.md",
+      "sha256": "34bfa39303511219fe9f559a94c1a4a4484128a9ffb091f04080a969bd18b75f"
+    },
+    "retrigger_gdb": {
+      "path": "scripts/phase3/p3b_bus_off_retrigger.gdb",
+      "sha256": "ba46bdfcf5caa656dda237d6cab13291659c98cda2de777d3d15a9306ad08ebf"
+    },
+    "retrigger_verify_gdb": {
+      "path": "scripts/phase3/p3b_bus_off_retrigger_verify.gdb",
+      "sha256": "00b2637f0a666674f97d301ae49c6aa803a3778bb919141bcc66fe457ea74775"
+    },
+    "snapshot_gdb": {
+      "path": "scripts/phase3/p3b_bus_off_snapshot.gdb",
+      "sha256": "7f47be00f3f172285c0071c7c6bcdd458d4a5341e75527bfb2a9c4bebb170f6e"
+    }
+  },
+  "evidence_boundary": {
+    "pending": [
+      "Repeat the controlled attempt on the isolated bench with active bit/form/stuff-error injection that remains effective after the DUT becomes error-passive.",
+      "Archive a BUS_OFF_LATCHED snapshot and independently review it before changing P3B or P4E gates."
+    ],
+    "statement": "A real isolated-bench attempt was executed with one silent analyzer. The DUT reached error-passive at TEC 128, timed out safely, and did not reach bus-off. Active bit/form/stuff-error injection is still required; no PASS is claimed.",
+    "status": "READY_FOR_ACTIVE_FAULT_INJECTION"
+  },
+  "evidence_id": "P3B-bus-off-fault-injection-readiness-2026-08-15",
+  "historical_blocker": {
+    "authority": "HISTORICAL_SUPERSEDED_BY_THIS_READINESS",
+    "path": "docs/evidence/phase3/P3B-bus-off-fault-injection-blocker-2026-08-15.json",
+    "sha256": "7abce66e01869eca723058b502a70110ac859b62b42ea1cb908d648157c82ca4"
+  },
+  "manual_acceptance": {
+    "automatic_recovery_attempts": {
+      "expected": 0,
+      "status": "PENDING"
+    },
+    "bus_off_observed": {
+      "expected": 1,
+      "status": "PENDING"
+    },
+    "cancel_timeout_observed": {
+      "expected": 0,
+      "status": "PENDING"
+    },
+    "error_passive_observed": {
+      "expected": 1,
+      "status": "PENDING"
+    },
+    "final_psr_bo": {
+      "expected": 1,
+      "status": "PENDING"
+    },
+    "last_submit_status": {
+      "expected": 0,
+      "status": "PENDING"
+    },
+    "max_tec_minimum": {
+      "expected": 128,
+      "status": "PENDING"
+    },
+    "once_per_boot_consumed": {
+      "expected": 1,
+      "status": "PENDING"
+    },
+    "post_cleanup_init": {
+      "expected": 1,
+      "status": "PENDING"
+    },
+    "post_cleanup_pads_disconnected": {
+      "expected": 1,
+      "status": "PENDING"
+    },
+    "post_cleanup_tx_pending": {
+      "expected": 0,
+      "status": "PENDING"
+    },
+    "result_state": {
+      "expected": "BUS_OFF_LATCHED",
+      "status": "PENDING"
+    },
+    "retrigger_rejected_count_delta": {
+      "expected": 1,
+      "status": "PENDING"
+    },
+    "retrigger_tx_submit_count": {
+      "expected": 1,
+      "status": "PENDING"
+    },
+    "run_nonce_matches_evidence": {
+      "expected": true,
+      "status": "PENDING"
+    },
+    "tx_submit_count": {
+      "expected": 1,
+      "status": "PENDING"
+    },
+    "warning_observed": {
+      "expected": 1,
+      "status": "PENDING"
+    }
+  },
+  "p4e_gate": "BLOCKED",
+  "phase": "P3B",
+  "qualification_status": "PARTIAL",
+  "readiness": "READY_FOR_ACTIVE_FAULT_INJECTION",
+  "schema": 1,
+  "source": {
+    "commit": "afbf243e1b0e433deb9fad946dab7d4beb3b026a",
+    "dirty": true,
+    "files": [
+      {
+        "path": "CMakeLists.txt",
+        "sha256": "d86c742d87e1c1dca467639f3c7e30a671aabd62edc4cab5b43f6810b35e743a"
+      },
+      {
+        "path": "CMakePresets.json",
+        "sha256": "8fab38287bcd6ddd5b0aa050cf7dc40dd9bdf31389e8f7daf04e56ab16d4d216"
+      },
+      {
+        "path": "USER/inc/app_mcan0_owner.h",
+        "sha256": "d2de1d1d44b34347639cee2f35f5466c9446f4621768613fd23e2af743774755"
+      },
+      {
+        "path": "USER/src/app_mcan0_owner.c",
+        "sha256": "68ce29e26cdf4d74ce883e898f28d92a8a694cd84cc1ecb416db27775c4b6063"
+      },
+      {
+        "path": "boards/hpm5321_custom/board.c",
+        "sha256": "fabcf86f370780591c13139b390225884edf7209512ed1e26e97acedbf0e60a1"
+      },
+      {
+        "path": "boards/hpm5321_custom/board.h",
+        "sha256": "2d50dbb54652080f5e8b3a92159f86773193dbc00307f7f5ad82689c79038d0a"
+      },
+      {
+        "path": "boards/hpm5321_custom/pinmux.c",
+        "sha256": "fc0ba3913efe53f55cdcc0edd103cc0fc0b3a2ffb10a266305b3d16ab05d1868"
+      },
+      {
+        "path": "boards/hpm5321_custom/pinmux.h",
+        "sha256": "f3a1cd29792ff60a2102f08fed566749e6f8a336b184979ca5dfdcb676d82f38"
+      },
+      {
+        "path": "scripts/build.sh",
+        "sha256": "655bde0805776043ec619ac0f74c4113bb2e0026c5dcc6ff8c5d52c906f91640"
+      },
+      {
+        "path": "scripts/env/check_memory_budget.py",
+        "sha256": "d499f1b66556e1073c1214bfdb39ef3f2bd19089fb8a0428703cb73b7e58e6bf"
+      },
+      {
+        "path": "scripts/env/write_build_manifest.py",
+        "sha256": "fbe6fa303d9f1adb57f583541273df3c84f7f0faaa4d5e51094501878bd23fe7"
+      },
+      {
+        "path": ".github/workflows/firmware-contract.yml",
+        "sha256": "51e3981bbb76a30085f72347c98372d62da2706355a5375c2d603b6de63be70e"
+      }
+    ],
+    "hpm_sdk_commit": "88b01b43900d8c30844a1e5cdd3f3b7aff6db40e",
+    "toolchain": "riscv32-unknown-elf-gcc (gc891d8dc23e) 13.2.0"
+  }
+}

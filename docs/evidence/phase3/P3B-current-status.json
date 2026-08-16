@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "as_of": "2026-08-16",
+  "phase": "P3B",
+  "qualification_status": "PARTIAL",
+  "p4e_gate": "BLOCKED",
+  "load_gate": "PASS_HOST_LOAD_ACCEPTANCE",
+  "bus_off_gate": "READY_FOR_MANUAL_HIL",
+  "bus_off_last_attempt": "TIMEOUT_CLEANED_NOT_BUS_OFF",
+  "freeze_status": "BLOCKED",
+  "freeze_blockers": [
+    "controlled active error injection has not produced bus-off",
+    "three independent bus-off reproductions and post-latch observations are pending",
+    "external raw-evidence object IDs and locations are pending",
+    "clean-checkout software closure has not been recorded at a frozen commit"
+  ],
+  "authoritative_evidence": {
+    "load_status": {
+      "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+      "sha256": "4d588e7ac971e6a13bbf3a896fda5836f7d24d315fd257f0d8dbecb8d4369789"
+    },
+    "bus_off_readiness": {
+      "path": "docs/evidence/phase3/P3B-bus-off-fault-injection-readiness-2026-08-15.json",
+      "sha256": "61d96ae4ab47df00b4c747f3eca36503a16a6227aa3d47faacae287281229fa9"
+    },
+    "bus_off_attempt": {
+      "path": "docs/evidence/phase3/P3B-bus-off-attempt-2026-08-15.json",
+      "sha256": "83417a29c480a8029a8dde988c82e53797aea6bded158a891f2aaf58142345e4"
+    }
+  },
+  "historical_blocker": {
+    "path": "docs/evidence/phase3/P3B-bus-off-fault-injection-blocker-2026-08-15.json",
+    "sha256": "7abce66e01869eca723058b502a70110ac859b62b42ea1cb908d648157c82ca4",
+    "authority": "HISTORICAL_ONLY",
+    "preserve_original": true
+  },
+  "external_artifact_index": "docs/evidence/phase3/P3B-external-artifacts.json"
+}

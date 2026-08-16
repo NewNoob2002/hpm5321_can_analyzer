@@ -1,0 +1,284 @@
+{
+  "evidence_boundary": {
+    "completed": [
+      "1 Mbit/s external CAN generator run at >=6000 frame/s for 1800 seconds",
+      "USB backpressure recovery under CAN load",
+      "EVENT-domain state/drop reconciliation",
+      "physical USB disconnect/reconnect (1 cycle)",
+      "independent analyzer low-rate frame/content, coarse timestamp/rate, and nominal 1 Mbit/s configuration reconciliation",
+      "controlled bus-off attempt with a silent analyzer reached error-passive at TEC 128 and safely timed out without bus-off"
+    ],
+    "limitations": [
+      "No independent analyzer per-frame timestamp export exists for the 6000 frame/s run.",
+      "The independent analyzer export-capable run observed approximately 63.661 frame/s and does not independently cover the 6000 frame/s load profile.",
+      "The independent analyzer timestamp text has 1 ms resolution and logger/scheduler jitter; sub-millisecond accuracy is not claimed.",
+      "The archived analyzer screenshot proves the selected 1 Mbit/s nominal arbitration bitrate, not electrical waveform shape, sample point, or oscillator tolerance.",
+      "EVENT-domain DATA_LOSS exactly reconciles missing EVENT sequences, but cannot exactly attribute the 90159 missing CAN channel records inside dropped batches.",
+      "The capture executable was built from an archived dirty source snapshot; its source and binary are embedded in the qualified package.",
+      "Firmware identity is bound to the prior immutable Program+Verify and flash-readback evidence rather than a new flash immediately before this rerun.",
+      "The 2026-08-15 bus-off attempt used one silent analyzer and no active fault injector; the DUT reached error-passive at TEC 128 and safely timed out, so bus-off was not achieved."
+    ],
+    "pending": [
+      "bus-off/manual fault injection"
+    ],
+    "statement": "The qualified rerun passed every encoded host/device acceptance criterion over the complete 1800-second measurement window. A separate export-capable low-rate independent analyzer window reconciled all frames and the selected 1 Mbit/s nominal bitrate. No independent high-rate timestamp stream is claimed."
+  },
+  "evidence_id": "P3B-HIL-load-status-2026-08-15",
+  "firmware_evidence": {
+    "path": "docs/evidence/phase3/P3B-HIL-firmware-evidence-2026-08-14.json",
+    "sha256": "aa2d08e431ae27534963359150981bfd038b1085dcaab7175d011f5a8da01d19"
+  },
+  "frozen_profile": {
+    "acceptance": {
+      "channel_sequence_gaps": 0,
+      "clock_fit_residual_p95_ns_max": 1000000,
+      "device_drops": 0,
+      "event_sequence_gaps": 0,
+      "latency_p95_ns_max": 5000000,
+      "minimum_frames_per_second": 6000,
+      "queue_drops": 0,
+      "ring_drops": 0
+    },
+    "blocked_reason": "The encoded 1800-second host/device load gate passed. The authoritative bus-off attempt outcome is TIMEOUT_CLEANED_NOT_BUS_OFF: one silent analyzer produced ACK errors only, the DUT reached error-passive at TEC 128, and no bus-off occurred. A controlled active bit/form/stuff-error source is still required; therefore overall P3B remains PARTIAL and P4E remains BLOCKED. The prior missing-hook blocker is retained only as historical evidence. The low-rate independent analyzer reconciliation is complete with explicit timestamp-resolution and high-rate-coverage limitations.",
+    "load_gate": "PASS",
+    "long_run_started": true,
+    "required_command": "cd host && cargo run -p hpm-usb-can-core --release --example can_hil_capture -- 60 1800 ../artifacts/hil-2026-08-15/T-CAN-1M-30MIN-RERUN-105401",
+    "result": "PASS_HOST_LOAD_ACCEPTANCE"
+  },
+  "operator_configuration_attestation": {
+    "attestation": {
+      "path": "docs/evidence/phase3/P3B-independent-analyzer-capability-2026-08-15.txt",
+      "sha256": "fa9e80b5c532bb5c898e58ebe6741d29a6fe58ff4c3d4546abca32ddd5674c9b"
+    },
+    "can_bitrate_bits_per_second": 1000000,
+    "date": "2026-08-15",
+    "generator_ack_mode": "normal_active",
+    "generator_minimum_frames_per_second": 6000,
+    "high_rate_evidence_mode": "dut_host_capture_and_firmware_diagnostics",
+    "independent_analyzer_6000fps_log_export": false,
+    "independent_analyzer_connected": true,
+    "independent_analyzer_export": "archived:analyzer-log.txt",
+    "independent_analyzer_low_rate_observed_frames_per_second": 63.661,
+    "independent_analyzer_low_rate_reconciliation": "PASS_WITH_LIMITATION",
+    "independent_analyzer_max_log_frames_per_second": 1000
+  },
+  "p4e_gate": "BLOCKED",
+  "phase": "P3B",
+  "preflight_status": {
+    "path": "docs/evidence/phase3/P3B-HIL-execution-status-2026-08-14.json",
+    "sha256": "4fa3ca911434e209a75742d67ca1bf415f9d4d21a93c3eff99ecbdfb149c8dbb"
+  },
+  "qualification_status": "PARTIAL",
+  "runs": {
+    "diagnostic_10_min": {
+      "acceptance_observed": {
+        "channel_gaps": 0,
+        "data_loss_dropped": 0,
+        "data_loss_events": 0,
+        "device_drop_total": 0,
+        "event_gaps": 0,
+        "external_analyzer_reconciliation": "PENDING",
+        "fit_residual_ns_p95": 19712,
+        "forward_missing_records": 0,
+        "frames_per_second": 5790.033,
+        "host_acceptance": false,
+        "latency_ns_p95": 1127936,
+        "measurement_queue_drops": 0,
+        "measurement_ring_drops": 0
+      },
+      "frames_csv": {
+        "active_frame_span_seconds": 576.677980962,
+        "archived": true,
+        "channel_gap_count": 0,
+        "compression": "zip-deflate",
+        "first_channel_sequence": 1,
+        "first_device_tick": 2261573761,
+        "first_host_ingest_ns": 1786760048708164935,
+        "frames_per_second_over_active_span": 6024.192208977231,
+        "last_channel_sequence": 3474020,
+        "last_device_tick": 16102183562,
+        "last_host_ingest_ns": 1786760625386145897,
+        "measurement_first_frame_utc": "2026-08-15T02:14:08.708165Z",
+        "measurement_last_frame_utc": "2026-08-15T02:23:45.386146Z",
+        "member": "frames.csv",
+        "row_count": 3474020,
+        "sha256": "e3071ec1a7e1ff78d52ec9d2c5d58024c80c0c902de17dac42ce6e689757fb4f",
+        "size": 201138497
+      },
+      "measurement_window": {
+        "duration_seconds": 600.000142281,
+        "end_device_tick": 16102184340,
+        "end_host_ns": 1786760625385178294,
+        "first_frame_delay_seconds": 23.323128922,
+        "last_frame_offset_from_end_seconds": 0.000967603,
+        "start_device_tick": 1701836787,
+        "start_host_ns": 1786760025385036013
+      },
+      "package": {
+        "members": [
+          "run-manifest.json",
+          "summary.json",
+          "diagnostics.csv",
+          "pings.csv",
+          "frames.csv",
+          "data_loss.csv",
+          "jlink-reset.txt"
+        ],
+        "path": "docs/evidence/phase3/P3B-HIL-10MIN-diagnostic-2026-08-15.zip",
+        "sha256": "c3cfca5331688b4c85428a1cd25ae3711a74d7f5a4903f11669791c9b20d9c1f",
+        "size": 29481962
+      },
+      "result": "FAIL_FIXED_WINDOW_THROUGHPUT"
+    },
+    "frozen_30_min_initial_failure": {
+      "acceptance_observed": {
+        "channel_gaps": 1,
+        "data_loss_dropped": 123,
+        "data_loss_events": 32,
+        "device_drop_total": 0,
+        "event_gaps": 32,
+        "external_analyzer_reconciliation": "PENDING",
+        "fit_residual_ns_p95": 10496,
+        "forward_missing_records": 858,
+        "frames_per_second": 6023.716,
+        "host_acceptance": false,
+        "latency_ns_p95": 0,
+        "measurement_queue_drops": 0,
+        "measurement_ring_drops": 0
+      },
+      "frames_csv": {
+        "active_frame_span_seconds": 1800.000414539,
+        "archived": true,
+        "channel_gap_count": 1,
+        "compression": "zip-deflate",
+        "first_channel_sequence": 361457,
+        "first_device_tick": 1657760361,
+        "first_host_ingest_ns": 1786757636958276919,
+        "frames_per_second_over_active_span": 6023.714168297529,
+        "last_channel_sequence": 11205003,
+        "last_device_tick": 44858806229,
+        "last_host_ingest_ns": 1786759436958691458,
+        "measurement_first_frame_utc": "2026-08-15T01:33:56.958277Z",
+        "measurement_last_frame_utc": "2026-08-15T02:03:56.958691Z",
+        "member": "frames.csv",
+        "row_count": 10842689,
+        "sha256": "374b8c5893a83fe6b3d53c99ec8a1e6a9a87a13f317160c154a6c65d44362117",
+        "size": 642082341
+      },
+      "measurement_window": {
+        "duration_seconds": 1800.00078128,
+        "end_device_tick": 44858808219,
+        "end_host_ns": 1786759436957866374,
+        "first_frame_delay_seconds": 0.001191825,
+        "last_frame_offset_from_end_seconds": 0.000825084,
+        "start_device_tick": 1657759558,
+        "start_host_ns": 1786757636957085094
+      },
+      "package": {
+        "members": [
+          "run-manifest.json",
+          "summary.json",
+          "diagnostics.csv",
+          "pings.csv",
+          "frames.csv",
+          "channel-gap-excerpt.csv",
+          "jlink-reset.txt"
+        ],
+        "path": "docs/evidence/phase3/P3B-HIL-30MIN-failure-2026-08-15.zip",
+        "sha256": "e9b0bdbe01afee482411264e61f7aa65c4ce50c09d9f50fc2f2650761bfa93ff",
+        "size": 93034126
+      },
+      "result": "FAIL_SEQUENCE_AND_DATA_LOSS"
+    },
+    "frozen_30_min_qualified": {
+      "acceptance_observed": {
+        "channel_gaps": 0,
+        "data_loss_dropped": 0,
+        "data_loss_events": 0,
+        "device_drop_total": 0,
+        "event_gaps": 0,
+        "external_analyzer_reconciliation": "PENDING",
+        "fit_residual_ns_p95": 11264,
+        "forward_missing_records": 0,
+        "frames_per_second": 6024.185,
+        "host_acceptance": true,
+        "latency_ns_p95": 1142272,
+        "measurement_queue_drops": 0,
+        "measurement_ring_drops": 0
+      },
+      "frames_csv": {
+        "active_frame_span_seconds": 1799.999717599,
+        "archived": true,
+        "channel_gap_count": 0,
+        "compression": "zip-deflate",
+        "first_channel_sequence": 3925927,
+        "first_device_tick": 61123889457,
+        "first_host_ingest_ns": 1786762501246063798,
+        "frames_per_second_over_active_span": 6024.185389575544,
+        "last_channel_sequence": 14769459,
+        "last_device_tick": 104324896865,
+        "last_host_ingest_ns": 1786764301245781397,
+        "measurement_first_frame_utc": "2026-08-15T02:55:01.246064Z",
+        "measurement_last_frame_utc": "2026-08-15T03:25:01.245781Z",
+        "member": "frames.csv",
+        "row_count": 10843533,
+        "sha256": "700436c934d28220243ccc093e1107adb21343b7224a34dcc56b1df517ff5bf9",
+        "size": 653411483
+      },
+      "measurement_window": {
+        "duration_seconds": 1800.000245453,
+        "end_device_tick": 104324899535,
+        "end_host_ns": 1786764301245066109,
+        "first_frame_delay_seconds": 0.001243142,
+        "last_frame_offset_from_end_seconds": 0.000715288,
+        "start_device_tick": 61123886833,
+        "start_host_ns": 1786762501244820656
+      },
+      "package": {
+        "members": [
+          "run-manifest.json",
+          "summary.json",
+          "diagnostics.csv",
+          "pings.csv",
+          "frames.csv",
+          "data_loss.csv",
+          "capture/capture-tool-anchor.json",
+          "capture/can_hil_capture.rs",
+          "capture/can_hil_capture",
+          "operator-attestation.txt"
+        ],
+        "path": "docs/evidence/phase3/P3B-HIL-30MIN-qualified-2026-08-15.zip",
+        "sha256": "75638af0e569d949936f2028c742c49518210e04d3e9027c417869ef140e0bec",
+        "size": 94999707
+      },
+      "result": "PASS_HOST_LOAD_ACCEPTANCE"
+    }
+  },
+  "schema": 1,
+  "supplemental_evidence": {
+    "backpressure": {
+      "path": "docs/evidence/phase3/P3B-HIL-backpressure-evidence-2026-08-15.json",
+      "sha256": "7c63204cb5f23ea0822e49b4a07f8dbef44d088be30159a4fefc1c86457d6265"
+    },
+    "bus_off_attempt": {
+      "path": "docs/evidence/phase3/P3B-bus-off-attempt-2026-08-15.json",
+      "sha256": "83417a29c480a8029a8dde988c82e53797aea6bded158a891f2aaf58142345e4"
+    },
+    "bus_off_fault_injection_readiness": {
+      "path": "docs/evidence/phase3/P3B-bus-off-fault-injection-readiness-2026-08-15.json",
+      "sha256": "61d96ae4ab47df00b4c747f3eca36503a16a6227aa3d47faacae287281229fa9"
+    },
+    "historical_bus_off_fault_injection_blocker": {
+      "path": "docs/evidence/phase3/P3B-bus-off-fault-injection-blocker-2026-08-15.json",
+      "sha256": "7abce66e01869eca723058b502a70110ac859b62b42ea1cb908d648157c82ca4"
+    },
+    "independent_analyzer_low_rate": {
+      "path": "docs/evidence/phase3/P3B-HIL-analyzer-low-rate-evidence-2026-08-15.json",
+      "sha256": "44f460b6d08bae5457a0a68e080727ab18dbd75d25609ff35fa0c0725dfc3eac"
+    },
+    "physical_usb_hotplug": {
+      "path": "docs/evidence/phase3/P3B-PHYSICAL-USB-HOTPLUG-1CYCLE-2026-08-15.json",
+      "sha256": "75a7ab06a58bca55bc6c87a69f9d9b95d7e5ad867dd2216ff50898ef2cc0755a"
+    }
+  }
+}

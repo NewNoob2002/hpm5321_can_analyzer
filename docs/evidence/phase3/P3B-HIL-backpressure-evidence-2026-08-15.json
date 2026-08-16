@@ -1,0 +1,38 @@
+{
+  "evidence_boundary": {
+    "limitations": [
+      "DATA_LOSS is in the EVENT sequence domain, so the exact number of CAN records inside each dropped batch cannot be reconstructed."
+    ],
+    "statement": "The host collector was paused for approximately 15 seconds under the active 1 Mbit/s >=6000 frame/s source. USB/protocol delivery recovered and every missing EVENT sequence was exactly declared by EVENT-domain DATA_LOSS."
+  },
+  "evidence_id": "P3B-HIL-backpressure-evidence-2026-08-15",
+  "outcomes": {
+    "channel_sequence_reconciliation": "PARTIAL",
+    "event_domain_state_drop_reconciliation": "PASS",
+    "usb_backpressure_recovery": "PASS"
+  },
+  "package": {
+    "members": [
+      "run-manifest.json",
+      "summary.json",
+      "diagnostics.csv",
+      "pings.csv",
+      "data_loss.csv",
+      "events.csv",
+      "frames.csv",
+      "capture-console.log",
+      "backpressure-control.log",
+      "backpressure-reconciliation.json",
+      "capture/can_hil_capture.rs",
+      "capture/can_hil_capture",
+      "reconcile/reconcile_p3b_backpressure.py"
+    ],
+    "path": "docs/evidence/phase3/P3B-HIL-backpressure-2026-08-15.zip",
+    "run_manifest_sha256": "68e9e0a6583d3ee0c372d29f7b510010ebf930dbf78cb82a273f2a37dfa5c11a",
+    "sha256": "eb8c35a06079f42cf59f846ddac40b1e1c34588b6816d099498dc845b907f417",
+    "size": 18044773
+  },
+  "phase": "P3B",
+  "schema": 1,
+  "status": "PARTIAL"
+}
