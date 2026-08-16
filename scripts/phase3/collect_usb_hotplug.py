@@ -158,12 +158,16 @@ def collect(args: argparse.Namespace) -> int:
     manifest_path = manifest_path.resolve()
 
     protocol_smoke = args.smoke_kind == "protocol"
+    cycle_label = "cycle" if args.cycles == 1 else "cycles"
     recovery_coverage = (
-        "100 physical disconnect/reconnect cycles, udev node access, and a "
-        "successful UCAN HELLO/device-info/capabilities/diagnostics transaction "
-        "after every cycle"
+        f"{args.cycles} physical disconnect/reconnect {cycle_label}, udev node "
+        "access, and a successful UCAN HELLO/device-info/capabilities/diagnostics "
+        "transaction after every cycle"
         if protocol_smoke
-        else "100 physical disconnect/reconnect cycles, udev node access, and an exact 1 MiB recovery echo after every cycle"
+        else (
+            f"{args.cycles} physical disconnect/reconnect {cycle_label}, udev "
+            "node access, and an exact 1 MiB recovery echo after every cycle"
+        )
     )
     evidence: dict[str, Any] = {
         "schema_version": 1,
