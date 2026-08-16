@@ -1,0 +1,31 @@
+name: P3B HIL Preflight Contract
+
+on:
+  push:
+    paths:
+      - "docs/development/p3b-active-bus-off-hil-preflight.md"
+      - "docs/evidence/phase3/P3B-active-bus-off-hil-preflight.template.json"
+      - "scripts/phase3/validate_p3b_bus_off_preflight.py"
+      - "tests/phase3/test_p3b_bus_off_preflight.py"
+      - ".github/workflows/p3b-hil-preflight-contract.yml"
+  pull_request:
+    paths:
+      - "docs/development/p3b-active-bus-off-hil-preflight.md"
+      - "docs/evidence/phase3/P3B-active-bus-off-hil-preflight.template.json"
+      - "scripts/phase3/validate_p3b_bus_off_preflight.py"
+      - "tests/phase3/test_p3b_bus_off_preflight.py"
+      - ".github/workflows/p3b-hil-preflight-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Test active bus-off HIL preflight validator
+        run: python3 -m unittest tests.phase3.test_p3b_bus_off_preflight
+      - name: Validate blocked repository template
+        run: python3 scripts/phase3/validate_p3b_bus_off_preflight.py
