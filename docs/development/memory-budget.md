@@ -16,6 +16,15 @@ The checker measures each region from its origin to the highest allocated
 top-level output-section end. This matches GNU ld's region high-water
 accounting and includes alignment gaps plus explicit heap and stack
 reservations; summing section sizes alone would under-report occupied DLM.
+RAM-only debug builds do not define a `FLASH` region in their linker maps.
+For those builds the checker reports `FLASH: N/A` while still requiring and
+enforcing the ILM, DLM, and AHB SRAM budgets.
+
+The explicit `hpm5321-ram-debug-bus-off` test-only preset uses the
+`bus-off-debug` profile. Only its ILM ceiling changes, from 120 KiB to
+126 KiB, leaving at least 2 KiB of physical ILM headroom for the Debug + RAM
+fault-injection image. FLASH, DLM, and AHB SRAM limits remain identical to
+the product profile. No normal or product preset selects this profile.
 
 The linker defines DLM as origin `0x80300`, length `128K - 768`; the checker
 does not reinterpret that capacity. The excluded 768 bytes are at the

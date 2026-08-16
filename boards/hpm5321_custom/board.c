@@ -189,6 +189,21 @@ void board_init_can(MCAN_Type *ptr) {
   }
 }
 
+void board_disconnect_can(MCAN_Type *ptr) {
+  if (ptr == HPM_MCAN0) {
+    init_mcan0_safe_gpio_inputs();
+  } else if (ptr == HPM_MCAN2) {
+    init_mcan2_safe_gpio_inputs();
+  }
+}
+
+bool board_can_pads_are_disconnected(MCAN_Type *ptr) {
+  if (ptr == HPM_MCAN0) {
+    return mcan0_pads_are_safe_gpio_inputs();
+  }
+  return false;
+}
+
 uint32_t board_init_can_clock(MCAN_Type *ptr) {
   if (ptr == HPM_MCAN0) {
     init_can0_clock();

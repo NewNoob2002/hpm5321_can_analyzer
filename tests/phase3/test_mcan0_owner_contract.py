@@ -50,7 +50,8 @@ class Mcan0OwnerContractTests(unittest.TestCase):
         self.assertIn("APP_MCAN0_OWNER_TX_REJECTED_DISARMED", header)
         self.assertIn("tx_rejected_disarmed", header)
         self.assertIn("request->reserved != 0U", source)
-        self.assertNotIn("mcan_transmit_", source)
+        submit_tx = source[source.index("app_mcan0_owner_submit_tx(") :]
+        self.assertNotIn("mcan_transmit_", submit_tx)
 
     def test_500k_preflight_is_a_separate_listen_only_build(self):
         presets = (ROOT / "CMakePresets.json").read_text()

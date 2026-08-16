@@ -26,6 +26,7 @@ if not compile_db.is_file():
     raise SystemExit("compile_commands.json was not generated")
 
 sdk = Path(os.environ["HPM_SDK_BASE"]).resolve()
+toolchain = Path(os.environ["GNURISCV_TOOLCHAIN_PATH"]).resolve()
 cache = (build / "CMakeCache.txt").read_text().splitlines()
 
 
@@ -43,6 +44,19 @@ compiler_path = next(
     for line in cache
     if line.startswith(("CMAKE_C_COMPILER:FILEPATH=", "CMAKE_C_COMPILER:STRING="))
 )
+compile_commands = compile_db.read_text()
+path_mappings = {
+    str(build.resolve()): "${BUILD}",
+    str(ROOT): "${SOURCE_TREE}",
+    str(sdk): "${HPM_SDK_BASE}",
+    str(toolchain): "${GNURISCV_TOOLCHAIN_PATH}",
+}
+# Replace nested locations before their parents (the build tree is under ROOT).
+for original, stable in sorted(
+    path_mappings.items(), key=lambda item: len(item[0]), reverse=True
+):
+    compile_commands = compile_commands.replace(original, stable)
+
 data = {
     "schema": 1,
     "preset": preset,
@@ -61,9 +75,15 @@ data = {
     ).splitlines()[0],
     "build_options": {
         "APP_USB_FORCE_FULL_SPEED": cache_value("APP_USB_FORCE_FULL_SPEED") == "ON",
+        "APP_MCAN0_BUS_OFF_TEST_HOOK": (
+            cache_value("APP_MCAN0_BUS_OFF_TEST_HOOK") == "ON"
+        ),
         "APP_MCAN_BITRATE": int(cache_value("APP_MCAN_BITRATE")),
     },
-    "compile_commands_sha256": hashlib.sha256(compile_db.read_bytes()).hexdigest(),
+    "compile_commands_sha256": hashlib.sha256(
+        compile_commands.encode()
+    ).hexdigest(),
+    "compile_commands_hash_mode": "paths-normalized-v1",
     "artifacts": artifacts,
 }
 (build / "build-manifest.json").write_text(json.dumps(data, indent=2) + "\n")

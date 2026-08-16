@@ -44,24 +44,55 @@ void init_usb0_pins(void) {
   HPM_IOC->PAD[IOC_PAD_PA25].FUNC_CTL = IOC_PAD_FUNC_CTL_ANALOG_MASK;
 }
 
-void disconnect_mcan_pins(void) {
+void disconnect_mcan0_pins(void) {
   /* IOC-only writes are safe before the board clock tree is reconfigured and
    * also handle warm resets where the previous MCAN mux selection persists. */
   HPM_IOC->PAD[IOC_PAD_PB00].FUNC_CTL = IOC_PB00_FUNC_CTL_GPIO_B_00;
   HPM_IOC->PAD[IOC_PAD_PB01].FUNC_CTL = IOC_PB01_FUNC_CTL_GPIO_B_01;
+}
+
+void disconnect_mcan2_pins(void) {
   HPM_IOC->PAD[IOC_PAD_PB08].FUNC_CTL = IOC_PB08_FUNC_CTL_GPIO_B_08;
   HPM_IOC->PAD[IOC_PAD_PB09].FUNC_CTL = IOC_PB09_FUNC_CTL_GPIO_B_09;
 }
 
-void init_mcan_safe_gpio_inputs(void) {
+void disconnect_mcan_pins(void) {
+  disconnect_mcan0_pins();
+  disconnect_mcan2_pins();
+}
+
+void init_mcan0_safe_gpio_inputs(void) {
   /* Establish GPIO ownership and input direction before selecting the GPIO
    * mux. This closes the warm-reset window in which a retained output-enable
    * bit could otherwise drive TXD as soon as FUNC_CTL changes. */
   init_gpio_input(GPIO_DI_GPIOB, 0U);
   init_gpio_input(GPIO_DI_GPIOB, 1U);
+  disconnect_mcan0_pins();
+}
+
+void init_mcan2_safe_gpio_inputs(void) {
   init_gpio_input(GPIO_DI_GPIOB, 8U);
   init_gpio_input(GPIO_DI_GPIOB, 9U);
-  disconnect_mcan_pins();
+  disconnect_mcan2_pins();
+}
+
+void init_mcan_safe_gpio_inputs(void) {
+  init_mcan0_safe_gpio_inputs();
+  init_mcan2_safe_gpio_inputs();
+}
+
+bool mcan0_pads_are_safe_gpio_inputs(void) {
+  const uint32_t pin_mask = (1UL << 0U) | (1UL << 1U);
+
+  return HPM_IOC->PAD[IOC_PAD_PB00].FUNC_CTL ==
+             IOC_PB00_FUNC_CTL_GPIO_B_00 &&
+         HPM_IOC->PAD[IOC_PAD_PB01].FUNC_CTL ==
+             IOC_PB01_FUNC_CTL_GPIO_B_01 &&
+         gpiom_get_pin_controller(HPM_GPIOM, GPIO_DI_GPIOB, 0U) ==
+             gpiom_soc_gpio0 &&
+         gpiom_get_pin_controller(HPM_GPIOM, GPIO_DI_GPIOB, 1U) ==
+             gpiom_soc_gpio0 &&
+         (HPM_GPIO0->OE[GPIO_OE_GPIOB].VALUE & pin_mask) == 0U;
 }
 
 void init_mcan0_pins(void) {

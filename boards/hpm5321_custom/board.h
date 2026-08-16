@@ -125,6 +125,8 @@ void board_init_usb(USB_Type *ptr);
 void board_init_uart(UART_Type *ptr);
 uint32_t board_init_uart_clock(UART_Type *ptr);
 void board_init_can(MCAN_Type *ptr);
+void board_disconnect_can(MCAN_Type *ptr);
+bool board_can_pads_are_disconnected(MCAN_Type *ptr);
 uint32_t board_init_can_clock(MCAN_Type *ptr);
 void board_init_spi_pins(SPI_Type *ptr);
 void board_init_spi_pins_with_gpio_as_cs(SPI_Type *ptr);

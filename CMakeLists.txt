@@ -12,6 +12,20 @@ set(CONFIG_USB_DEVICE 1)
 option(APP_USB_FORCE_FULL_SPEED
     "Force the USB device controller to enumerate at Full Speed for P3A qualification"
     OFF)
+option(APP_MCAN0_BUS_OFF_TEST_HOOK
+    "Enable the debugger-only, bounded P3B MCAN0 bus-off fault-injection hook"
+    OFF)
+
+if(APP_MCAN0_BUS_OFF_TEST_HOOK)
+    if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+        message(FATAL_ERROR
+            "APP_MCAN0_BUS_OFF_TEST_HOOK requires Debug")
+    endif()
+    if(NOT HPM_BUILD_TYPE STREQUAL "ram")
+        message(FATAL_ERROR
+            "APP_MCAN0_BUS_OFF_TEST_HOOK requires HPM_BUILD_TYPE=ram")
+    endif()
+endif()
 
 set(APP_MCAN_BITRATE "1000000" CACHE STRING
     "MCAN0 listen-only nominal bitrate; 500000 is qualification preflight only")
@@ -37,13 +51,42 @@ set_property(CACHE APP_FAULT_INJECT_REASON PROPERTY STRINGS 0 1 2 3)
 if(NOT APP_FAULT_INJECT_REASON MATCHES "^[0-3]$")
     message(FATAL_ERROR "APP_FAULT_INJECT_REASON must be 0, 1, 2, or 3")
 endif()
+if(APP_MCAN0_BUS_OFF_TEST_HOOK AND
+   NOT APP_FAULT_INJECT_REASON STREQUAL "0")
+    message(FATAL_ERROR
+        "APP_MCAN0_BUS_OFF_TEST_HOOK cannot be combined with APP_FAULT_INJECT_REASON")
+endif()
 
 find_package(hpm-sdk REQUIRED HINTS $ENV{HPM_SDK_BASE})
 
 project(hpm5321_can_analyzer)
 
+# Make compiler-visible paths independent of the checkout location.  The SDK
+# interface target is consumed by app, board/SDK sources and repository
+# libraries such as EasyLogger, so these options cover every firmware
+# translation unit rather than only the application object library.
+set(APP_REPRO_SOURCE_ROOT "/src/hpm5321_can_analyzer")
+set(APP_REPRO_BUILD_ROOT "/build/hpm5321_can_analyzer")
+set(APP_REPRO_SDK_ROOT "/sdk/hpm_sdk")
+foreach(prefix_map_kind file macro debug)
+    sdk_compile_options(
+        "-f${prefix_map_kind}-prefix-map=${CMAKE_SOURCE_DIR}=${APP_REPRO_SOURCE_ROOT}"
+        "-f${prefix_map_kind}-prefix-map=${CMAKE_BINARY_DIR}=${APP_REPRO_BUILD_ROOT}"
+        "-f${prefix_map_kind}-prefix-map=${HPM_SDK_BASE}=${APP_REPRO_SDK_ROOT}"
+    )
+    if(DEFINED ENV{GNURISCV_TOOLCHAIN_PATH})
+        sdk_compile_options(
+            "-f${prefix_map_kind}-prefix-map=$ENV{GNURISCV_TOOLCHAIN_PATH}=/toolchain/riscv")
+    endif()
+endforeach()
+
 if(APP_USB_FORCE_FULL_SPEED)
     sdk_compile_definitions(-DCONFIG_USB_DEVICE_FORCE_FULL_SPEED)
+endif()
+if(APP_MCAN0_BUS_OFF_TEST_HOOK)
+    sdk_compile_definitions(-DAPP_MCAN0_BUS_OFF_TEST_HOOK=1)
+else()
+    sdk_compile_definitions(-DAPP_MCAN0_BUS_OFF_TEST_HOOK=0)
 endif()
 
 # The SDK adds CherryUSB's dynamic FreeRTOS OSAL and OTG translation units
