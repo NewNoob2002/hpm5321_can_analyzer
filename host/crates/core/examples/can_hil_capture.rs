@@ -7,7 +7,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use hpm_usb_can_core::usb::UsbTransport;
 use hpm_usb_can_core::{Transport, TransportError};
-use hpm_usb_can_protocol::payload::{HelloRequest, PingRequest, PingResponse};
+use hpm_usb_can_protocol::payload::{ErrorPayload, HelloRequest, PingRequest, PingResponse};
 use hpm_usb_can_protocol::payload_control::{
     CaptureRequest, CaptureResponse, Diagnostics, McanDiagnostics, SessionState,
 };
@@ -43,10 +43,19 @@ struct CaptureStats {
     bus_off_events: u64,
     data_loss_events: u64,
     data_loss_dropped: u64,
+    flow_control_events: u64,
+    event_missing_sequences: u64,
     previous_event_sequence: u32,
     previous_channel_sequence: u32,
     timing_samples: Vec<(u64, u64)>,
     tick_window: Option<TickWindow>,
+}
+
+struct CaptureEventContext<'a> {
+    stats: &'a mut CaptureStats,
+    raw: &'a mut BufWriter<File>,
+    data_loss_csv: &'a mut BufWriter<File>,
+    event_ledger_csv: &'a mut BufWriter<File>,
 }
 
 #[derive(Clone, Copy)]
@@ -81,6 +90,8 @@ impl CaptureStats {
             bus_off_events: 0,
             data_loss_events: 0,
             data_loss_dropped: 0,
+            flow_control_events: 0,
+            event_missing_sequences: 0,
             previous_event_sequence: 0,
             previous_channel_sequence: 0,
             timing_samples: Vec::new(),
@@ -132,8 +143,35 @@ fn next_nonzero(value: u32) -> u32 {
     value.wrapping_add(1).max(1)
 }
 
+fn initial_command_sequence(host_time_ns: u64, session_id: u32) -> u32 {
+    let folded_time = host_time_ns as u32 ^ (host_time_ns >> 32) as u32;
+    (folded_time ^ session_id.rotate_left(13)).max(1)
+}
+
 fn request(message_type: u16, sequence: u32, payload: Vec<u8>) -> Frame {
     Frame::request(message_type, sequence, payload)
+}
+
+fn unexpected_response(context: &str, frame: &Frame) -> String {
+    let header = format!(
+        "{context} type=0x{:04x} flags=0x{:02x} status={} sequence={}",
+        frame.message_type, frame.flags, frame.status, frame.sequence
+    );
+    if frame.flags & flags::ERROR == 0 {
+        return header;
+    }
+    match ErrorPayload::decode(&frame.payload) {
+        Ok(error) => format!(
+            "{header} detail=0x{:04x} error_flags=0x{:04x} field_offset=0x{:08x} expected={} actual={} debug={:?}",
+            error.detail_code,
+            error.error_flags,
+            error.field_offset,
+            error.expected,
+            error.actual,
+            error.debug,
+        ),
+        Err(error) => format!("{header} error_payload_decode={error}"),
+    }
 }
 
 fn read_response(
@@ -151,9 +189,9 @@ fn read_response(
             || frame.sequence != sequence
             || frame.status != 0
         {
-            return Err(TransportError::Protocol(format!(
-                "unexpected response type=0x{:04x} flags=0x{:02x} status={} sequence={}",
-                frame.message_type, frame.flags, frame.status, frame.sequence
+            return Err(TransportError::Protocol(unexpected_response(
+                "unexpected response",
+                &frame,
             )));
         }
         return Ok(frame);
@@ -213,6 +251,8 @@ fn ping_during_capture(
     sample_id: u32,
     stats: &mut CaptureStats,
     raw: &mut BufWriter<File>,
+    data_loss_csv: &mut BufWriter<File>,
+    event_ledger_csv: &mut BufWriter<File>,
 ) -> Result<PingSample, Box<dyn std::error::Error>> {
     let host_send_ns = now_ns();
     let payload = PingRequest {
@@ -221,7 +261,18 @@ fn ping_during_capture(
     }
     .encode();
     transport.write_frame(&request(msg::PING, sequence, payload))?;
-    let response = read_response_during_capture(transport, msg::PING, sequence, stats, raw, true)?;
+    let response = read_response_during_capture(
+        transport,
+        msg::PING,
+        sequence,
+        CaptureEventContext {
+            stats,
+            raw,
+            data_loss_csv,
+            event_ledger_csv,
+        },
+        true,
+    )?;
     let host_receive_ns = now_ns();
     let ping = PingResponse::decode(&response.payload)?;
     if ping.host_send_ns != host_send_ns || ping.sample_id != sample_id {
@@ -240,11 +291,19 @@ fn ping_burst_during_capture(
     samples: &mut Vec<PingSample>,
     stats: &mut CaptureStats,
     raw: &mut BufWriter<File>,
+    data_loss_csv: &mut BufWriter<File>,
+    event_ledger_csv: &mut BufWriter<File>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     for _ in 0..PING_BURST {
         let sample_id = samples.len() as u32 + 1;
         samples.push(ping_during_capture(
-            transport, *sequence, sample_id, stats, raw,
+            transport,
+            *sequence,
+            sample_id,
+            stats,
+            raw,
+            data_loss_csv,
+            event_ledger_csv,
         )?);
         *sequence = next_nonzero(*sequence);
     }
@@ -321,6 +380,17 @@ fn diagnostics_csv_header() -> &'static str {
     )
 }
 
+fn data_loss_csv_header() -> &'static str {
+    concat!(
+        "host_ingest_ns,device_tick,event_sequence,channel,source,sequence_domain,reason,",
+        "config_generation,first_dropped_sequence,last_dropped_sequence,dropped_count"
+    )
+}
+
+fn event_ledger_csv_header() -> &'static str {
+    "host_ingest_ns,event_sequence,message_type"
+}
+
 fn write_diagnostics_row<W: Write>(
     output: &mut W,
     host_poll_ns: u64,
@@ -365,14 +435,20 @@ fn read_response_during_capture(
     transport: &mut UsbTransport,
     message_type: u16,
     sequence: u32,
-    stats: &mut CaptureStats,
-    raw: &mut BufWriter<File>,
+    context: CaptureEventContext<'_>,
     retain: bool,
 ) -> Result<Frame, Box<dyn std::error::Error>> {
     loop {
         let frame = transport.read_frame(IO_TIMEOUT)?;
         if frame.flags & flags::EVENT != 0 {
-            record_event(frame, stats, raw, retain)?;
+            record_event(
+                frame,
+                context.stats,
+                context.raw,
+                context.data_loss_csv,
+                context.event_ledger_csv,
+                retain,
+            )?;
             continue;
         }
         if frame.flags != flags::RESPONSE
@@ -380,16 +456,13 @@ fn read_response_during_capture(
             || frame.sequence != sequence
             || frame.status != 0
         {
-            return Err(format!(
-                "unexpected response during capture type=0x{:04x} flags=0x{:02x} status={} sequence={}",
-                frame.message_type, frame.flags, frame.status, frame.sequence
-            )
-            .into());
+            return Err(unexpected_response("unexpected response during capture", &frame).into());
         }
         return Ok(frame);
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn poll_mcan_diagnostics(
     transport: &mut UsbTransport,
     sequence: u32,
@@ -397,6 +470,8 @@ fn poll_mcan_diagnostics(
     diagnostics_csv: &mut BufWriter<File>,
     stats: &mut CaptureStats,
     raw: &mut BufWriter<File>,
+    data_loss_csv: &mut BufWriter<File>,
+    event_ledger_csv: &mut BufWriter<File>,
     retain: bool,
 ) -> Result<McanDiagnostics, Box<dyn std::error::Error>> {
     let host_poll_ns = now_ns();
@@ -405,8 +480,12 @@ fn poll_mcan_diagnostics(
         transport,
         msg::GET_MCAN_DIAGNOSTICS,
         sequence,
-        stats,
-        raw,
+        CaptureEventContext {
+            stats,
+            raw,
+            data_loss_csv,
+            event_ledger_csv,
+        },
         retain,
     )?;
     let diagnostics = McanDiagnostics::decode(&response.payload)?;
@@ -441,21 +520,37 @@ fn validate_mcan_safety_state(
     Ok(())
 }
 
-fn record_event<W: Write>(
+fn record_event<W: Write, L: Write, E: Write>(
     frame: Frame,
     stats: &mut CaptureStats,
     raw: &mut W,
+    data_loss_csv: &mut L,
+    event_ledger_csv: &mut E,
     retain: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    let host_ingest_ns = now_ns();
+    if retain {
+        writeln!(
+            event_ledger_csv,
+            "{host_ingest_ns},{},{}",
+            frame.sequence, frame.message_type
+        )?;
+    }
     if stats.previous_event_sequence != 0
         && frame.sequence != next_nonzero(stats.previous_event_sequence)
     {
         stats.event_gaps += 1;
+        let expected = next_nonzero(stats.previous_event_sequence);
+        let delta = frame.sequence.wrapping_sub(expected);
+        if delta < 0x8000_0000 {
+            stats.event_missing_sequences = stats
+                .event_missing_sequences
+                .saturating_add(u64::from(delta));
+        }
     }
     stats.previous_event_sequence = frame.sequence;
     match frame.message_type {
         msg::CAN_RX_BATCH => {
-            let host_ingest_ns = now_ns();
             let batch = CanRxBatch::decode(&frame.payload)?;
             let mut retained_batch = false;
             for (record_index, record) in batch.records.into_iter().enumerate() {
@@ -527,12 +622,32 @@ fn record_event<W: Write>(
                 }
             }
         }
+        msg::FLOW_CONTROL => {
+            stats.flow_control_events += 1;
+        }
         msg::DATA_LOSS => {
             let event = DataLossEvent::decode(&frame.payload)?;
             if stats.includes_tick(event.device_tick) {
                 stats.data_loss_events += 1;
                 stats.data_loss_dropped =
                     stats.data_loss_dropped.saturating_add(event.dropped_count);
+                if retain {
+                    writeln!(
+                        data_loss_csv,
+                        "{host_ingest_ns},{},{},{},{},{},{},{},{},{},{}",
+                        event.device_tick,
+                        frame.sequence,
+                        event.channel,
+                        event.source,
+                        event.sequence_domain,
+                        event.reason,
+                        event.config_generation,
+                        event.first_dropped_sequence,
+                        event.last_dropped_sequence,
+                        event.dropped_count,
+                    )?;
+                    data_loss_csv.flush()?;
+                }
             }
         }
         _ => {}
@@ -544,6 +659,8 @@ fn capture_events_until(
     transport: &mut UsbTransport,
     deadline: Instant,
     raw: &mut BufWriter<File>,
+    data_loss_csv: &mut BufWriter<File>,
+    event_ledger_csv: &mut BufWriter<File>,
     retain: bool,
     stats: &mut CaptureStats,
 ) -> Result<(), Box<dyn std::error::Error>> {
@@ -558,7 +675,7 @@ fn capture_events_until(
         let timeout = remaining.min(IO_TIMEOUT);
         match transport.read_frame(timeout) {
             Ok(frame) if frame.flags & flags::EVENT != 0 => {
-                record_event(frame, stats, raw, retain)?;
+                record_event(frame, stats, raw, data_loss_csv, event_ledger_csv, retain)?;
             }
             Ok(_) | Err(TransportError::Timeout) => {}
             Err(error) => return Err(error.into()),
@@ -576,6 +693,8 @@ fn capture_with_diagnostics_until(
     command_sequence: &mut u32,
     diagnostics_csv: &mut BufWriter<File>,
     raw: &mut BufWriter<File>,
+    data_loss_csv: &mut BufWriter<File>,
+    event_ledger_csv: &mut BufWriter<File>,
     retain: bool,
     stats: &mut CaptureStats,
 ) -> Result<(), Box<dyn std::error::Error>> {
@@ -589,6 +708,8 @@ fn capture_with_diagnostics_until(
                 diagnostics_csv,
                 stats,
                 raw,
+                data_loss_csv,
+                event_ledger_csv,
                 retain,
             )?;
             *command_sequence = next_nonzero(*command_sequence);
@@ -605,7 +726,7 @@ fn capture_with_diagnostics_until(
         }
         match transport.read_frame(remaining.min(IO_TIMEOUT)) {
             Ok(frame) if frame.flags & flags::EVENT != 0 => {
-                record_event(frame, stats, raw, retain)?;
+                record_event(frame, stats, raw, data_loss_csv, event_ledger_csv, retain)?;
             }
             Ok(_) | Err(TransportError::Timeout) => {}
             Err(error) => return Err(error.into()),
@@ -657,6 +778,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     )?;
     let mut diagnostics_csv = BufWriter::new(File::create(output_dir.join("diagnostics.csv"))?);
     writeln!(diagnostics_csv, "{}", diagnostics_csv_header())?;
+    let mut data_loss_csv = BufWriter::new(File::create(output_dir.join("data_loss.csv"))?);
+    writeln!(data_loss_csv, "{}", data_loss_csv_header())?;
+    let mut event_ledger_csv = BufWriter::new(File::create(output_dir.join("events.csv"))?);
+    writeln!(event_ledger_csv, "{}", event_ledger_csv_header())?;
 
     let mut transport = UsbTransport::open_default()?;
     let hello = transport.negotiate(
@@ -671,7 +796,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         },
         IO_TIMEOUT,
     )?;
-    let mut command_sequence = 2u32;
+    /* The device replay cache is scoped to the USB session, which can outlive
+     * this process. Seed request sequences per invocation so a restarted HIL
+     * tool does not reuse a side-effect sequence with different bytes. */
+    let mut command_sequence = initial_command_sequence(now_ns(), hello.session_id);
     let mut pings = Vec::new();
     ping_burst(&mut transport, &mut command_sequence, &mut pings)?;
     write_ping_csv(&output_dir.join("pings.csv"), &pings)?;
@@ -698,6 +826,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         &mut diagnostics_csv,
         &mut preflight_stats,
         &mut raw,
+        &mut data_loss_csv,
+        &mut event_ledger_csv,
         false,
     )?;
     command_sequence = next_nonzero(command_sequence);
@@ -726,6 +856,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         &mut command_sequence,
         &mut diagnostics_csv,
         &mut raw,
+        &mut data_loss_csv,
+        &mut event_ledger_csv,
         false,
         &mut warmup,
     )?;
@@ -737,6 +869,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         &mut diagnostics_csv,
         &mut warmup,
         &mut raw,
+        &mut data_loss_csv,
+        &mut event_ledger_csv,
         false,
     )?;
     command_sequence = next_nonzero(command_sequence);
@@ -753,6 +887,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             &mut command_sequence,
             &mut diagnostics_csv,
             &mut raw,
+            &mut data_loss_csv,
+            &mut event_ledger_csv,
             true,
             &mut measured,
         )?;
@@ -764,18 +900,24 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         &mut diagnostics_csv,
         &mut measured,
         &mut raw,
+        &mut data_loss_csv,
+        &mut event_ledger_csv,
         true,
     )?;
     measured.close_measurement_window(measurement_end_diagnostics.snapshot_tick);
     command_sequence = next_nonzero(command_sequence);
     raw.flush()?;
     diagnostics_csv.flush()?;
+    data_loss_csv.flush()?;
+    event_ledger_csv.flush()?;
     ping_burst_during_capture(
         &mut transport,
         &mut command_sequence,
         &mut pings,
         &mut measured,
         &mut raw,
+        &mut data_loss_csv,
+        &mut event_ledger_csv,
     )?;
     write_ping_csv(&output_dir.join("pings.csv"), &pings)?;
     transport.write_frame(&request(msg::GET_DIAGNOSTICS, command_sequence, Vec::new()))?;
@@ -784,8 +926,12 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             &mut transport,
             msg::GET_DIAGNOSTICS,
             command_sequence,
-            &mut measured,
-            &mut raw,
+            CaptureEventContext {
+                stats: &mut measured,
+                raw: &mut raw,
+                data_loss_csv: &mut data_loss_csv,
+                event_ledger_csv: &mut event_ledger_csv,
+            },
             true,
         )?
         .payload,
@@ -807,7 +953,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             loop {
                 match transport.read_frame(IO_TIMEOUT) {
                     Ok(frame) if frame.flags & flags::EVENT != 0 => {
-                        record_event(frame, &mut measured, &mut raw, true)?;
+                        record_event(
+                            frame,
+                            &mut measured,
+                            &mut raw,
+                            &mut data_loss_csv,
+                            &mut event_ledger_csv,
+                            true,
+                        )?;
                     }
                     Ok(frame)
                         if frame.flags == flags::RESPONSE
@@ -851,11 +1004,15 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         &mut transport,
         Instant::now() + Duration::from_millis(100),
         &mut raw,
+        &mut data_loss_csv,
+        &mut event_ledger_csv,
         true,
         &mut measured,
     )?;
     raw.flush()?;
     diagnostics_csv.flush()?;
+    data_loss_csv.flush()?;
+    event_ledger_csv.flush()?;
     write_ping_csv(&output_dir.join("pings.csv"), &pings)?;
 
     let (offset, slope, residuals) = fit_clock(&pings)?;
@@ -895,6 +1052,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             "{{\n  \"status\": \"{}\",\n  \"session_id\": {},\n  \"warmup_seconds\": {},\n",
             "  \"duration_seconds\": {},\n  \"frames\": {},\n  \"batches\": {},\n",
             "  \"frames_per_second\": {:.3},\n  \"event_gaps\": {},\n  \"channel_gaps\": {},\n",
+            "  \"event_missing_sequences\": {},\n  \"flow_control_events\": {},\n",
             "  \"intra_batch_discontinuities\": {},\n  \"cross_batch_discontinuities\": {},\n",
             "  \"forward_missing_records\": {},\n  \"backward_or_duplicate_records\": {},\n",
             "  \"first_channel_sequence\": {},\n  \"last_channel_sequence\": {},\n",
@@ -911,7 +1069,9 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             "  \"fit_residual_ns_p95\": {},\n  \"clock_slope_ns_per_tick\": {:.9},\n",
             "  \"clock_offset_ns\": {:.3},\n  \"clock_drift_ppm\": {:.3},\n",
             "  \"host_acceptance\": {},\n  \"external_analyzer_reconciliation\": \"PENDING\",\n",
-            "  \"mcan_diagnostics_csv\": \"diagnostics.csv\",\n  \"tx_armed_before_capture\": false,\n",
+            "  \"mcan_diagnostics_csv\": \"diagnostics.csv\",\n",
+            "  \"data_loss_csv\": \"data_loss.csv\",\n  \"events_csv\": \"events.csv\",\n",
+            "  \"tx_armed_before_capture\": false,\n",
             "  \"tx_operations_issued\": 0\n}}\n"
         ),
         if host_acceptance { "PARTIAL" } else { "FAIL" },
@@ -923,6 +1083,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         measured.frames as f64 / duration_seconds as f64,
         measured.event_gaps,
         measured.channel_gaps,
+        measured.event_missing_sequences,
+        measured.flow_control_events,
         measured.intra_batch_discontinuities,
         measured.cross_batch_discontinuities,
         measured.forward_missing_records,
@@ -1003,6 +1165,30 @@ mod tests {
         }
     }
 
+    fn data_loss_event(event_sequence: u32, device_tick: u64) -> Frame {
+        Frame {
+            major: 1,
+            minor: 0,
+            flags: flags::EVENT,
+            message_type: msg::DATA_LOSS,
+            status: 0,
+            sequence: event_sequence,
+            payload: DataLossEvent {
+                channel: 0,
+                source: 2,
+                sequence_domain: 2,
+                reason: 1,
+                config_generation: 7,
+                first_dropped_sequence: 40,
+                last_dropped_sequence: 42,
+                dropped_count: 3,
+                device_tick,
+            }
+            .encode()
+            .unwrap(),
+        }
+    }
+
     fn diagnostics() -> McanDiagnostics {
         McanDiagnostics {
             version: McanDiagnostics::VERSION,
@@ -1052,6 +1238,43 @@ mod tests {
     }
 
     #[test]
+    fn unexpected_error_response_includes_structured_payload() {
+        let payload = ErrorPayload {
+            detail_code: 0x0002,
+            error_flags: 0x0001,
+            field_offset: u32::MAX,
+            expected: 7,
+            actual: 8,
+            debug: "generation mismatch".to_owned(),
+        }
+        .encode()
+        .unwrap();
+        let frame = Frame {
+            major: 1,
+            minor: 0,
+            flags: flags::RESPONSE | flags::ERROR,
+            message_type: msg::START_CAPTURE,
+            status: 4,
+            sequence: 36,
+            payload,
+        };
+
+        assert_eq!(
+            unexpected_response("unexpected response", &frame),
+            "unexpected response type=0x0012 flags=0x0a status=4 sequence=36 detail=0x0002 error_flags=0x0001 field_offset=0xffffffff expected=7 actual=8 debug=\"generation mismatch\""
+        );
+    }
+
+    #[test]
+    fn command_sequence_seed_changes_across_invocations_and_never_returns_zero() {
+        assert_eq!(initial_command_sequence(0, 0), 1);
+        assert_ne!(
+            initial_command_sequence(1_000_000_000, 7),
+            initial_command_sequence(1_000_000_001, 7)
+        );
+    }
+
+    #[test]
     fn diagnostics_safety_requires_listen_only_and_disarmed() {
         let safe = diagnostics();
         validate_mcan_safety_state(&safe).unwrap();
@@ -1074,16 +1297,36 @@ mod tests {
         let mut stats = CaptureStats::measurement(100);
         stats.close_measurement_window(200);
         let mut raw = Vec::new();
+        let mut losses = Vec::new();
+        let mut events = Vec::new();
 
-        record_event(can_event(10, 100, &[(0, 100)]), &mut stats, &mut raw, true).unwrap();
+        record_event(
+            can_event(10, 100, &[(0, 100)]),
+            &mut stats,
+            &mut raw,
+            &mut losses,
+            &mut events,
+            true,
+        )
+        .unwrap();
         record_event(
             can_event(11, 201, &[(0, 101), (1, 102)]),
             &mut stats,
             &mut raw,
+            &mut losses,
+            &mut events,
             true,
         )
         .unwrap();
-        record_event(can_event(12, 150, &[(0, 103)]), &mut stats, &mut raw, true).unwrap();
+        record_event(
+            can_event(12, 150, &[(0, 103)]),
+            &mut stats,
+            &mut raw,
+            &mut losses,
+            &mut events,
+            true,
+        )
+        .unwrap();
 
         assert_eq!(stats.frames, 2);
         assert_eq!(stats.batches, 2);
@@ -1100,13 +1343,66 @@ mod tests {
         let mut stats = CaptureStats::measurement(100);
         stats.close_measurement_window(200);
         let mut raw = Vec::new();
+        let mut losses = Vec::new();
+        let mut events = Vec::new();
 
-        record_event(can_event(20, 100, &[(0, 100)]), &mut stats, &mut raw, false).unwrap();
-        record_event(can_event(21, 110, &[(0, 102)]), &mut stats, &mut raw, false).unwrap();
+        record_event(
+            can_event(20, 100, &[(0, 100)]),
+            &mut stats,
+            &mut raw,
+            &mut losses,
+            &mut events,
+            false,
+        )
+        .unwrap();
+        record_event(
+            can_event(21, 110, &[(0, 102)]),
+            &mut stats,
+            &mut raw,
+            &mut losses,
+            &mut events,
+            false,
+        )
+        .unwrap();
 
         assert_eq!(stats.frames, 2);
         assert_eq!(stats.channel_gaps, 1);
         assert_eq!(stats.forward_missing_records, 1);
+    }
+
+    #[test]
+    fn measurement_data_loss_is_written_with_complete_attribution() {
+        let mut stats = CaptureStats::measurement(100);
+        stats.close_measurement_window(200);
+        let mut raw = Vec::new();
+        let mut losses = Vec::new();
+        let mut events = Vec::new();
+
+        record_event(
+            data_loss_event(77, 150),
+            &mut stats,
+            &mut raw,
+            &mut losses,
+            &mut events,
+            true,
+        )
+        .unwrap();
+
+        assert_eq!(stats.data_loss_events, 1);
+        assert_eq!(stats.data_loss_dropped, 3);
+        let row = String::from_utf8(losses).unwrap();
+        let fields = row.trim().split(',').collect::<Vec<_>>();
+        assert_eq!(fields.len(), 11);
+        assert!(fields[0].parse::<u64>().is_ok());
+        assert_eq!(
+            &fields[1..],
+            &["150", "77", "0", "2", "2", "1", "7", "40", "42", "3"]
+        );
+        let event_row = String::from_utf8(events).unwrap();
+        let event_fields = event_row.trim().split(',').collect::<Vec<_>>();
+        assert_eq!(event_fields.len(), 3);
+        assert!(event_fields[0].parse::<u64>().is_ok());
+        assert_eq!(&event_fields[1..], &["77", "32773"]);
     }
 }
 
