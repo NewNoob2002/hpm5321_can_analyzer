@@ -5,7 +5,7 @@ import argparse
 from datetime import datetime
 import hashlib
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import subprocess
 import sys
@@ -36,6 +36,27 @@ EXPECTED_MANIFEST_MEMBERS = (
 
 def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def repository_file(value: object, label: str) -> Path:
+    if not isinstance(value, str) or not value or "\\" in value:
+        raise SystemExit(f"invalid {label} path")
+    relative = PurePosixPath(value)
+    if relative.is_absolute() or any(
+        part in {"", ".", ".."} for part in value.split("/")
+    ):
+        raise SystemExit(f"invalid {label} path")
+    if str(relative) != value:
+        raise SystemExit(f"invalid {label} path")
+    path = ROOT / value
+    try:
+        resolved = path.resolve(strict=True)
+        resolved.relative_to(ROOT.resolve())
+    except (FileNotFoundError, ValueError) as error:
+        raise SystemExit(f"invalid {label} path") from error
+    if path.is_symlink() or not resolved.is_file():
+        raise SystemExit(f"invalid {label} path")
+    return resolved
 
 
 def verified_evidence_text(metadata: dict, path_key: str, hash_key: str) -> str:
@@ -181,9 +202,9 @@ def main() -> None:
     elif provenance == "artifact-attested":
         if metadata.get("approved_test_ids") != ["T-CAN-003", "T-CAN-013-subcase"]:
             raise SystemExit("current capture test-ID mapping is invalid")
-        attestation_path = ROOT / metadata.get("artifact_attestation_path", "")
-        if not attestation_path.is_file():
-            raise SystemExit("artifact attestation does not exist")
+        attestation_path = repository_file(
+            metadata.get("artifact_attestation_path"), "artifact attestation"
+        )
         attestation = json.loads(attestation_path.read_text())
         run_nonce = metadata.get("run_nonce")
         if not isinstance(run_nonce, int) or not 0 < run_nonce <= 0xFFFF:
@@ -200,8 +221,22 @@ def main() -> None:
             raise SystemExit("capture ELF digest does not match artifact attestation")
 
         archived = "source_commit" in attestation
-        if archived:
+        attestation_schema = attestation.get("schema")
+        if archived and attestation_schema == 1 and "artifact_package" not in attestation:
             verify_archived_source_manifest(attestation)
+        elif archived and attestation_schema == 2 and "artifact_package" in attestation:
+            validator = ROOT / "scripts/phase0/validate_current_artifact.py"
+            result = subprocess.run(
+                [sys.executable, str(validator), str(attestation_path)],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+            )
+            if result.returncode != 0:
+                detail = result.stderr.strip() or result.stdout.strip()
+                raise SystemExit(f"artifact attestation validation failed: {detail}")
+        elif archived:
+            raise SystemExit("unsupported archived artifact attestation schema")
         else:
             elf_path = Path(metadata.get("elf_path", ""))
             if not elf_path.is_absolute():

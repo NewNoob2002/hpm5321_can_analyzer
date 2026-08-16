@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -21,6 +22,9 @@ def load_module(name: str, path: Path):
 
 
 usb = load_module("usb_validator", ROOT / "scripts/phase0/validate_usb_composite.py")
+packager = load_module(
+    "artifact_packager", ROOT / "scripts/phase0/package_current_artifact.py"
+)
 
 
 class UsbModelTests(unittest.TestCase):
@@ -125,6 +129,83 @@ class CanCaptureTests(unittest.TestCase):
         metadata = ROOT / "docs/evidence/phase0/T-CAN-013-ABI5-A504-adapter-metadata.json"
         self.assertEqual(self.run_validator(capture, metadata).returncode, 0)
 
+    def test_schema2_archived_capture_requires_valid_artifact_package(self):
+        capture = ROOT / "docs/evidence/phase0/T-CAN-013-ABI5-A504-adapter-capture.txt"
+        metadata = json.loads(
+            (
+                ROOT
+                / "docs/evidence/phase0/T-CAN-013-ABI5-A504-adapter-metadata.json"
+            ).read_text()
+        )
+        attestation = json.loads(
+            (
+                ROOT / "docs/evidence/phase0/T-CAN-013-ABI5-A504-artifact.json"
+            ).read_text()
+        )
+        attestation["schema"] = 2
+        attestation["artifact_package"] = (
+            "docs/evidence/phase0/does-not-exist.zip"
+        )
+        attestation["artifact_package_sha256"] = "0" * 64
+        directory = ROOT / "docs/evidence/phase0"
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", dir=directory, delete=False
+        ) as stream:
+            json.dump(attestation, stream)
+            attestation_path = Path(stream.name)
+        try:
+            metadata["artifact_attestation_path"] = str(
+                attestation_path.relative_to(ROOT)
+            )
+            with tempfile.TemporaryDirectory() as temp:
+                metadata_path = Path(temp) / "metadata.json"
+                metadata_path.write_text(json.dumps(metadata))
+                result = self.run_validator(capture, metadata_path)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("artifact attestation validation failed", result.stderr)
+            self.assertIn("invalid artifact package", result.stderr)
+        finally:
+            attestation_path.unlink()
+
+    def test_artifact_attestation_must_be_inside_repository(self):
+        capture = ROOT / "docs/evidence/phase0/T-CAN-013-ABI5-A504-adapter-capture.txt"
+        metadata = json.loads(
+            (
+                ROOT
+                / "docs/evidence/phase0/T-CAN-013-ABI5-A504-adapter-metadata.json"
+            ).read_text()
+        )
+        source = ROOT / "docs/evidence/phase0/T-CAN-013-ABI5-A504-artifact.json"
+        with tempfile.TemporaryDirectory() as temporary:
+            attestation = Path(temporary) / "artifact.json"
+            attestation.write_bytes(source.read_bytes())
+            metadata["artifact_attestation_path"] = str(attestation)
+            metadata_path = Path(temporary) / "metadata.json"
+            metadata_path.write_text(json.dumps(metadata))
+            result = self.run_validator(capture, metadata_path)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("invalid artifact attestation path", result.stderr)
+
+    def test_artifact_attestation_symlink_is_rejected(self):
+        capture = ROOT / "docs/evidence/phase0/T-CAN-013-ABI5-A504-adapter-capture.txt"
+        metadata = json.loads(
+            (
+                ROOT
+                / "docs/evidence/phase0/T-CAN-013-ABI5-A504-adapter-metadata.json"
+            ).read_text()
+        )
+        source = ROOT / "docs/evidence/phase0/T-CAN-013-ABI5-A504-artifact.json"
+        directory = ROOT / "docs/evidence/phase0"
+        with tempfile.TemporaryDirectory(dir=directory) as temporary:
+            link = Path(temporary) / "artifact-link.json"
+            link.symlink_to(source)
+            metadata["artifact_attestation_path"] = link.relative_to(ROOT).as_posix()
+            metadata_path = Path(temporary) / "metadata.json"
+            metadata_path.write_text(json.dumps(metadata))
+            result = self.run_validator(capture, metadata_path)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("invalid artifact attestation path", result.stderr)
+
     def test_historical_capture_cannot_use_current_nonce_attestation(self):
         if "HPM_SDK_BASE" not in os.environ:
             self.skipTest("HPM_SDK_BASE is required for SDK revision validation")
@@ -144,6 +225,7 @@ class CurrentArtifactTests(unittest.TestCase):
     def setUp(self):
         self.attestation = ROOT / "docs/evidence/phase0/T-CAN-TX-current-artifact.json"
         self.validator = ROOT / "scripts/phase0/validate_current_artifact.py"
+        self.rebuild = ROOT / "scripts/phase0/rebuild_current_artifact.sh"
 
     def run_validator(self, attestation: Path):
         env = os.environ.copy()
@@ -155,16 +237,38 @@ class CurrentArtifactTests(unittest.TestCase):
             env=env,
         )
 
+    @staticmethod
+    def write_package(
+        path: Path,
+        package_manifest: dict,
+        artifact_name: str,
+        artifact_bytes: bytes,
+        *,
+        external_attr: int = 0o100644 << 16,
+    ) -> None:
+        manifest_bytes = (
+            json.dumps(package_manifest, indent=2, sort_keys=True) + "\n"
+        ).encode()
+        with zipfile.ZipFile(path, "w") as archive:
+            for name, payload in (
+                ("package-manifest.json", manifest_bytes),
+                (artifact_name, artifact_bytes),
+            ):
+                info = zipfile.ZipInfo(name, packager.FIXED_ZIP_TIME)
+                info.create_system = 3
+                info.compress_type = zipfile.ZIP_STORED
+                info.flag_bits = 0
+                info.internal_attr = 0
+                info.external_attr = external_attr
+                archive.writestr(info, payload)
+
     def test_archived_artifact_attestation(self):
-        if "HPM_SDK_BASE" not in os.environ:
-            self.skipTest("HPM_SDK_BASE is required for SDK revision validation")
         self.assertEqual(self.run_validator(self.attestation).returncode, 0)
 
     def test_archived_artifact_requires_source_commit(self):
-        if "HPM_SDK_BASE" not in os.environ:
-            self.skipTest("HPM_SDK_BASE is required for SDK revision validation")
         data = json.loads(self.attestation.read_text())
         data.pop("source_commit")
+        data["artifact_package"] = "docs/evidence/phase0/does-not-exist.zip"
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "artifact.json"
             path.write_text(json.dumps(data))
@@ -172,9 +276,177 @@ class CurrentArtifactTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("requires a full source_commit", result.stderr)
 
+    def test_archived_artifact_does_not_require_ignored_build_tree(self):
+        build = ROOT / "build/review-mcan-tx"
+        hidden = ROOT / "build/review-mcan-tx.validator-hidden"
+        self.assertFalse(hidden.exists())
+        moved = build.is_dir()
+        if moved:
+            build.rename(hidden)
+        try:
+            self.assertEqual(self.run_validator(self.attestation).returncode, 0)
+        finally:
+            if moved:
+                hidden.rename(build)
+
+    def test_packager_rejects_forged_build_definitions(self):
+        data = json.loads(self.attestation.read_text())
+        forged = dict(data["build_definitions"])
+        forged["MCAN0_ACTIVE_TX"] = 0
+        arguments = [
+            "riscv32-unknown-elf-gcc",
+            *(f"-D{name}={value}" for name, value in data["build_definitions"].items()),
+            "-c",
+            str(ROOT / packager.SOURCE_SUFFIX),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            build = Path(directory)
+            (build / "compile_commands.json").write_text(json.dumps([{
+                "directory": str(build),
+                "file": str(ROOT / packager.SOURCE_SUFFIX),
+                "arguments": arguments,
+            }]))
+            with self.assertRaises(SystemExit) as context:
+                packager.actual_build_definitions(build, forged)
+        self.assertIn("build definition mismatch", str(context.exception))
+
+    def test_sdk_commit_must_match_archived_lock_without_local_sdk(self):
+        data = json.loads(self.attestation.read_text())
+        package = ROOT / data["artifact_package"]
+        with zipfile.ZipFile(package) as archive:
+            package_manifest = json.loads(archive.read("package-manifest.json"))
+            artifact_bytes = archive.read(data["artifact"])
+        data["sdk_commit"] = "0" * 40
+        package_manifest["sdk_commit"] = "0" * 40
+        directory = ROOT / "docs/evidence/phase0"
+        with tempfile.TemporaryDirectory(dir=directory) as temp:
+            temp_path = Path(temp)
+            package_path = temp_path / "artifact.zip"
+            self.write_package(
+                package_path,
+                package_manifest,
+                data["artifact"],
+                artifact_bytes,
+            )
+            data["artifact_package"] = str(package_path.relative_to(ROOT))
+            data["artifact_package_sha256"] = hashlib.sha256(
+                package_path.read_bytes()
+            ).hexdigest()
+            attestation = temp_path / "artifact.json"
+            attestation.write_text(json.dumps(data))
+            env_value = os.environ.pop("HPM_SDK_BASE", None)
+            try:
+                result = self.run_validator(attestation)
+            finally:
+                if env_value is not None:
+                    os.environ["HPM_SDK_BASE"] = env_value
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("SDK commit does not match archived lock", result.stderr)
+
+    def test_unsafe_artifact_member_rejected(self):
+        data = json.loads(self.attestation.read_text())
+        data["artifact"] = "../unsafe.elf"
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "artifact.json"
+            path.write_text(json.dumps(data))
+            result = self.run_validator(path)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("invalid artifact member", result.stderr)
+
+    def test_packager_rejects_output_outside_repository(self):
+        with self.assertRaises(SystemExit) as context:
+            packager.repository_output("../escaped.zip", "artifact package")
+        self.assertIn("invalid artifact package", str(context.exception))
+
+    def test_packager_rejects_output_symlink(self):
+        with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
+            directory = Path(temporary)
+            target = directory / "target.zip"
+            target.write_bytes(b"existing")
+            link = directory / "artifact.zip"
+            link.symlink_to(target)
+            with self.assertRaises(SystemExit) as context:
+                packager.repository_output(
+                    link.relative_to(ROOT).as_posix(), "artifact package"
+                )
+        self.assertIn("must not be a symlink", str(context.exception))
+
+    def test_sdk_dirty_package_is_rejected(self):
+        data = json.loads(self.attestation.read_text())
+        package = ROOT / data["artifact_package"]
+        with zipfile.ZipFile(package) as archive:
+            package_manifest = json.loads(archive.read("package-manifest.json"))
+            artifact_bytes = archive.read(data["artifact"])
+        package_manifest["sdk_dirty"] = True
+        directory = ROOT / "docs/evidence/phase0"
+        with tempfile.TemporaryDirectory(dir=directory) as temporary:
+            temp = Path(temporary)
+            package_path = temp / "artifact.zip"
+            self.write_package(
+                package_path, package_manifest, data["artifact"], artifact_bytes
+            )
+            data["artifact_package"] = package_path.relative_to(ROOT).as_posix()
+            data["artifact_package_sha256"] = hashlib.sha256(
+                package_path.read_bytes()
+            ).hexdigest()
+            attestation = temp / "artifact.json"
+            attestation.write_text(json.dumps(data))
+            result = self.run_validator(attestation)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("SDK worktree must be clean", result.stderr)
+
+    def test_rebuild_rejects_preexisting_ignored_python_bytecode(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            sdk = Path(temporary)
+            (sdk / ".gitignore").write_text("__pycache__/\n")
+            bytecode = sdk / "scripts/ide/__pycache__/generator.pyc"
+            bytecode.parent.mkdir(parents=True)
+            bytecode.write_bytes(b"untrusted bytecode")
+            env = os.environ.copy()
+            env["HPM_SDK_BASE"] = str(sdk)
+            result = subprocess.run(
+                ["sh", str(self.rebuild)],
+                capture_output=True,
+                text=True,
+                check=False,
+                env=env,
+            )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("SDK worktree contains Python bytecode", result.stderr)
+
+    def test_rebuild_disables_python_bytecode_generation(self):
+        script = self.rebuild.read_text()
+        self.assertEqual(script.count("PYTHONDONTWRITEBYTECODE=1"), 2)
+        self.assertNotIn("-exec rm -rf", script)
+
+    def test_package_member_dos_attributes_are_rejected(self):
+        data = json.loads(self.attestation.read_text())
+        package = ROOT / data["artifact_package"]
+        with zipfile.ZipFile(package) as archive:
+            package_manifest = json.loads(archive.read("package-manifest.json"))
+            artifact_bytes = archive.read(data["artifact"])
+        directory = ROOT / "docs/evidence/phase0"
+        with tempfile.TemporaryDirectory(dir=directory) as temporary:
+            temp = Path(temporary)
+            package_path = temp / "artifact.zip"
+            self.write_package(
+                package_path,
+                package_manifest,
+                data["artifact"],
+                artifact_bytes,
+                external_attr=(0o100644 << 16) | 0x01,
+            )
+            data["artifact_package"] = package_path.relative_to(ROOT).as_posix()
+            data["artifact_package_sha256"] = hashlib.sha256(
+                package_path.read_bytes()
+            ).hexdigest()
+            attestation = temp / "artifact.json"
+            attestation.write_text(json.dumps(data))
+            result = self.run_validator(attestation)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("artifact package member metadata mismatch", result.stderr)
+
     def test_stale_artifact_hash_rejected(self):
-        if "HPM_SDK_BASE" not in os.environ:
-            self.skipTest("HPM_SDK_BASE is required for SDK revision validation")
         data = json.loads(self.attestation.read_text())
         data["elf_sha256"] = "0" * 64
         with tempfile.TemporaryDirectory() as directory:
@@ -185,8 +457,6 @@ class CurrentArtifactTests(unittest.TestCase):
             self.assertIn("artifact SHA-256 mismatch", result.stderr)
 
     def test_invalid_external_capture_status_rejected(self):
-        if "HPM_SDK_BASE" not in os.environ:
-            self.skipTest("HPM_SDK_BASE is required for SDK revision validation")
         data = json.loads(self.attestation.read_text())
         data["external_capture_status"] = "made-up-pass"
         with tempfile.TemporaryDirectory() as directory:
