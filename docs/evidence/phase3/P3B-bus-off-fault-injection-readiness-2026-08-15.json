@@ -169,7 +169,7 @@
       },
       {
         "path": ".github/workflows/firmware-contract.yml",
-        "sha256": "51e3981bbb76a30085f72347c98372d62da2706355a5375c2d603b6de63be70e"
+        "sha256": "cd8f3a803cc3b4e10b5149b665f073744ef83a07d8e1d445cfe860b66a34b0fe"
       }
     ],
     "hpm_sdk_commit": "88b01b43900d8c30844a1e5cdd3f3b7aff6db40e",

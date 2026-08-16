@@ -17,11 +17,11 @@
   "authoritative_evidence": {
     "load_status": {
       "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
-      "sha256": "4d588e7ac971e6a13bbf3a896fda5836f7d24d315fd257f0d8dbecb8d4369789"
+      "sha256": "0dd31563327d1fd61d94d6c515e75d37bac9055f106d4ee8bad1832bfdc84a82"
     },
     "bus_off_readiness": {
       "path": "docs/evidence/phase3/P3B-bus-off-fault-injection-readiness-2026-08-15.json",
-      "sha256": "61d96ae4ab47df00b4c747f3eca36503a16a6227aa3d47faacae287281229fa9"
+      "sha256": "bee2e4095ef3296d16551306de70d8cf080c840e4012015e6f791404a3fdd949"
     },
     "bus_off_attempt": {
       "path": "docs/evidence/phase3/P3B-bus-off-attempt-2026-08-15.json",
