@@ -4,22 +4,52 @@ on:
   push:
     paths:
       - "CMakeLists.txt"
+      - "CMakePresets.json"
       - "USER/**"
+      - "boards/**"
       - "config/**"
+      - "docs/development/p3b-bus-off-manual-test.md"
+      - "docs/development/p3b-current-status.md"
+      - "docs/development/evidence-storage-policy.md"
+      - "docs/evidence/phase0/**"
+      - "docs/evidence/phase3/**"
+      - "scripts/build.sh"
+      - "scripts/ci/**"
+      - "scripts/env/**"
       - "scripts/phase2/**"
+      - "scripts/phase0/**"
       - "scripts/phase3/**"
+      - "tests/phase0/**"
       - "tests/phase2/**"
       - "tests/phase3/**"
+      - "tests/protocol/test_c_codec_parity.py"
+      - "tests/protocol/test_c_codec_sanitizer_control.py"
+      - "tests/test_memory_budget.py"
       - ".github/workflows/firmware-contract.yml"
   pull_request:
     paths:
       - "CMakeLists.txt"
+      - "CMakePresets.json"
       - "USER/**"
+      - "boards/**"
       - "config/**"
+      - "docs/development/p3b-bus-off-manual-test.md"
+      - "docs/development/p3b-current-status.md"
+      - "docs/development/evidence-storage-policy.md"
+      - "docs/evidence/phase0/**"
+      - "docs/evidence/phase3/**"
+      - "scripts/build.sh"
+      - "scripts/ci/**"
+      - "scripts/env/**"
       - "scripts/phase2/**"
+      - "scripts/phase0/**"
       - "scripts/phase3/**"
+      - "tests/phase0/**"
       - "tests/phase2/**"
       - "tests/phase3/**"
+      - "tests/protocol/test_c_codec_parity.py"
+      - "tests/protocol/test_c_codec_sanitizer_control.py"
+      - "tests/test_memory_budget.py"
       - ".github/workflows/firmware-contract.yml"
   workflow_dispatch:
 
@@ -34,7 +64,24 @@ jobs:
       - name: Run firmware source contracts
         run: >-
           python3 -m unittest
+          tests.phase0.test_p0_python_runner
+          tests.phase0.test_phase0_validators
+          tests.phase0.test_reproducible_build_contract
           tests.phase2.test_bsp_banner_contract
           tests.phase2.test_rtos_advanced_contract
           tests.phase3.test_mcan0_owner_contract
+          tests.phase3.test_mcan0_hook_elf_isolation
           tests.phase3.test_usb_owner_contract
+          tests.phase3.test_p3b_bus_off_hook_contract
+          tests.phase3.test_p3b_bus_off_evidence
+          tests.phase3.test_p3b_load_evidence
+          tests.phase3.test_p3b_current_status
+          tests.protocol.test_c_codec_parity
+          tests.protocol.test_c_codec_sanitizer_control
+          tests.test_memory_budget
+
+      - name: Validate repository-resident evidence indexes
+        run: |
+          python3 scripts/phase0/validate_current_artifact.py \
+            docs/evidence/phase0/T-CAN-TX-current-artifact.json
+          python3 scripts/phase3/validate_p3b_current_status.py
