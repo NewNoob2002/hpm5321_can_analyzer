@@ -8,6 +8,8 @@
 #ifndef HPM_PINMUX_H
 #define HPM_PINMUX_H
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -15,8 +17,13 @@ extern "C" {
 void init_pins(void);
 void init_uart0_pins(void);
 void init_usb0_pins(void);
+void disconnect_mcan0_pins(void);
+void disconnect_mcan2_pins(void);
 void disconnect_mcan_pins(void);
+void init_mcan0_safe_gpio_inputs(void);
+void init_mcan2_safe_gpio_inputs(void);
 void init_mcan_safe_gpio_inputs(void);
+bool mcan0_pads_are_safe_gpio_inputs(void);
 void init_mcan0_pins(void);
 void init_mcan2_pins(void);
 void init_spi2_pins(void);

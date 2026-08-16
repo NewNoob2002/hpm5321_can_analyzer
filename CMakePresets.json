@@ -64,6 +64,19 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "HPM_BUILD_TYPE": "ram"
             }
+        },
+        {
+            "name": "hpm5321-ram-debug-bus-off",
+            "inherits": "hpm5321-base",
+            "displayName": "HPM5321 Custom - RAM Debug (P3B Bus-Off Hook)",
+            "binaryDir": "${sourceDir}/build/hpm5321-ram-debug-bus-off",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "HPM_BUILD_TYPE": "ram",
+                "APP_MCAN0_BUS_OFF_TEST_HOOK": "ON",
+                "APP_FAULT_INJECT_REASON": "0",
+                "APP_FIRMWARE_VERSION": "0.1.0-dev-p3b-busoff"
+            }
         }
     ],
     "buildPresets": [
@@ -95,6 +108,12 @@
             "name": "hpm5321-ram-debug",
             "displayName": "Build HPM5321 RAM Debug",
             "configurePreset": "hpm5321-ram-debug",
+            "jobs": 8
+        },
+        {
+            "name": "hpm5321-ram-debug-bus-off",
+            "displayName": "Build HPM5321 RAM Debug (P3B Bus-Off Hook)",
+            "configurePreset": "hpm5321-ram-debug-bus-off",
             "jobs": 8
         }
     ]
