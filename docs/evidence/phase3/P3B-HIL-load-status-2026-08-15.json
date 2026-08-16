@@ -266,7 +266,7 @@
     },
     "bus_off_fault_injection_readiness": {
       "path": "docs/evidence/phase3/P3B-bus-off-fault-injection-readiness-2026-08-15.json",
-      "sha256": "61d96ae4ab47df00b4c747f3eca36503a16a6227aa3d47faacae287281229fa9"
+      "sha256": "bee2e4095ef3296d16551306de70d8cf080c840e4012015e6f791404a3fdd949"
     },
     "historical_bus_off_fault_injection_blocker": {
       "path": "docs/evidence/phase3/P3B-bus-off-fault-injection-blocker-2026-08-15.json",

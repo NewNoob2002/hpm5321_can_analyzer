@@ -49,7 +49,7 @@ EXPECTED_SOURCE_HASHES = {
         "fbe6fa303d9f1adb57f583541273df3c84f7f0faaa4d5e51094501878bd23fe7"
     ),
     ".github/workflows/firmware-contract.yml": (
-        "51e3981bbb76a30085f72347c98372d62da2706355a5375c2d603b6de63be70e"
+        "cd8f3a803cc3b4e10b5149b665f073744ef83a07d8e1d445cfe860b66a34b0fe"
     ),
 }
 EXPECTED_ASSET_PATHS = {
