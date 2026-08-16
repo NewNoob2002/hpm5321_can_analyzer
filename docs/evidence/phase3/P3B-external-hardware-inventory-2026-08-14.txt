@@ -1,0 +1,28 @@
+P3B_EXTERNAL_HARDWARE_INVENTORY_DATE_UTC 2026-08-14T15:44:04Z
+LSUSB_BEGIN
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 002: ID 046d:c539 Logitech, Inc. Lightspeed Receiver
+Bus 001 Device 004: ID 0489:e0cd Foxconn / Hon Hai MediaTek Bluetooth Adapter
+Bus 001 Device 017: ID 05e3:0610 Genesys Logic, Inc. Hub
+Bus 001 Device 018: ID 1366:0101 SEGGER J-Link PLUS
+Bus 001 Device 019: ID 1a86:55d4 QinHeng Electronics USB Single Serial
+Bus 001 Device 028: ID 34b7:1236 HPMicro HPM5321 USB-CAN Analyzer
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 002 Device 005: ID 05e3:0626 Genesys Logic, Inc. Hub
+Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 003 Device 002: ID 5986:2169 Bison Electronics Inc. Integrated RGB Camera
+Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 005 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 006 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 007 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 008 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+LSUSB_END
+DETECTED_SOCKETCAN_INTERFACES none
+DETECTED_SERIAL_NODES /dev/ttyACM0
+DEVNAME=/dev/ttyACM0
+ID_MODEL=USB_Single_Serial
+ID_MODEL_ID=55d4
+ID_SERIAL=1a86_USB_Single_Serial_5857010879
+ID_VENDOR_ID=1a86
+ID_USB_DRIVER=cdc_acm
+OBSERVATION no active external CAN traffic was observed by the 5-second frozen-profile preflight

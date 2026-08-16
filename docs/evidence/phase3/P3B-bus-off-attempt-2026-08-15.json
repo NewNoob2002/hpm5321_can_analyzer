@@ -1,0 +1,222 @@
+{
+  "containment": {
+    "automatic_recovery_attempts": 0,
+    "cancel_timeout_observed": 0,
+    "live_cccr": "0x60",
+    "live_cccr_mon": 1,
+    "live_txbrp": 0,
+    "once_per_boot_consumed": 1,
+    "owner_initialized": 1,
+    "owner_mode": "LISTEN_ONLY",
+    "owner_online": 1,
+    "owner_tx_armed": 0
+  },
+  "evidence_id": "P3B-bus-off-attempt-2026-08-15",
+  "execution": {
+    "executed": true,
+    "outcome": "TIMEOUT_CLEANED_NOT_BUS_OFF",
+    "status": "INCOMPLETE_PHYSICAL_FAULT_STIMULUS"
+  },
+  "firmware": {
+    "elf_sha256": "665869d1ddbcc312a884e8ab3ecb726774441d2c209f002b843017227cb8a05b",
+    "load_target": "RAM_ONLY",
+    "preset": "hpm5321-ram-debug-bus-off",
+    "source_dirty": true,
+    "source_revision": "afbf243e1b0e433deb9fad946dab7d4beb3b026a"
+  },
+  "gates": {
+    "p4e_gate": "BLOCKED",
+    "pending": "bus-off/manual fault injection with active error injection",
+    "qualification_status": "PARTIAL"
+  },
+  "hardware": {
+    "active_fault_injector_present": false,
+    "analyzer_mode": "silent_listen_only",
+    "can_bitrate_bits_per_second": 1000000,
+    "can_topology": [
+      "DUT",
+      "one CAN analyzer"
+    ],
+    "debug_interface": "JTAG",
+    "debug_speed_khz": 4000,
+    "debugger": "J-Link PLUS",
+    "debugger_serial": "607000454",
+    "isolated_bench": true,
+    "target": "HPM5321xCFx",
+    "target_voltage_v": 3.32
+  },
+  "interpretation": {
+    "forbidden_claim": "This attempt is not a bus-off HIL PASS.",
+    "required_next_condition": "Provide a controlled active bit/form/stuff-error source that can continue driving transmit errors after the DUT becomes error-passive.",
+    "statement": "The silent analyzer supplied no ACK. The DUT reached error-passive with TEC 128, did not reach bus-off, and was safely restored to listen-only after the 2000 ms bounded window."
+  },
+  "observed": {
+    "bus_off_observed": 0,
+    "elapsed_ticks": 2000,
+    "end_tick": 68200,
+    "error_passive_observed": 1,
+    "final_error_count": 1048704,
+    "final_protocol_status": 1891,
+    "final_psr_bo": 0,
+    "final_tx_request_pending": 0,
+    "last_submit_status": 0,
+    "max_tec": 128,
+    "result_state": "TIMEOUT_CLEANED",
+    "result_state_value": 4,
+    "start_tick": 66200,
+    "warning_observed": 1
+  },
+  "package": {
+    "members": [
+      "attempt-record.json",
+      "build-manifest.json",
+      "build.txt",
+      "sha256.txt",
+      "elf-readelf.txt",
+      "load-ram.gdb",
+      "load-ram-gdb.txt",
+      "preflight-snapshot-gdb.txt",
+      "run-nonce.txt",
+      "arm-and-run.gdb",
+      "arm-and-run-gdb.txt",
+      "bounded-window.txt",
+      "terminal-snapshot.gdb",
+      "terminal-snapshot-gdb.txt",
+      "timeout-dump.gdb",
+      "timeout-dump-gdb.txt",
+      "gdb-error-compat-test.txt",
+      "jlink-gdb-server.log",
+      "jlink-preflight-server.log",
+      "jlink-arm-server.log",
+      "jlink-terminal-server.log",
+      "jlink-timeout-dump-server.log"
+    ],
+    "path": "docs/evidence/phase3/P3B-bus-off-attempt-2026-08-15.zip",
+    "sha256": "e41e3c63ed6e138f3b6837a90872b3de891a38b5e90d7ff3f3e20d6b829d8a2d",
+    "size": 165938
+  },
+  "phase": "P3B",
+  "raw_members": [
+    {
+      "path": "build-manifest.json",
+      "sha256": "dbaeb3c2efda0097cc09ceecbfd91b8aa2430d2a21a2c2e82b91bfa87692f9cb",
+      "size": 917
+    },
+    {
+      "path": "build.txt",
+      "sha256": "b2aeb0cb6cccdd2d9155564a17d8646c2f913db0bc04c03bbfb8a6685067cbfe",
+      "size": 1827
+    },
+    {
+      "path": "sha256.txt",
+      "sha256": "5e85eef11d285932a776784281546aea7a0e28cd5a08e076e52ab381db1d6ab5",
+      "size": 542
+    },
+    {
+      "path": "elf-readelf.txt",
+      "sha256": "dfaa79084f9266090288ee64252ffc11a9096747b85c9fdf40d224381e3e924d",
+      "size": 1623
+    },
+    {
+      "path": "load-ram.gdb",
+      "sha256": "4fe0552d7732c9417b1425ceb5ae65a081d765cfbc00e3f8136286afbf106056",
+      "size": 242
+    },
+    {
+      "path": "load-ram-gdb.txt",
+      "sha256": "960f990ff087fe361eb64f9895a2216e0fc73ae4f0bf9630f82e234156ed7480",
+      "size": 1404
+    },
+    {
+      "path": "preflight-snapshot-gdb.txt",
+      "sha256": "a8a7c2d59b4641e002069626bc89411bc9f9aa9d5400132121f5391d3c6c9d08",
+      "size": 3051
+    },
+    {
+      "path": "run-nonce.txt",
+      "sha256": "a5bd8a4cea634ac6d5a69374a141b19b143212e4c67927eb17119ae29bd904ff",
+      "size": 11
+    },
+    {
+      "path": "arm-and-run.gdb",
+      "sha256": "ed84f0eb1dd4260f6a6657475e22976f0efe12af9866eb9480688a64230d9127",
+      "size": 266
+    },
+    {
+      "path": "arm-and-run-gdb.txt",
+      "sha256": "da466b27eb19f86f65bf22cd29fbe21077e2bb76f07f3b0c1ed0d0b747ee1785",
+      "size": 4303
+    },
+    {
+      "path": "bounded-window.txt",
+      "sha256": "c71f29ad5ea42b3ca9edee24aa74e21b2d93e0b72b84a3d0f7956a90c4998534",
+      "size": 36
+    },
+    {
+      "path": "terminal-snapshot.gdb",
+      "sha256": "aac7168d29658c6d5be9294423603d35818deaf906eac11a418e5c79b6690cdc",
+      "size": 176
+    },
+    {
+      "path": "terminal-snapshot-gdb.txt",
+      "sha256": "a68f13dfb78e6199a4c29db403b895a1615540600537b5d918510943baf2c4d1",
+      "size": 1339
+    },
+    {
+      "path": "timeout-dump.gdb",
+      "sha256": "468822fed462a4e2d53feae7f31f059ce101d81e8b87198a26cf02e321f99b44",
+      "size": 337
+    },
+    {
+      "path": "timeout-dump-gdb.txt",
+      "sha256": "ffbbb5de16da67bdf235456cb5472afe5ca0cb7dda7e6d23193109ae860c9326",
+      "size": 2979
+    },
+    {
+      "path": "gdb-error-compat-test.txt",
+      "sha256": "fdd8dc646c971a1aa5e778e6fa5c7541ec2156b77ff0f6ca98918329809b04ae",
+      "size": 1005
+    },
+    {
+      "path": "jlink-gdb-server.log",
+      "sha256": "1d19f7fb39721b2c921e7f31b33554dd89234617eff0a7a5cf0c9e3871960b92",
+      "size": 464605
+    },
+    {
+      "path": "jlink-preflight-server.log",
+      "sha256": "488babc3be047ba145fb6532fa4b178febb885e7192518f4fd919c56b36c80fe",
+      "size": 65816
+    },
+    {
+      "path": "jlink-arm-server.log",
+      "sha256": "e1e29bca4b7f92b78e6d8425260c6ce1237477676c5fed525f14477659c247a0",
+      "size": 152748
+    },
+    {
+      "path": "jlink-terminal-server.log",
+      "sha256": "df3b9183161fd07d8dd52ddc8d12a9b5283c7727596565c10899b210bf5f2426",
+      "size": 52336
+    },
+    {
+      "path": "jlink-timeout-dump-server.log",
+      "sha256": "4c6b7d42051492ccc4e5bb33e76b4b8ff76c7cbb3c57cf80442d7304db1d9414",
+      "size": 51438
+    }
+  ],
+  "schema": 1,
+  "stimulus": {
+    "active_timeout_ms": 2000,
+    "dlc": 8,
+    "frame_id": "0x7DE",
+    "payload_prefix_hex": "424F4649",
+    "run_nonce_decimal": 1786790191,
+    "run_nonce_hex": "0x6A80412F",
+    "tx_requests_submitted": 1
+  },
+  "test": "bus-off/manual fault injection",
+  "tooling_finding": {
+    "finding": "built-in error command unavailable",
+    "gdb_version": "13.2",
+    "mitigation_verified": "define error; echo ERROR; quit 1"
+  }
+}

@@ -1,0 +1,4 @@
+P3B_USB_PING_SOAK_DATE_UTC 2026-08-14T15:40:14Z
+    Finished `release` profile [optimized] target(s) in 0.01s
+     Running `target/release/examples/protocol_smoke ping-soak 60`
+PASS ping_soak elapsed_s=60.004 samples=559490 session_id=815897250 rtt_us_p50=105 rtt_us_p95=121 rtt_us_p99=135 rtt_us_max=99475 usb_rx_bytes=22382904 usb_tx_bytes=0 dropped=0 bus_off_count=0 error_count=0

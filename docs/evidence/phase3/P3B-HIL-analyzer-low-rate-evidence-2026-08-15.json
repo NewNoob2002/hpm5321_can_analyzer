@@ -1,0 +1,46 @@
+{
+  "evidence_boundary": {
+    "limitations": [
+      "Every observed frame has the same 0x7FF identifier, DLC 0, and empty payload, so independent record-order permutations are not distinguishable even though counts and per-position content match.",
+      "The analyzer timestamp text has 1 ms resolution and exhibits logger/scheduler jitter; sub-millisecond timestamp accuracy is not claimed.",
+      "This approximately 64 frame/s export-capable window does not provide independent analyzer timestamp coverage for the separate 6000 frame/s qualification run.",
+      "The configuration screenshot proves the selected nominal arbitration bitrate, not electrical waveform shape, sample point, or oscillator tolerance."
+    ],
+    "statement": "The export-capable approximately 64 frame/s analyzer window exactly matches all 11459 DUT frames by count, identifier, DLC, and payload. Because every frame is identical, independent order permutations are not distinguishable. Its active-span rate agrees with the DUT capture, and the archived analyzer configuration screenshot records a 1 Mbit/s arbitration bitrate."
+  },
+  "evidence_id": "P3B-HIL-analyzer-low-rate-evidence-2026-08-15",
+  "outcomes": {
+    "coarse_timestamp_and_rate_reconciliation": "PASS_WITH_LIMITATION",
+    "detailed_sample_point_and_waveform_reconciliation": "NOT_COVERED",
+    "frame_count_and_content_reconciliation": "PASS",
+    "high_rate_analyzer_timestamp_coverage": "NOT_CLAIMED",
+    "nominal_1_mbit_configuration_reconciliation": "PASS",
+    "record_order_reconciliation": "NOT_DISTINGUISHABLE_IDENTICAL_FRAMES"
+  },
+  "package": {
+    "members": [
+      "run-manifest.json",
+      "summary.json",
+      "diagnostics.csv",
+      "pings.csv",
+      "data_loss.csv",
+      "events.csv",
+      "frames.csv",
+      "analyzer-log.txt",
+      "bit-timing.png",
+      "analyzer-reconciliation.json",
+      "capture/capture-tool-anchor.json",
+      "capture/can_hil_capture.rs",
+      "capture/can_hil_capture",
+      "reconcile/reconcile_p3b_analyzer.py",
+      "operator-attestation.txt"
+    ],
+    "path": "docs/evidence/phase3/P3B-HIL-analyzer-low-rate-2026-08-15.zip",
+    "run_manifest_sha256": "8171ee77735e389b067184420ef941a8b241e6c27852e0a0f71735377d8623bd",
+    "sha256": "218d923c75c9a00cfd9b0105f6277a6a0c64004e7ae45d5bb917b910d0c6f128",
+    "size": 2467264
+  },
+  "phase": "P3B",
+  "schema": 1,
+  "status": "PASS_WITH_LIMITATION"
+}

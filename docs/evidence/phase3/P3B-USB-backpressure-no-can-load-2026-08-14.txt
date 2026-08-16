@@ -1,0 +1,4 @@
+P3B_USB_BACKPRESSURE_DATE_UTC 2026-08-14T15:39:59Z
+    Finished `release` profile [optimized] target(s) in 0.01s
+     Running `target/release/examples/protocol_smoke backpressure 15`
+PASS backpressure_pause_ms=15000 session_id=815897250 diag_generation=1 usb_rx_bytes=3244 usb_tx_bytes=0 response_depth=0 event_depth=0 data_depth=0

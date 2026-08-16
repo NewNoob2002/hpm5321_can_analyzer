@@ -1,0 +1,93 @@
+{
+  "build": {
+    "manifest_member": "build/build-manifest.json",
+    "manifest_sha256": "d8e679e7f52d0984ca5226a42cbe2a3f795fed951d787326083df0cdd185023b",
+    "options": {
+      "APP_MCAN_BITRATE": 1000000,
+      "APP_USB_FORCE_FULL_SPEED": false
+    },
+    "preset": "hpm5321-flash-release"
+  },
+  "captured_at_utc": "2026-08-14T15:33:10Z",
+  "evidence_boundary": {
+    "pending": [
+      "1 Mbit/s external CAN generator run at >=6000 frame/s for 1800 seconds",
+      "independent analyzer timestamp and bit-timing reconciliation",
+      "USB backpressure under CAN load",
+      "state-edge/drop reconciliation",
+      "physical USB disconnect/reconnect",
+      "bus-off/manual fault injection"
+    ],
+    "statement": "This evidence proves the named ELF was programmed and independently read back from the named target; it does not prove P3B load qualification."
+  },
+  "evidence_id": "P3B-HIL-firmware-2026-08-14",
+  "firmware": {
+    "demo.bin": {
+      "sha256": "d9c3e9accac68ba0f419efc5fbc9c3e3a455bb66e638e0501a72836d3e60e892",
+      "size": 110720
+    },
+    "demo.elf": {
+      "sha256": "6cea2e432665d5706932548a1cbb1e9b17e172b4175188b43487c4585e6233c0",
+      "size": 174616
+    }
+  },
+  "flash_readback": {
+    "matched_sections": [
+      ".nor_cfg_option",
+      ".boot_header",
+      ".start",
+      ".vectors",
+      ".text",
+      ".eh_frame",
+      ".data"
+    ],
+    "result": "GDB compare-sections matched every loadable ELF section",
+    "status": "PASS",
+    "transcript": {
+      "path": "docs/evidence/phase3/P3B-HIL-flash-compare-gdb-2026-08-14.txt",
+      "sha256": "fbcbcd9fb2d3d67d5b399d18f94f72d5d81712e2639bc5194eb0e72cdf05e6af"
+    }
+  },
+  "p4e_gate": "BLOCKED",
+  "package": {
+    "members": [
+      "package-manifest.json",
+      "build/build-manifest.json",
+      "firmware/demo.elf",
+      "firmware/demo.bin"
+    ],
+    "package_manifest_sha256": "fc820e0465f23b67e3a644e9061fd9f45e26cdb96e5a75b52c343d255f6bf95a",
+    "path": "docs/evidence/phase3/P3B-HIL-firmware-afbf243.zip",
+    "sha256": "fcb44d15f6ab29a09f0267735a05dc4e516a45eda5735c19762c4e1cffe3f3c6",
+    "size": 287619
+  },
+  "phase": "P3B",
+  "program_verify": {
+    "result": "J-Link loadfile completed with Program & Verify and O.K.",
+    "status": "PASS",
+    "transcript": {
+      "path": "docs/evidence/phase3/P3B-HIL-flash-jlink-2026-08-14.txt",
+      "sha256": "dcde8a339ec6a6666edad91aec072257a3943fdf65aff2385082e5c196860f56"
+    }
+  },
+  "qualification_status": "PARTIAL",
+  "schema": 1,
+  "scope": "firmware_program_verify_and_flash_readback",
+  "sdk": {
+    "commit": "88b01b43900d8c30844a1e5cdd3f3b7aff6db40e"
+  },
+  "source": {
+    "commit": "afbf243e1b0e433deb9fad946dab7d4beb3b026a",
+    "dirty": false
+  },
+  "status": "PASS",
+  "target": {
+    "device": "HPM5321xCFx",
+    "interface": "JTAG",
+    "probe_serial": "607000454",
+    "speed_khz": 4000
+  },
+  "toolchain": {
+    "compiler": "riscv32-unknown-elf-gcc (gc891d8dc23e) 13.2.0"
+  }
+}

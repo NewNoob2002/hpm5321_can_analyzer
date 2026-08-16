@@ -1,0 +1,18 @@
+P3B_HIL_COMPARE_DATE_UTC 2026-08-14T15:33:10Z
+P3B_HIL_PROBE_SERIAL 607000454
+P3B_HIL_TARGET HPM5321xCFx
+P3B_HIL_ELF_PATH build/hpm5321-flash-release/output/demo.elf
+P3B_HIL_ELF_SHA256 6cea2e432665d5706932548a1cbb1e9b17e172b4175188b43487c4585e6233c0
+riscv32-unknown-elf-gdb: /lib64/libtinfo.so.6: no version information available (required by riscv32-unknown-elf-gdb)
+riscv32-unknown-elf-gdb: /lib64/libncursesw.so.6: no version information available (required by riscv32-unknown-elf-gdb)
+riscv32-unknown-elf-gdb: /lib64/libncursesw.so.6: no version information available (required by riscv32-unknown-elf-gdb)
+riscv32-unknown-elf-gdb: /lib64/libncursesw.so.6: no version information available (required by riscv32-unknown-elf-gdb)
+0x8001449a in prvIdleTask ()
+Section .nor_cfg_option, range 0x80000400 -- 0x80000410: matched.
+Section .boot_header, range 0x80001000 -- 0x80001090: matched.
+Section .start, range 0x80003000 -- 0x80003050: matched.
+Section .vectors, range 0x80003050 -- 0x800060d8: matched.
+Section .text, range 0x800060d8 -- 0x8001b260: matched.
+Section .eh_frame, range 0x8001b260 -- 0x8001b288: matched.
+Section .data, range 0x8001b288 -- 0x8001b480: matched.
+[Inferior 1 (Remote target) detached]

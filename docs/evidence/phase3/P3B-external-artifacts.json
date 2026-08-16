@@ -1,0 +1,87 @@
+{
+  "schema": 1,
+  "policy": "docs/development/evidence-storage-policy.md",
+  "retention": "project_lifetime_plus_2_years",
+  "freeze_ready": false,
+  "artifacts": [
+    {
+      "staging_path": "docs/evidence/phase3/P3B-HIL-10MIN-diagnostic-2026-08-15.zip",
+      "sha256": "c3cfca5331688b4c85428a1cd25ae3711a74d7f5a4903f11669791c9b20d9c1f",
+      "size": 29481962,
+      "members": ["run-manifest.json", "summary.json", "diagnostics.csv", "pings.csv", "frames.csv", "data_loss.csv", "jlink-reset.txt"],
+      "key_excerpt": {
+        "source_evidence": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+        "run": "diagnostic_10_min",
+        "result": "FAIL_FIXED_WINDOW_THROUGHPUT",
+        "frames_csv_sha256": "e3071ec1a7e1ff78d52ec9d2c5d58024c80c0c902de17dac42ce6e689757fb4f",
+        "frames_csv_size": 201138497,
+        "frames_csv_row_count": 3474020,
+        "host_acceptance": false,
+        "measurement_duration_seconds": 600.000142281
+      },
+      "archive_status": "PENDING_UPLOAD",
+      "immutable_object_id": null,
+      "location": null
+    },
+    {
+      "staging_path": "docs/evidence/phase3/P3B-HIL-30MIN-failure-2026-08-15.zip",
+      "sha256": "e9b0bdbe01afee482411264e61f7aa65c4ce50c09d9f50fc2f2650761bfa93ff",
+      "size": 93034126,
+      "members": ["run-manifest.json", "summary.json", "diagnostics.csv", "pings.csv", "frames.csv", "channel-gap-excerpt.csv", "jlink-reset.txt"],
+      "key_excerpt": {
+        "source_evidence": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+        "run": "frozen_30_min_initial_failure",
+        "result": "FAIL_SEQUENCE_AND_DATA_LOSS",
+        "frames_csv_sha256": "374b8c5893a83fe6b3d53c99ec8a1e6a9a87a13f317160c154a6c65d44362117",
+        "frames_csv_size": 642082341,
+        "frames_csv_row_count": 10842689,
+        "host_acceptance": false,
+        "measurement_duration_seconds": 1800.00078128
+      },
+      "archive_status": "PENDING_UPLOAD",
+      "immutable_object_id": null,
+      "location": null
+    },
+    {
+      "staging_path": "docs/evidence/phase3/P3B-HIL-30MIN-qualified-2026-08-15.zip",
+      "sha256": "75638af0e569d949936f2028c742c49518210e04d3e9027c417869ef140e0bec",
+      "size": 94999707,
+      "members": ["run-manifest.json", "summary.json", "diagnostics.csv", "pings.csv", "frames.csv", "data_loss.csv", "capture/capture-tool-anchor.json", "capture/can_hil_capture.rs", "capture/can_hil_capture", "operator-attestation.txt"],
+      "key_excerpt": {
+        "source_evidence": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+        "run": "frozen_30_min_qualified",
+        "result": "PASS_HOST_LOAD_ACCEPTANCE",
+        "frames_csv_sha256": "700436c934d28220243ccc093e1107adb21343b7224a34dcc56b1df517ff5bf9",
+        "frames_csv_size": 653411483,
+        "frames_csv_row_count": 10843533,
+        "host_acceptance": true,
+        "measurement_duration_seconds": 1800.000245453
+      },
+      "archive_status": "PENDING_UPLOAD",
+      "immutable_object_id": null,
+      "location": null
+    },
+    {
+      "staging_path": "docs/evidence/phase3/P3B-HIL-backpressure-2026-08-15.zip",
+      "sha256": "eb8c35a06079f42cf59f846ddac40b1e1c34588b6816d099498dc845b907f417",
+      "size": 18044773,
+      "members": ["run-manifest.json", "summary.json", "diagnostics.csv", "pings.csv", "data_loss.csv", "events.csv", "frames.csv", "capture-console.log", "backpressure-control.log", "backpressure-reconciliation.json", "capture/can_hil_capture.rs", "capture/can_hil_capture", "reconcile/reconcile_p3b_backpressure.py"],
+      "key_excerpt": {
+        "source_evidence": "docs/evidence/phase3/P3B-HIL-backpressure-evidence-2026-08-15.json",
+        "result": "PARTIAL_CHANNEL_ATTRIBUTION",
+        "run_manifest_sha256": "68e9e0a6583d3ee0c372d29f7b510010ebf930dbf78cb82a273f2a37dfa5c11a",
+        "pause_duration_ns": 15004321839,
+        "frames": 271293,
+        "event_missing_sequences": 12913,
+        "flow_control_events": 3,
+        "host_acceptance": false,
+        "usb_backpressure_recovery": "PASS",
+        "event_sequence_reconciliation": "PASS",
+        "channel_sequence_reconciliation": "PARTIAL"
+      },
+      "archive_status": "PENDING_UPLOAD",
+      "immutable_object_id": null,
+      "location": null
+    }
+  ]
+}

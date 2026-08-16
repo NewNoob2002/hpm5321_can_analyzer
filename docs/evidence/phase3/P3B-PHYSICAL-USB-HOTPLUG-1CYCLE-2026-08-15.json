@@ -1,0 +1,126 @@
+{
+  "completed_at": "2026-08-15T03:44:02.785258+00:00",
+  "completed_cycles": 1,
+  "cycles": [
+    {
+      "cycle": 1,
+      "device": {
+        "manufacturer": "HPMicro",
+        "product": "HPM5321 USB-CAN Analyzer",
+        "serial": "HPM5321-P3A-001",
+        "speed_mbps": "480",
+        "topology_path": "1-2.4"
+      },
+      "device_node": "/dev/bus/usb/001/031",
+      "device_node_readable": true,
+      "device_node_writable": true,
+      "disconnect_ms": 1211.715,
+      "disconnected_at": "2026-08-15T03:44:01.459111+00:00",
+      "reconnected_at": "2026-08-15T03:44:02.670827+00:00",
+      "recovery_completed_at": "2026-08-15T03:44:02.684589+00:00",
+      "recovery_smoke": {
+        "attempt_count": 1,
+        "attempts": [
+          {
+            "exit_code": 0,
+            "stderr": "",
+            "stdout": "PASS protocol=1.0 session_id=135412399 max_message=488 firmware=0.1.0-dev build_id=hpm5321-product board=Gerber_PCB1_2026-07-23 serial=HPM5321-P3A-001 usb_mode=2 tick_hz=24000000 channel=0 mode_mask=0x02 nominal_min=1000000 nominal_max=1000000 diag_generation=1 usb_rx_bytes=74540 usb_tx_bytes=0 rx_frames=15618329 tx_frames=0 dropped=0 bus_off_count=0 error_count=0 config_generation=1 capture_generation=1 capture_state=0 tx_armed=false mcan_wire_length=104 mcan_generation=19121407 mcan_state_flags=0x00000007 mcan_queue_drops=0 mcan_ring_drops=0"
+          }
+        ],
+        "exit_code": 0,
+        "recovery_ms": 12.686,
+        "stderr": "",
+        "stdout": "PASS protocol=1.0 session_id=135412399 max_message=488 firmware=0.1.0-dev build_id=hpm5321-product board=Gerber_PCB1_2026-07-23 serial=HPM5321-P3A-001 usb_mode=2 tick_hz=24000000 channel=0 mode_mask=0x02 nominal_min=1000000 nominal_max=1000000 diag_generation=1 usb_rx_bytes=74540 usb_tx_bytes=0 rx_frames=15618329 tx_frames=0 dropped=0 bus_off_count=0 error_count=0 config_generation=1 capture_generation=1 capture_state=0 tx_armed=false mcan_wire_length=104 mcan_generation=19121407 mcan_state_flags=0x00000007 mcan_queue_drops=0 mcan_ring_drops=0"
+      },
+      "topology_path": "1-2.4"
+    }
+  ],
+  "device": {
+    "manufacturer": "HPMicro",
+    "product": "HPM5321 USB-CAN Analyzer",
+    "serial": "HPM5321-P3A-001",
+    "speed_mbps": "480",
+    "topology_path": "1-2.4"
+  },
+  "device_node": "/dev/bus/usb/001/030",
+  "device_node_readable": true,
+  "device_node_writable": true,
+  "disconnect_method": "physical-cable",
+  "evidence_boundary": {
+    "covered": "1 physical disconnect/reconnect cycle, udev node access, and a successful UCAN HELLO/device-info/capabilities/diagnostics transaction after every cycle",
+    "not_covered": "Windows PnP, FS fallback, endpoint HALT, protocol/session, or CAN data-plane behavior",
+    "verdict": "PASS"
+  },
+  "firmware_manifest": {
+    "association_method": "operator-selected manifest with verified host build artifacts",
+    "bin_sha256": "d9c3e9accac68ba0f419efc5fbc9c3e3a455bb66e638e0501a72836d3e60e892",
+    "boundary": "the raw echo firmware does not expose an on-device build identifier",
+    "build_options": {
+      "APP_MCAN_BITRATE": 1000000,
+      "APP_USB_FORCE_FULL_SPEED": false
+    },
+    "compiler": "riscv32-unknown-elf-gcc (gc891d8dc23e) 13.2.0",
+    "device_attested": false,
+    "elf_sha256": "6cea2e432665d5706932548a1cbb1e9b17e172b4175188b43487c4585e6233c0",
+    "path": "build/hpm5321-flash-release/build-manifest.json",
+    "preset": "hpm5321-flash-release",
+    "sdk_commit": "88b01b43900d8c30844a1e5cdd3f3b7aff6db40e",
+    "sha256": "d8e679e7f52d0984ca5226a42cbe2a3f795fed951d787326083df0cdd185023b",
+    "source_dirty": false,
+    "source_revision": "afbf243e1b0e433deb9fad946dab7d4beb3b026a",
+    "verified_artifacts": {
+      "demo.bin": {
+        "path": "build/hpm5321-flash-release/output/demo.bin",
+        "sha256": "d9c3e9accac68ba0f419efc5fbc9c3e3a455bb66e638e0501a72836d3e60e892",
+        "size": 110720,
+        "verified": true
+      },
+      "demo.elf": {
+        "path": "build/hpm5321-flash-release/output/demo.elf",
+        "sha256": "6cea2e432665d5706932548a1cbb1e9b17e172b4175188b43487c4585e6233c0",
+        "size": 174616,
+        "verified": true
+      }
+    }
+  },
+  "initial_smoke": {
+    "attempt_count": 1,
+    "attempts": [
+      {
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "PASS protocol=1.0 session_id=135412392 max_message=488 firmware=0.1.0-dev build_id=hpm5321-product board=Gerber_PCB1_2026-07-23 serial=HPM5321-P3A-001 usb_mode=2 tick_hz=24000000 channel=0 mode_mask=0x02 nominal_min=1000000 nominal_max=1000000 diag_generation=1 usb_rx_bytes=74384 usb_tx_bytes=0 rx_frames=15618329 tx_frames=0 dropped=0 bus_off_count=0 error_count=0 config_generation=9 capture_generation=9 capture_state=0 tx_armed=false mcan_wire_length=104 mcan_generation=19121162 mcan_state_flags=0x00000007 mcan_queue_drops=0 mcan_ring_drops=0"
+      }
+    ],
+    "exit_code": 0,
+    "recovery_ms": 11.714,
+    "stderr": "",
+    "stdout": "PASS protocol=1.0 session_id=135412392 max_message=488 firmware=0.1.0-dev build_id=hpm5321-product board=Gerber_PCB1_2026-07-23 serial=HPM5321-P3A-001 usb_mode=2 tick_hz=24000000 channel=0 mode_mask=0x02 nominal_min=1000000 nominal_max=1000000 diag_generation=1 usb_rx_bytes=74384 usb_tx_bytes=0 rx_frames=15618329 tx_frames=0 dropped=0 bus_off_count=0 error_count=0 config_generation=9 capture_generation=9 capture_state=0 tx_armed=false mcan_wire_length=104 mcan_generation=19121162 mcan_state_flags=0x00000007 mcan_queue_drops=0 mcan_ring_drops=0"
+  },
+  "minimum_disconnect_ms": 1000,
+  "normalization": {
+    "correction": "Replaced the collector's stale hard-coded 100-cycle scope text with the recorded required/completed cycle count; measurements were not altered.",
+    "source_artifact": "artifacts/hil-2026-08-15/P3B-PHYSICAL-USB-HOTPLUG-1CYCLE.json",
+    "source_sha256": "1acd19f85cdab77b5ed93efa48fe6016636ba443584588226f806dbe8d03904a"
+  },
+  "operator": "codex-hil",
+  "pid": "1236",
+  "recovery_timeout_seconds": 30.0,
+  "repository": {
+    "dirty": true,
+    "head": "afbf243e1b0e433deb9fad946dab7d4beb3b026a"
+  },
+  "required_cycles": 1,
+  "schema_version": 1,
+  "smoke_bytes": 1048576,
+  "smoke_executable": "host/target/release/examples/protocol_smoke",
+  "smoke_kind": "protocol",
+  "smoke_retry_ms": 100,
+  "smoke_sha256": "4929a8fa348f21b6ffa58dcc1074b5b43f2cf743c9b0a2fc090ced56de34217e",
+  "started_at": "2026-08-15T03:43:39.484021+00:00",
+  "status": "PASS",
+  "status_semantics": "PASS qualifies T-USB-007 for the recorded physical-cable cycles and recovery echo only",
+  "test_id": "T-USB-007",
+  "topology_path": "1-2.4",
+  "vid": "34b7"
+}
