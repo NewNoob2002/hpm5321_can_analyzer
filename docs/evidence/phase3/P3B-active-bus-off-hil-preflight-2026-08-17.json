@@ -2,6 +2,7 @@
   "schema": 1,
   "phase": "P3B",
   "purpose": "active_bus_off_hil_preflight_only",
+  "recorded_on": "2026-08-17",
   "decision": "BLOCKED_FOR_HIL_PREFLIGHT",
   "approved": false,
   "hardware_execution_authorized": false,
@@ -56,28 +57,62 @@
     }
   ],
   "bench": {
-    "isolated_bench_confirmed": false,
-    "vehicle_connected": null,
-    "production_gateway_connected": null,
-    "emergency_stop_or_power_cut_method": null
+    "isolated_bench_confirmed": true,
+    "bench_id": "0816",
+    "responsible_person": "Ted",
+    "vehicle_connected": false,
+    "production_gateway_connected": false,
+    "emergency_stop_or_power_cut_method": "Stop active injector output, confirm its no-output safe state, disable the DUT bench-supply output if required, and preserve logs and physical state without immediate retry.",
+    "dut_power_cut_method": "Disable the bench power-supply output.",
+    "emergency_action_owner": "Guo",
+    "stop_conditions": [
+      "power abnormality",
+      "equipment overheating",
+      "injector exceeds approved limits",
+      "unexpected bus activity",
+      "logging interruption",
+      "DUT state becomes uncontrolled"
+    ],
+    "recovery_requirements": "Identify the root cause; inspect DUT power, wiring, termination, common ground, injector, and analyzer state; confirm all values are back within approved limits; preserve failure evidence; and obtain approval from independent reviewer Guo before retry."
   },
   "dut": {
-    "model": null,
-    "hardware_revision": null,
-    "serial_number": null,
-    "target_voltage_v": null
+    "model": "X-CAN",
+    "hardware_revision": "V1.0",
+    "serial_number": "X20260721",
+    "target_voltage_v": 5.0,
+    "bench_supply_current_limit_a": 1.0,
+    "test_can_channel": "MCAN0"
   },
   "debug_probe": {
-    "model": null,
-    "serial_number": null,
-    "firmware_version": null
+    "model": "SEGGER J-Link Pro V4",
+    "serial_number": "607000454",
+    "firmware_version": "J-Link Pro V4 V11 PLUS Dec compiled 9 2041 12:59:59",
+    "hardware_version": "V11.00",
+    "connection": "JTAG",
+    "commander_version": "SEGGER J-Link Commander V9.68 (Compiled Aug 12 2026 15:33:26)",
+    "dll_version": "V9.68, compiled Aug 12 2026 15:32:37",
+    "usb_speed_mode": "High speed (480 MBit/s)",
+    "vtref_v": 3.31,
+    "firmware_banner_preserved_verbatim": true
   },
   "can_analyzer": {
-    "model": null,
-    "serial_number": null,
-    "firmware_or_software_version": null,
-    "mode": null,
-    "timestamp_resolution": null
+    "model": "JCAN",
+    "serial_number": "346D",
+    "firmware_or_software_version": "V1.0.2",
+    "channel_count": 1,
+    "selected_channel": 1,
+    "mode": "Classic CAN and CAN-FD supported; frozen DUT image uses Classic CAN",
+    "supports_1_mbit_per_second": true,
+    "timestamp_resolution": "1 ms display resolution",
+    "raw_receive_capture_60_seconds_available": true,
+    "receive_capture_limit": "No stated frame-count limit when frames are received.",
+    "transmit_capture_limit": "Above 64 frames, cyclic transmit is required and transmitted CAN frames are not displayed live by the host application.",
+    "can_error_frame_recording_supported": true,
+    "error_warning_passive_bus_off_recording_supported": true,
+    "receive_overflow_counter_supported": true,
+    "dut_attribution_supported": true,
+    "authority_boundary": "Analyzer attribution is corroborating evidence; DUT PSR.BO, ECR progression, and BUS_OFF_LATCHED remain authoritative.",
+    "raw_record_example": "26-08-17 10:00:23.680 Send[321]: 48 50 4D 52 00 00 00 01"
   },
   "active_fault_injector": {
     "present": false,
@@ -87,7 +122,8 @@
     "supported_injection_types": [],
     "selected_injection_type": null,
     "operating_limits": null,
-    "emergency_stop_condition": null
+    "emergency_stop_condition": null,
+    "unavailable_reason": "The available JCAN analyzer does not support active CAN error injection."
   },
   "gdb_fault_injection_policy": {
     "mailbox_arm_after_separate_hardware_authorization_allowed": true,
@@ -112,11 +148,13 @@
     "unique_nonce_per_run": true,
     "unique_log_directory_per_run": true,
     "same_firmware_sha_for_all_runs": true,
-    "post_latch_observation_seconds": null,
+    "post_latch_observation_seconds": 60,
+    "post_latch_observation_basis": "Observe continuously for 60 seconds from first confirmation of BUS_OFF_LATCHED in every run to verify the fixed window retains bus-off latch, INIT, and pad isolation without automatic recovery or a second TX submission.",
+    "post_latch_observation_approved_by": "Ted",
     "cleanup_required_per_run": true,
     "cleanup_confirmed_per_run": false,
     "raw_gdb_capture_available": false,
-    "raw_analyzer_capture_available": false
+    "raw_analyzer_capture_available": true
   },
   "runs": [
     {
@@ -181,30 +219,23 @@
     }
   ],
   "operator": {
-    "identity": null,
-    "approval": false
+    "identity": "Ted",
+    "approval": true
   },
   "independent_reviewer": {
-    "identity": null,
-    "approval": false,
-    "distinct_from_operator": false
+    "identity": "Guo",
+    "approval": true,
+    "distinct_from_operator": true
   },
   "project_safety_approver": {
-    "identity": null,
-    "approval": false,
-    "scope": null
+    "identity": "Guo",
+    "approval": true,
+    "scope": "Recorded safety boundaries only; hardware execution remains unauthorized while blockers exist."
   },
   "blockers": [
-    "isolated bench and vehicle/gateway disconnection are not confirmed",
-    "emergency stop or power-cut method is not approved",
-    "DUT identity and target voltage are missing",
-    "debug probe identity and firmware version are missing",
-    "CAN analyzer identity, mode, version, and timestamp resolution are missing",
     "active fault injector identity, supported injection type, operating limits, and stop condition are missing",
     "bus sample point, mode, termination, common ground, and idle voltage are not confirmed",
-    "post-latch observation duration is not approved",
     "three independent run IDs, nonces, paths, wiring records, and equipment records are not assigned",
-    "raw GDB and analyzer capture availability is not confirmed",
-    "operator, distinct independent reviewer, and project/safety approver approvals are missing"
+    "raw GDB and analyzer capture availability is not confirmed"
   ]
 }

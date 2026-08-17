@@ -11,7 +11,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PREFLIGHT = Path(
-    "docs/evidence/phase3/P3B-active-bus-off-hil-preflight.template.json"
+    "docs/evidence/phase3/P3B-active-bus-off-hil-preflight-2026-08-17.json"
 )
 SOURCE_COMMIT = "a4e310f79c40d1324a642c76d46403b927aa2a07"
 SDK_COMMIT = "88b01b43900d8c30844a1e5cdd3f3b7aff6db40e"
@@ -73,6 +73,16 @@ EXPECTED_CI = [
     },
 ]
 
+EXPECTED_GDB_FAULT_INJECTION_POLICY = {
+    "mailbox_arm_after_separate_hardware_authorization_allowed": True,
+    "write_result_state_or_latch_for_hardware_pass_allowed": False,
+    "write_psr_or_ecr_for_hardware_pass_allowed": False,
+    "ack_suppression_only_accepted_for_hardware_pass": False,
+    "synthetic_software_path_test_may_be_planned_separately": True,
+    "synthetic_evidence_class": "SOFTWARE_ONLY_NOT_HARDWARE_BUS_OFF",
+    "decision": "NOT_A_REPLACEMENT_FOR_ACTIVE_FAULT_INJECTOR",
+}
+
 BLOCK_BENCH = "isolated bench and vehicle/gateway disconnection are not confirmed"
 BLOCK_ESTOP = "emergency stop or power-cut method is not approved"
 BLOCK_DUT = "DUT identity and target voltage are missing"
@@ -94,7 +104,10 @@ BLOCK_RUNS = (
     "records are not assigned"
 )
 BLOCK_RAW = "raw GDB and analyzer capture availability is not confirmed"
-BLOCK_APPROVALS = "operator and distinct independent reviewer approvals are missing"
+BLOCK_APPROVALS = (
+    "operator, distinct independent reviewer, and project/safety approver "
+    "approvals are missing"
+)
 
 
 def nonempty(value: object) -> bool:
@@ -266,6 +279,11 @@ def readiness_blockers(preflight: dict[str, Any]) -> list[str]:
         if isinstance(preflight.get("independent_reviewer"), dict)
         else {}
     )
+    safety_approver = (
+        preflight.get("project_safety_approver")
+        if isinstance(preflight.get("project_safety_approver"), dict)
+        else {}
+    )
     if not (
         nonempty(operator.get("identity"))
         and operator.get("approval") is True
@@ -273,6 +291,8 @@ def readiness_blockers(preflight: dict[str, Any]) -> list[str]:
         and reviewer.get("approval") is True
         and reviewer.get("distinct_from_operator") is True
         and reviewer.get("identity") != operator.get("identity")
+        and nonempty(safety_approver.get("identity"))
+        and safety_approver.get("approval") is True
     ):
         blockers.append(BLOCK_APPROVALS)
     return blockers
@@ -307,6 +327,11 @@ def validate(root: Path, preflight_path: Path = DEFAULT_PREFLIGHT) -> list[str]:
         errors.append("preflight software identity mismatch")
     if preflight.get("ci") != EXPECTED_CI:
         errors.append("preflight same-SHA CI matrix mismatch")
+    if (
+        preflight.get("gdb_fault_injection_policy")
+        != EXPECTED_GDB_FAULT_INJECTION_POLICY
+    ):
+        errors.append("preflight GDB fault-injection policy mismatch")
 
     execution = preflight.get("execution")
     fixed_execution = {
