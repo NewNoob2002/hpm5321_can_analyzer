@@ -4,18 +4,28 @@ on:
   push:
     paths:
       - "docs/development/p3b-active-bus-off-hil-preflight.md"
+      - "docs/development/p3b-bus-off-deferral.md"
+      - "docs/development/system-functional-completion-plan.md"
       - "docs/evidence/phase3/P3B-active-bus-off-hil-preflight.template.json"
       - "docs/evidence/phase3/P3B-active-bus-off-hil-preflight-2026-08-17.json"
+      - "docs/evidence/phase3/P3B-bus-off-deferral-2026-08-17.json"
       - "scripts/phase3/validate_p3b_bus_off_preflight.py"
+      - "scripts/phase3/validate_p3b_bus_off_deferral.py"
       - "tests/phase3/test_p3b_bus_off_preflight.py"
+      - "tests/phase3/test_p3b_bus_off_deferral.py"
       - ".github/workflows/p3b-hil-preflight-contract.yml"
   pull_request:
     paths:
       - "docs/development/p3b-active-bus-off-hil-preflight.md"
+      - "docs/development/p3b-bus-off-deferral.md"
+      - "docs/development/system-functional-completion-plan.md"
       - "docs/evidence/phase3/P3B-active-bus-off-hil-preflight.template.json"
       - "docs/evidence/phase3/P3B-active-bus-off-hil-preflight-2026-08-17.json"
+      - "docs/evidence/phase3/P3B-bus-off-deferral-2026-08-17.json"
       - "scripts/phase3/validate_p3b_bus_off_preflight.py"
+      - "scripts/phase3/validate_p3b_bus_off_deferral.py"
       - "tests/phase3/test_p3b_bus_off_preflight.py"
+      - "tests/phase3/test_p3b_bus_off_deferral.py"
       - ".github/workflows/p3b-hil-preflight-contract.yml"
   workflow_dispatch:
 
@@ -31,3 +41,7 @@ jobs:
         run: python3 -m unittest tests.phase3.test_p3b_bus_off_preflight
       - name: Validate current blocked preflight record
         run: python3 scripts/phase3/validate_p3b_bus_off_preflight.py
+      - name: Validate active bus-off HIL deferral boundary
+        run: |
+          python3 -m unittest tests.phase3.test_p3b_bus_off_deferral
+          python3 scripts/phase3/validate_p3b_bus_off_deferral.py

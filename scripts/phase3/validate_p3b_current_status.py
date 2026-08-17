@@ -59,8 +59,9 @@ def validate(root: Path, status_path: Path = DEFAULT_STATUS) -> list[str]:
         "qualification_status": "PARTIAL",
         "p4e_gate": "BLOCKED",
         "load_gate": "PASS_HOST_LOAD_ACCEPTANCE",
-        "bus_off_gate": "READY_FOR_MANUAL_HIL",
+        "bus_off_gate": "DEFERRED_EXTERNAL_FAULT_INJECTION_CAPABILITY",
         "bus_off_last_attempt": "TIMEOUT_CLEANED_NOT_BUS_OFF",
+        "development_continuation": "AUTHORIZED_WITH_DEFERRED_HARDWARE_GATE",
         "freeze_status": "BLOCKED",
     }
     for name, value in expected.items():
@@ -73,7 +74,12 @@ def validate(root: Path, status_path: Path = DEFAULT_STATUS) -> list[str]:
     if not isinstance(references, dict):
         errors.append("P3B current status requires authoritative evidence")
         references = {}
-    for name in ("load_status", "bus_off_readiness", "bus_off_attempt"):
+    for name in (
+        "load_status",
+        "bus_off_readiness",
+        "bus_off_attempt",
+        "bus_off_deferral",
+    ):
         reference = references.get(name)
         if not isinstance(reference, dict):
             errors.append(f"missing authoritative evidence: {name}")
