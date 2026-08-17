@@ -14,6 +14,7 @@ python3 scripts/phase3/validate_p3b_analyzer_evidence.py
 python3 scripts/phase3/validate_p3b_backpressure_evidence.py
 python3 scripts/phase3/validate_p3b_bus_off_attempt.py
 python3 scripts/phase3/validate_p3b_bus_off_evidence.py
+python3 scripts/phase3/validate_p3b_bus_off_deferral.py
 python3 scripts/phase3/validate_p3b_current_status.py
 
 scripts/build.sh hpm5321-flash-release

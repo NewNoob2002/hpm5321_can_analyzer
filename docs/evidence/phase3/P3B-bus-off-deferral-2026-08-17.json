@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "phase": "P3B",
+  "recorded_on": "2026-08-17",
+  "decision": "DEFERRED_EXTERNAL_FAULT_INJECTION_CAPABILITY",
+  "deferral_reason": "No qualified active CAN fault-injection capability is currently available.",
+  "hardware_bus_off_status": "NOT_COMPLETED",
+  "qualification_status": "PARTIAL",
+  "p4e_qualification_gate": "BLOCKED",
+  "freeze_ready": false,
+  "hardware_execution_authorized": false,
+  "development_continuation": "AUTHORIZED_WITH_DEFERRED_HARDWARE_GATE",
+  "last_hardware_attempt": {
+    "outcome": "TIMEOUT_CLEANED_NOT_BUS_OFF",
+    "warning_observed": 1,
+    "error_passive_observed": 1,
+    "max_tec": 128,
+    "bus_off_observed": 0,
+    "final_psr_bo": 0
+  },
+  "authorized_scope": [
+    "non-bus-off firmware functionality",
+    "USB and protocol integration",
+    "host core and CLI development",
+    "single-channel E2E implementation excluding bus-off qualification closure",
+    "dual-channel implementation and non-bus-off reliability work"
+  ],
+  "prohibited_claims": [
+    "P3B PASS",
+    "P4E qualification complete",
+    "hardware bus-off verified",
+    "freeze ready",
+    "release qualification complete"
+  ],
+  "prohibited_substitutions": [
+    "GDB writes to result state, latch, PSR, or ECR",
+    "silent or no-ACK operation alone",
+    "intentional bitrate mismatch",
+    "intentional termination or wiring misuse"
+  ],
+  "resume_conditions": [
+    "a qualified active CAN fault injector or independently qualified equivalent device is available",
+    "injector identity, supported error types, electrical limits, and emergency stop conditions are recorded",
+    "bus bitrate, sample point, mode, termination, common ground, and idle voltage preflight is complete",
+    "three independent run IDs, nonces, evidence paths, and reset boundaries are assigned",
+    "raw GDB transcript and analyzer capture capability is confirmed",
+    "a new explicit hardware execution authorization is obtained"
+  ],
+  "authoritative_references": {
+    "last_attempt": {
+      "path": "docs/evidence/phase3/P3B-bus-off-attempt-2026-08-15.json",
+      "sha256": "83417a29c480a8029a8dde988c82e53797aea6bded158a891f2aaf58142345e4"
+    },
+    "readiness": {
+      "path": "docs/evidence/phase3/P3B-bus-off-fault-injection-readiness-2026-08-15.json",
+      "sha256": "bee2e4095ef3296d16551306de70d8cf080c840e4012015e6f791404a3fdd949"
+    },
+    "blocked_preflight": {
+      "path": "docs/evidence/phase3/P3B-active-bus-off-hil-preflight-2026-08-17.json",
+      "sha256": "5376920414ca8c838a12f650e6d2c8eba1cb2845dfc347a8e50dd16c8d732748"
+    }
+  },
+  "historical_blocker": {
+    "path": "docs/evidence/phase3/P3B-bus-off-fault-injection-blocker-2026-08-15.json",
+    "sha256": "7abce66e01869eca723058b502a70110ac859b62b42ea1cb908d648157c82ca4",
+    "authority": "HISTORICAL_ONLY",
+    "preserve_original": true
+  }
+}

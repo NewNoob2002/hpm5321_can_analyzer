@@ -15,6 +15,9 @@
   明确授权。
 - 本预检不得改变 `P3B=PARTIAL`、`P4E=BLOCKED`、`freeze_ready=false`
   或 hardware bus-off 未完成状态。
+- 2026-08-17 起，硬件执行 disposition 为
+  `DEFERRED_EXTERNAL_FAULT_INJECTION_CAPABILITY`。这只暂停 Track B，不解除本页
+  blocker，也不授权任何硬件操作；恢复时必须刷新现场值并获得新的明确授权。
 
 ## 冻结的软件输入
 
