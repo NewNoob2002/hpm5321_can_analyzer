@@ -1,0 +1,3653 @@
+{
+  "schema_version": 1,
+  "ledger_id": "P3B-POST-DEFERRAL-GAP-LEDGER-2026-08-17",
+  "generated_from_commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+  "planning_contract": {
+    "path": "docs/development/p3b-next-step-work-plan.md",
+    "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2",
+    "work_order": [
+      "WP0",
+      "WP1",
+      "WP2",
+      "WP3||WP4",
+      "WP5"
+    ],
+    "wp0_review_gate": "A2_APPROVE_WP0"
+  },
+  "authoritative_status": {
+    "path": "docs/evidence/phase3/P3B-current-status.json",
+    "blob": "37c76576dc4f299c9cb653d89f8000965b5fdbdd",
+    "qualification_status": "PARTIAL",
+    "p4e_gate": "BLOCKED",
+    "freeze_ready": false,
+    "hardware_bus_off": "NOT_COMPLETED",
+    "hardware_execution_authorized": false,
+    "bus_off_gate": "DEFERRED_EXTERNAL_FAULT_INJECTION_CAPABILITY",
+    "development_continuation": "AUTHORIZED_WITH_DEFERRED_HARDWARE_GATE",
+    "historical_blocker": {
+      "path": "docs/evidence/phase3/P3B-bus-off-fault-injection-blocker-2026-08-15.json",
+      "sha256": "7abce66e01869eca723058b502a70110ac859b62b42ea1cb908d648157c82ca4",
+      "authority": "HISTORICAL_ONLY",
+      "preserve_original": true
+    }
+  },
+  "governance_invariants": {
+    "P3B": "PARTIAL",
+    "P4E": "BLOCKED",
+    "freeze_ready": false,
+    "hardware_bus_off": "NOT_COMPLETED",
+    "hardware_execution_authorized": false,
+    "bus_off_gate": "DEFERRED_EXTERNAL_FAULT_INJECTION_CAPABILITY",
+    "development_continuation": "AUTHORIZED_WITH_DEFERRED_HARDWARE_GATE",
+    "single_channel_before_dual_channel": true,
+    "MVP": "OPEN",
+    "Beta": "OPEN",
+    "release": "OPEN"
+  },
+  "status_semantics": {
+    "implementation_status": "Source/product implementation only",
+    "software_verification_status": "Reproducible non-hardware tests only",
+    "hardware_evidence_status": "Artifact-bound physical evidence only",
+    "qualification_status": "Approved gate closure only",
+    "conservative_status": "Most conservative aggregate; never inferred from implementation alone"
+  },
+  "entries": [
+    {
+      "test_id": "T-CAN-002",
+      "gate": "D",
+      "work_package": "WP5",
+      "requirement_ids": [
+        "CAN-05"
+      ],
+      "scope": "MCAN2 internal loopback",
+      "release_scope": "Beta+",
+      "beta_only": true,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "PARTIAL",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "E1_DUAL_CHANNEL_OWNER",
+      "implementation_paths": [
+        "USER/src/app_mcan2_owner.c"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/evidence/phase0/T-CAN-001-002-internal-safe-gdb.txt"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase0/T-CAN-001-002-internal-safe-gdb.txt",
+          "blob": "dcb8c31eae0eb3d2596aa1722ee7d0c64a27218e"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase0/T-CAN-001-002-internal-safe-gdb.txt",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "dcb8c31eae0eb3d2596aa1722ee7d0c64a27218e"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "E1_DUAL_CHANNEL_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP2_ACCEPTED",
+        "WP3_DUAL_CHANNEL_SAFETY_CONTROLS"
+      ],
+      "blockers": [
+        "Phase 0 probe evidence is not product MCAN2 integration evidence"
+      ],
+      "next_action": "E1 implements MCAN2 only after channel-neutral contracts and records new non-hardware evidence",
+      "notes": "Beta-only dual-channel preparation; single-channel remains first."
+    },
+    {
+      "test_id": "T-CAN-005",
+      "gate": "D",
+      "work_package": "WP5",
+      "requirement_ids": [
+        "CAN-05"
+      ],
+      "scope": "MCAN2 filter hit/miss",
+      "release_scope": "Beta+",
+      "beta_only": true,
+      "implementation_status": "NOT_IMPLEMENTED",
+      "software_verification_status": "NOT_TESTED",
+      "hardware_evidence_status": "NOT_TESTED",
+      "qualification_status": "BLOCKED",
+      "conservative_status": "NOT_TESTED",
+      "owner_role": "E1_DUAL_CHANNEL_OWNER",
+      "implementation_paths": [
+        "USER/src/app_mcan2_owner.c"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/implementation-status.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/implementation-status.md",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/implementation-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "status": "NOT_EXECUTED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "The required closure execution has not run at the ledger baseline; follow next_action before producing a qualification artifact.",
+          "expected_owner": "E1_DUAL_CHANNEL_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP2_ACCEPTED",
+        "WP3_DUAL_CHANNEL_SAFETY_CONTROLS"
+      ],
+      "blockers": [
+        "Product MCAN2 owner/filter path does not exist"
+      ],
+      "next_action": "E1 adds channel-attributed filter contracts after its start gate",
+      "notes": "Beta-only dual-channel preparation; single-channel remains first."
+    },
+    {
+      "test_id": "T-CAN-009",
+      "gate": "D",
+      "work_package": "WP5",
+      "requirement_ids": [
+        "CAN-03"
+      ],
+      "scope": "Dual-channel full load for 30 minutes",
+      "release_scope": "Beta+",
+      "beta_only": true,
+      "implementation_status": "NOT_IMPLEMENTED",
+      "software_verification_status": "NOT_TESTED",
+      "hardware_evidence_status": "NOT_TESTED",
+      "qualification_status": "BLOCKED",
+      "conservative_status": "BLOCKED",
+      "owner_role": "E1_DUAL_CHANNEL_OWNER",
+      "implementation_paths": [
+        "USER/src/app_mcan0_owner.c",
+        "USER/src/app_mcan2_owner.c",
+        "host/crates/core/**"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/implementation-status.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/implementation-status.md",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/implementation-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "status": "NOT_EXECUTED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "The required closure execution has not run at the ledger baseline; follow next_action before producing a qualification artifact.",
+          "expected_owner": "E1_DUAL_CHANNEL_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP2_ACCEPTED",
+        "WP3_DUAL_CHANNEL_SAFETY_CONTROLS",
+        "WP5_MCAN2_IMPLEMENTED"
+      ],
+      "blockers": [
+        "No product MCAN2 path or frozen aggregate profile"
+      ],
+      "next_action": "E1 first proves isolation/fairness in non-hardware tests; any HIL needs separate authorization",
+      "notes": "Beta-only dual-channel preparation; single-channel remains first."
+    },
+    {
+      "test_id": "T-E2E-001",
+      "gate": "F",
+      "work_package": "WP2",
+      "requirement_ids": [
+        "E2E-03"
+      ],
+      "scope": "Enumerate → HELLO → capability",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "IMPLEMENTED",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "PARTIAL",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "C3_E2E_INTEGRATION_REVIEWER",
+      "implementation_paths": [
+        "USER/src/app_usb_owner.c",
+        "host/crates/core/src/usb.rs"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/implementation-status.md",
+        "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md",
+        "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/implementation-status.md",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md",
+          "blob": "59f189bd722a96d08e9f619a922d09d703786068"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/implementation-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "59f189bd722a96d08e9f619a922d09d703786068"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "C3_E2E_INTEGRATION_REVIEWER"
+        }
+      ],
+      "dependencies": [
+        "WP1_INTERFACE_FREEZE"
+      ],
+      "blockers": [
+        "Current HIL covers negotiation but not the complete product CLI vertical slice"
+      ],
+      "next_action": "C3 validates the C1/C2 heads with an offline source-bound E2E fixture, then requests separately authorized HIL",
+      "notes": "C3 is read-only unless separately authorized for new offline harness/fixtures/tests."
+    },
+    {
+      "test_id": "T-E2E-002",
+      "gate": "F",
+      "work_package": "WP2",
+      "requirement_ids": [
+        "E2E-03"
+      ],
+      "scope": "Configure CAN → capture",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PARTIAL",
+      "hardware_evidence_status": "PARTIAL",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "C3_E2E_INTEGRATION_REVIEWER",
+      "implementation_paths": [
+        "USER/src/app_mcan0_owner.c",
+        "USER/src/app_usb_owner.c",
+        "host/crates/core/src/lib.rs"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/implementation-status.md",
+        "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md",
+        "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/implementation-status.md",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md",
+          "blob": "59f189bd722a96d08e9f619a922d09d703786068"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/implementation-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "59f189bd722a96d08e9f619a922d09d703786068"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "C3_E2E_INTEGRATION_REVIEWER"
+        }
+      ],
+      "dependencies": [
+        "WP1_INTERFACE_FREEZE",
+        "C1_SINGLE_CHANNEL_PATH"
+      ],
+      "blockers": [
+        "Current firmware is listen-only and the complete configure/capture CLI flow is not closed"
+      ],
+      "next_action": "C1 and C2 complete the single-channel configuration/capture contract; C3 reviews offline evidence",
+      "notes": "C3 is read-only unless separately authorized for new offline harness/fixtures/tests."
+    },
+    {
+      "test_id": "T-E2E-003",
+      "gate": "F",
+      "work_package": "WP2",
+      "requirement_ids": [
+        "E2E-03"
+      ],
+      "scope": "Authorized TX → TX_RESULT → external receive",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "NOT_IMPLEMENTED",
+      "software_verification_status": "BLOCKED",
+      "hardware_evidence_status": "NOT_TESTED",
+      "qualification_status": "BLOCKED",
+      "conservative_status": "BLOCKED",
+      "owner_role": "C3_E2E_INTEGRATION_REVIEWER",
+      "implementation_paths": [
+        "USER/src/app_mcan0_owner.c",
+        "USER/src/app_usb_owner.c",
+        "host/crates/core/src/lib.rs"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/implementation-status.md",
+        "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/implementation-status.md",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md",
+          "blob": "59f189bd722a96d08e9f619a922d09d703786068"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/implementation-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "59f189bd722a96d08e9f619a922d09d703786068"
+        },
+        {
+          "status": "NOT_EXECUTED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "The required closure execution has not run at the ledger baseline; follow next_action before producing a qualification artifact.",
+          "expected_owner": "C3_E2E_INTEGRATION_REVIEWER"
+        }
+      ],
+      "dependencies": [
+        "WP1_INTERFACE_FREEZE",
+        "WP3_TX_SAFETY_CONTROLS"
+      ],
+      "blockers": [
+        "Product authorized TX is not implemented",
+        "Hardware execution is not authorized"
+      ],
+      "next_action": "C1 implements fail-closed authorized TX only after B2 freeze and approved safety controls; hardware evidence requires a new authorization",
+      "notes": "C3 is read-only unless separately authorized for new offline harness/fixtures/tests."
+    },
+    {
+      "test_id": "T-E2E-004",
+      "gate": "F",
+      "work_package": "WP2",
+      "requirement_ids": [
+        "E2E-01"
+      ],
+      "scope": "BP-LATENCY-v1 over BP-CAN-MVP-v1",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PARTIAL",
+      "hardware_evidence_status": "PARTIAL",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "C3_E2E_INTEGRATION_REVIEWER",
+      "implementation_paths": [
+        "USER/src/app_mcan0_owner.c",
+        "USER/src/app_usb_owner.c",
+        "host/crates/core/examples/can_hil_capture.rs"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "C3_E2E_INTEGRATION_REVIEWER"
+        }
+      ],
+      "dependencies": [
+        "WP1_INTERFACE_FREEZE",
+        "C1_SINGLE_CHANNEL_PATH",
+        "C2_CLI_VERTICAL_SLICE"
+      ],
+      "blockers": [
+        "P3B load latency is capture-tool evidence, not end-to-end CLI-ingest qualification"
+      ],
+      "next_action": "C3 binds calibrated CLI-ingest samples to frozen firmware/host artifacts after WP2 integration",
+      "notes": "C3 is read-only unless separately authorized for new offline harness/fixtures/tests."
+    },
+    {
+      "test_id": "T-E2E-005",
+      "gate": "F",
+      "work_package": "WP5",
+      "requirement_ids": [
+        "E2E-04"
+      ],
+      "scope": "BP-CAN-BETA-v1 aggregate profile",
+      "release_scope": "Beta+",
+      "beta_only": true,
+      "implementation_status": "NOT_IMPLEMENTED",
+      "software_verification_status": "NOT_TESTED",
+      "hardware_evidence_status": "NOT_TESTED",
+      "qualification_status": "BLOCKED",
+      "conservative_status": "BLOCKED",
+      "owner_role": "E1_DUAL_CHANNEL_OWNER",
+      "implementation_paths": [
+        "USER/src/app_mcan0_owner.c",
+        "USER/src/app_mcan2_owner.c",
+        "host/crates/cli/**"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/implementation-status.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/implementation-status.md",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/implementation-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "status": "NOT_EXECUTED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "The required closure execution has not run at the ledger baseline; follow next_action before producing a qualification artifact.",
+          "expected_owner": "E1_DUAL_CHANNEL_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP2_ACCEPTED",
+        "WP3_DUAL_CHANNEL_SAFETY_CONTROLS",
+        "WP4_PRODUCTIZED",
+        "WP5_MCAN2_IMPLEMENTED"
+      ],
+      "blockers": [
+        "Beta profile parameters and dual-channel product path are not complete"
+      ],
+      "next_action": "E1 and D2 bind a frozen supported aggregate profile after WP5 implementation",
+      "notes": "Beta-only dual-channel preparation; single-channel remains first."
+    },
+    {
+      "test_id": "T-E2E-006",
+      "gate": "F",
+      "work_package": "WP2",
+      "requirement_ids": [
+        "E2E-02"
+      ],
+      "scope": "Host backpressure and explicit drop event",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PARTIAL",
+      "hardware_evidence_status": "PARTIAL",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "C3_E2E_INTEGRATION_REVIEWER",
+      "implementation_paths": [
+        "USER/src/app_mcan0_owner.c",
+        "USER/src/app_usb_owner.c",
+        "host/crates/core/src/transport.rs"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md",
+        "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md",
+          "blob": "59f189bd722a96d08e9f619a922d09d703786068"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "59f189bd722a96d08e9f619a922d09d703786068"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "C3_E2E_INTEGRATION_REVIEWER"
+        }
+      ],
+      "dependencies": [
+        "WP1_INTERFACE_FREEZE",
+        "C1_SINGLE_CHANNEL_PATH"
+      ],
+      "blockers": [
+        "P3B backpressure evidence does not close the full product CLI and overload reconciliation scope"
+      ],
+      "next_action": "C3 reconciles device counters, DATA_LOSS and host metadata on the integrated WP2 slice",
+      "notes": "C3 is read-only unless separately authorized for new offline harness/fixtures/tests."
+    },
+    {
+      "test_id": "T-E2E-007",
+      "gate": "F",
+      "work_package": "WP2",
+      "requirement_ids": [
+        "E2E-02"
+      ],
+      "scope": "USB disconnect during CAN load",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PARTIAL",
+      "hardware_evidence_status": "PARTIAL",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "C3_E2E_INTEGRATION_REVIEWER",
+      "implementation_paths": [
+        "USER/src/app_usb_owner.c",
+        "host/crates/core/src/usb.rs"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/evidence/phase3/P3A-USB-HIL-status-2026-08-10.md",
+        "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3A-USB-HIL-status-2026-08-10.md",
+          "blob": "747fdb19c70eecd5b98550f5e2679f732089c3f3"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3A-USB-HIL-status-2026-08-10.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "747fdb19c70eecd5b98550f5e2679f732089c3f3"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "C3_E2E_INTEGRATION_REVIEWER"
+        }
+      ],
+      "dependencies": [
+        "WP1_INTERFACE_FREEZE",
+        "C1_SINGLE_CHANNEL_PATH"
+      ],
+      "blockers": [
+        "One P3B physical cycle and P3A partial provenance do not close the approved integrated scenario"
+      ],
+      "next_action": "C3 requires a source/artifact-bound disconnect-under-load bundle after WP2 software integration",
+      "notes": "C3 is read-only unless separately authorized for new offline harness/fixtures/tests."
+    },
+    {
+      "test_id": "T-E2E-008",
+      "gate": "F",
+      "work_package": "WP2",
+      "requirement_ids": [
+        "E2E-03"
+      ],
+      "scope": "CLI machine-readable output and stable exit codes",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "NOT_IMPLEMENTED",
+      "software_verification_status": "BLOCKED",
+      "hardware_evidence_status": "NOT_TESTED",
+      "qualification_status": "BLOCKED",
+      "conservative_status": "BLOCKED",
+      "owner_role": "C3_E2E_INTEGRATION_REVIEWER",
+      "implementation_paths": [
+        "host/crates/cli/**"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/implementation-status.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/implementation-status.md",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/implementation-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "status": "NOT_EXECUTED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "The required closure execution has not run at the ledger baseline; follow next_action before producing a qualification artifact.",
+          "expected_owner": "C3_E2E_INTEGRATION_REVIEWER"
+        }
+      ],
+      "dependencies": [
+        "WP1_INTERFACE_FREEZE",
+        "C2_CLI_VERTICAL_SLICE"
+      ],
+      "blockers": [
+        "Product CLI is not implemented at the baseline"
+      ],
+      "next_action": "C2 implements the application-layer vertical slice without modifying B1 protocol/core hotspots",
+      "notes": "C3 is read-only unless separately authorized for new offline harness/fixtures/tests."
+    },
+    {
+      "test_id": "T-E2E-009",
+      "gate": "F",
+      "work_package": "WP2",
+      "requirement_ids": [
+        "E2E-03"
+      ],
+      "scope": "USB disconnect + CAN bus-off + command flood compound fault",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "BLOCKED",
+      "hardware_evidence_status": "BLOCKED",
+      "qualification_status": "BLOCKED",
+      "conservative_status": "BLOCKED",
+      "owner_role": "C3_E2E_INTEGRATION_REVIEWER",
+      "implementation_paths": [
+        "USER/src/app_mcan0_owner.c",
+        "USER/src/app_usb_owner.c",
+        "host/crates/core/src/transport.rs"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/evidence/phase3/P3B-current-status.json",
+        "docs/evidence/phase3/P3B-bus-off-deferral-2026-08-17.json"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-current-status.json",
+          "blob": "37c76576dc4f299c9cb653d89f8000965b5fdbdd"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-bus-off-deferral-2026-08-17.json",
+          "blob": "1ab9d53597701a3e8e9bd93de253f66b6277e04d"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-current-status.json",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "37c76576dc4f299c9cb653d89f8000965b5fdbdd"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-bus-off-deferral-2026-08-17.json",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "1ab9d53597701a3e8e9bd93de253f66b6277e04d"
+        },
+        {
+          "status": "NOT_EXECUTED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "The required closure execution has not run at the ledger baseline; follow next_action before producing a qualification artifact.",
+          "expected_owner": "C3_E2E_INTEGRATION_REVIEWER"
+        }
+      ],
+      "dependencies": [
+        "WP2_ACCEPTED",
+        "WP3_FAULT_CONTROLS",
+        "ACTIVE_BUS_OFF_CAPABILITY"
+      ],
+      "blockers": [
+        "Active bus-off is not completed",
+        "Hardware execution is not authorized",
+        "Split software scenarios cannot close the approved compound fault"
+      ],
+      "next_action": "M1 monitors qualified fault-injector availability; C3 keeps the combined test open pending new hardware authorization",
+      "notes": "C3 is read-only unless separately authorized for new offline harness/fixtures/tests."
+    },
+    {
+      "test_id": "T-FW-001",
+      "gate": "H",
+      "work_package": "WP5",
+      "requirement_ids": [
+        "FW-01"
+      ],
+      "scope": "Dual CAN + USB + UART optional SD 72 h",
+      "release_scope": "Beta+",
+      "beta_only": true,
+      "implementation_status": "NOT_IMPLEMENTED",
+      "software_verification_status": "NOT_TESTED",
+      "hardware_evidence_status": "NOT_TESTED",
+      "qualification_status": "BLOCKED",
+      "conservative_status": "NOT_TESTED",
+      "owner_role": "E1_DUAL_CHANNEL_OWNER",
+      "implementation_paths": [
+        "USER/**"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/implementation-status.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/implementation-status.md",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/implementation-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "status": "NOT_EXECUTED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "The required closure execution has not run at the ledger baseline; follow next_action before producing a qualification artifact.",
+          "expected_owner": "E1_DUAL_CHANNEL_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP5_MCAN2_IMPLEMENTED",
+        "WP4_PRODUCTIZED"
+      ],
+      "blockers": [
+        "Dual-channel product path and 72 h profile do not exist"
+      ],
+      "next_action": "E1 schedules only non-bus-off software preparation; future soak requires explicit hardware authorization",
+      "notes": "Beta-only dual-channel preparation; single-channel remains first."
+    },
+    {
+      "test_id": "T-FW-002",
+      "gate": "H",
+      "work_package": "WP5",
+      "requirement_ids": [
+        "FW-01"
+      ],
+      "scope": "1000 USB reconnects",
+      "release_scope": "Beta+",
+      "beta_only": true,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PARTIAL",
+      "hardware_evidence_status": "PARTIAL",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "E1_DUAL_CHANNEL_OWNER",
+      "implementation_paths": [
+        "USER/src/app_usb_owner.c",
+        "host/crates/core/src/usb.rs"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/evidence/phase3/P3A-USB-HIL-status-2026-08-10.md",
+        "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3A-USB-HIL-status-2026-08-10.md",
+          "blob": "747fdb19c70eecd5b98550f5e2679f732089c3f3"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3A-USB-HIL-status-2026-08-10.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "747fdb19c70eecd5b98550f5e2679f732089c3f3"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "E1_DUAL_CHANNEL_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP5_MCAN2_IMPLEMENTED",
+        "WP4_PRODUCTIZED"
+      ],
+      "blockers": [
+        "Existing evidence covers fewer cycles and incomplete product provenance/scope"
+      ],
+      "next_action": "E1 and D2 prepare deterministic reconnect/session reconciliation; later hardware execution is separately authorized",
+      "notes": "Beta-only dual-channel preparation; single-channel remains first."
+    },
+    {
+      "test_id": "T-FW-003",
+      "gate": "H",
+      "work_package": "WP5",
+      "requirement_ids": [
+        "FW-01"
+      ],
+      "scope": "100 bus-off injections per channel",
+      "release_scope": "Beta+",
+      "beta_only": true,
+      "implementation_status": "DEFERRED",
+      "software_verification_status": "DEFERRED",
+      "hardware_evidence_status": "BLOCKED",
+      "qualification_status": "BLOCKED",
+      "conservative_status": "BLOCKED",
+      "owner_role": "M1_BUS_OFF_CAPABILITY_MONITOR",
+      "implementation_paths": [
+        "USER/src/app_mcan0_owner.c",
+        "USER/src/app_mcan2_owner.c"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/evidence/phase3/P3B-current-status.json",
+        "docs/evidence/phase3/P3B-bus-off-deferral-2026-08-17.json"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-current-status.json",
+          "blob": "37c76576dc4f299c9cb653d89f8000965b5fdbdd"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-bus-off-deferral-2026-08-17.json",
+          "blob": "1ab9d53597701a3e8e9bd93de253f66b6277e04d"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-current-status.json",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "37c76576dc4f299c9cb653d89f8000965b5fdbdd"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-bus-off-deferral-2026-08-17.json",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "1ab9d53597701a3e8e9bd93de253f66b6277e04d"
+        },
+        {
+          "status": "NOT_EXECUTED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "The required closure execution has not run at the ledger baseline; follow next_action before producing a qualification artifact.",
+          "expected_owner": "M1_BUS_OFF_CAPABILITY_MONITOR"
+        }
+      ],
+      "dependencies": [
+        "ACTIVE_BUS_OFF_CAPABILITY",
+        "NEW_HARDWARE_EXECUTION_AUTHORIZATION"
+      ],
+      "blockers": [
+        "Qualified active fault injector is unavailable",
+        "hardware_execution_authorized=false"
+      ],
+      "next_action": "M1 preserves the deferral and requests a new controlled action only after all resume conditions are met",
+      "notes": "Deferred lane; no hardware command or authorization."
+    },
+    {
+      "test_id": "T-FW-004",
+      "gate": "H",
+      "work_package": "WP3",
+      "requirement_ids": [
+        "E2E-02"
+      ],
+      "scope": "Command flood/rate limiting",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PARTIAL",
+      "hardware_evidence_status": "NOT_TESTED",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "D1_FIRMWARE_RELIABILITY_OWNER",
+      "implementation_paths": [
+        "USER/src/app_usb_owner.c",
+        "protocol/v1/c/ucan_session.c"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/development/phase1-status.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/phase1-status.md",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/development/phase1-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "D1_FIRMWARE_RELIABILITY_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP2_ACCEPTED"
+      ],
+      "blockers": [
+        "No integrated product command-flood evidence"
+      ],
+      "next_action": "D1 adds bounded command-flood contract and source-bound non-hardware evidence after WP2",
+      "notes": "Non-bus-off work only."
+    },
+    {
+      "test_id": "T-FW-005",
+      "gate": "H",
+      "work_package": "WP3",
+      "requirement_ids": [
+        "E2E-02"
+      ],
+      "scope": "Queue/pool exhaustion containment",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PARTIAL",
+      "hardware_evidence_status": "NOT_TESTED",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "D1_FIRMWARE_RELIABILITY_OWNER",
+      "implementation_paths": [
+        "USER/src/app_mcan0_owner.c",
+        "USER/src/app_usb_owner.c"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md",
+        "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md",
+          "blob": "59f189bd722a96d08e9f619a922d09d703786068"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "59f189bd722a96d08e9f619a922d09d703786068"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "D1_FIRMWARE_RELIABILITY_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP2_ACCEPTED"
+      ],
+      "blockers": [
+        "Existing bounded queues do not close the approved exhaustion/recovery matrix"
+      ],
+      "next_action": "D1 adds deterministic exhaustion/recovery tests and reconciles all counters",
+      "notes": "Non-bus-off work only."
+    },
+    {
+      "test_id": "T-FW-006",
+      "gate": "H",
+      "work_package": "WP3",
+      "requirement_ids": [
+        "FW-03"
+      ],
+      "scope": "Hardware watchdog recovery",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "NOT_IMPLEMENTED",
+      "software_verification_status": "BLOCKED",
+      "hardware_evidence_status": "NOT_TESTED",
+      "qualification_status": "BLOCKED",
+      "conservative_status": "BLOCKED",
+      "owner_role": "D1_FIRMWARE_RELIABILITY_OWNER",
+      "implementation_paths": [
+        "USER/src/app_watchdog.c"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/implementation-status.md",
+        "docs/evidence/phase2/P2-RTOS-followup-2026-08-09.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/implementation-status.md",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase2/P2-RTOS-followup-2026-08-09.md",
+          "blob": "e5c9b75c48e09b05407a673e0cb652507484abfb"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/implementation-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase2/P2-RTOS-followup-2026-08-09.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "e5c9b75c48e09b05407a673e0cb652507484abfb"
+        },
+        {
+          "status": "NOT_EXECUTED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "The required closure execution has not run at the ledger baseline; follow next_action before producing a qualification artifact.",
+          "expected_owner": "D1_FIRMWARE_RELIABILITY_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP2_ACCEPTED",
+        "SEPARATE_HARDWARE_AUTHORIZATION"
+      ],
+      "blockers": [
+        "Hardware watchdog is not configured or fed",
+        "Recovery evidence requires hardware action"
+      ],
+      "next_action": "D1 implements the watchdog contract after WP2; a decision owner separately authorizes target recovery evidence",
+      "notes": "Non-bus-off work only."
+    },
+    {
+      "test_id": "T-FW-007",
+      "gate": "H",
+      "work_package": "WP3",
+      "requirement_ids": [
+        "FW-03"
+      ],
+      "scope": "Configuration corruption and factory reset",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "NOT_IMPLEMENTED",
+      "software_verification_status": "NOT_TESTED",
+      "hardware_evidence_status": "NOT_TESTED",
+      "qualification_status": "BLOCKED",
+      "conservative_status": "BLOCKED",
+      "owner_role": "D1_FIRMWARE_RELIABILITY_OWNER",
+      "implementation_paths": [
+        "USER/src/app_usb_owner.c"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/implementation-status.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/implementation-status.md",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/implementation-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "status": "NOT_EXECUTED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "The required closure execution has not run at the ledger baseline; follow next_action before producing a qualification artifact.",
+          "expected_owner": "D1_FIRMWARE_RELIABILITY_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP2_ACCEPTED"
+      ],
+      "blockers": [
+        "Product configuration persistence/factory-reset path is not implemented"
+      ],
+      "next_action": "D1 defines fail-safe defaults and corruption handling without changing wire ABI; hardware proof requires separate authorization",
+      "notes": "Non-bus-off work only."
+    },
+    {
+      "test_id": "T-FW-008",
+      "gate": "H",
+      "work_package": "WP3",
+      "requirement_ids": [
+        "FW-02"
+      ],
+      "scope": "Map/RAM/stack budget",
+      "release_scope": "Beta+",
+      "beta_only": true,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "PARTIAL",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "D1_FIRMWARE_RELIABILITY_OWNER",
+      "implementation_paths": [
+        "USER/**"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/evidence/phase2/P2-RTOS-followup-2026-08-09.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase2/P2-RTOS-followup-2026-08-09.md",
+          "blob": "e5c9b75c48e09b05407a673e0cb652507484abfb"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase2/P2-RTOS-followup-2026-08-09.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "e5c9b75c48e09b05407a673e0cb652507484abfb"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "D1_FIRMWARE_RELIABILITY_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP2_ACCEPTED"
+      ],
+      "blockers": [
+        "P2 measurements are not the Beta dual-channel/current-image budget"
+      ],
+      "next_action": "D1 refreshes Release/Debug map and stack budgets for each high-risk WP2/WP5 change",
+      "notes": "Beta-only continuous high-risk gate; current evidence is an earlier baseline."
+    },
+    {
+      "test_id": "T-FW-009",
+      "gate": "H",
+      "work_package": "WP3",
+      "requirement_ids": [
+        "FW-03"
+      ],
+      "scope": "Static analysis and warning gate",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "NOT_APPLICABLE",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "D1_FIRMWARE_RELIABILITY_OWNER",
+      "implementation_paths": [
+        "USER/**",
+        "protocol/v1/c/**",
+        "host/**"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/development/phase1-status.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/phase1-status.md",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/development/phase1-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "D1_FIRMWARE_RELIABILITY_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP2_ACCEPTED"
+      ],
+      "blockers": [
+        "Existing clean builds/clippy do not constitute a complete cross-component static-analysis report"
+      ],
+      "next_action": "D1 runs the approved warning/static-analysis suite at the integrated source SHA",
+      "notes": "Non-bus-off work only."
+    },
+    {
+      "test_id": "T-FW-010",
+      "gate": "H",
+      "work_package": "WP3",
+      "requirement_ids": [
+        "FW-03"
+      ],
+      "scope": "CAN_TX_CANCEL versus TX-complete exactly-once final result",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "NOT_TESTED",
+      "qualification_status": "BLOCKED",
+      "conservative_status": "BLOCKED",
+      "owner_role": "D1_FIRMWARE_RELIABILITY_OWNER",
+      "implementation_paths": [
+        "protocol/v1/c/ucan_session.c",
+        "host/crates/core/src/fake.rs",
+        "USER/src/app_mcan0_owner.c"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/development/phase1-status.md",
+        "docs/implementation-status.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/phase1-status.md",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/implementation-status.md",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/development/phase1-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/implementation-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "D1_FIRMWARE_RELIABILITY_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP2_AUTHORIZED_TX_IMPLEMENTED"
+      ],
+      "blockers": [
+        "Software session model exists but product TX completion/cancel path is not implemented"
+      ],
+      "next_action": "D1 adds product race tests only after C1 authorized-TX integration",
+      "notes": "Non-bus-off work only."
+    },
+    {
+      "test_id": "T-FW-011",
+      "gate": "H",
+      "work_package": "WP5",
+      "requirement_ids": [
+        "FW-04"
+      ],
+      "scope": "Dual-channel timestamp/order and event sequence gaps",
+      "release_scope": "Beta+",
+      "beta_only": true,
+      "implementation_status": "NOT_IMPLEMENTED",
+      "software_verification_status": "NOT_TESTED",
+      "hardware_evidence_status": "NOT_TESTED",
+      "qualification_status": "BLOCKED",
+      "conservative_status": "NOT_TESTED",
+      "owner_role": "E1_DUAL_CHANNEL_OWNER",
+      "implementation_paths": [
+        "USER/src/app_mcan0_owner.c",
+        "USER/src/app_mcan2_owner.c",
+        "host/crates/core/**"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/implementation-status.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/implementation-status.md",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/implementation-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "status": "NOT_EXECUTED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "The required closure execution has not run at the ledger baseline; follow next_action before producing a qualification artifact.",
+          "expected_owner": "E1_DUAL_CHANNEL_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP5_MCAN2_IMPLEMENTED"
+      ],
+      "blockers": [
+        "No dual-channel attribution/order implementation"
+      ],
+      "next_action": "E1 adds channel-neutral ordering contracts before MCAN2 implementation",
+      "notes": "Beta-only dual-channel preparation; single-channel remains first."
+    },
+    {
+      "test_id": "T-FW-012",
+      "gate": "H",
+      "work_package": "WP3",
+      "requirement_ids": [
+        "FW-03"
+      ],
+      "scope": "Power/config CRC failure returns to safe state",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "NOT_IMPLEMENTED",
+      "software_verification_status": "NOT_TESTED",
+      "hardware_evidence_status": "NOT_TESTED",
+      "qualification_status": "BLOCKED",
+      "conservative_status": "BLOCKED",
+      "owner_role": "D1_FIRMWARE_RELIABILITY_OWNER",
+      "implementation_paths": [
+        "USER/src/app_usb_owner.c",
+        "USER/src/app_mcan0_owner.c"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/implementation-status.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/implementation-status.md",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/implementation-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "status": "NOT_EXECUTED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "The required closure execution has not run at the ledger baseline; follow next_action before producing a qualification artifact.",
+          "expected_owner": "D1_FIRMWARE_RELIABILITY_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP2_ACCEPTED",
+        "SEPARATE_HARDWARE_AUTHORIZATION"
+      ],
+      "blockers": [
+        "Persistent configuration CRC path is absent",
+        "Power-cycle evidence is not authorized"
+      ],
+      "next_action": "D1 implements source-level safe-state handling; decision owner authorizes later power-cycle evidence",
+      "notes": "Non-bus-off work only."
+    },
+    {
+      "test_id": "T-FW-013",
+      "gate": "H",
+      "work_package": "WP3",
+      "requirement_ids": [
+        "FW-03"
+      ],
+      "scope": "Cleanup proves listen-only and zero TX queue/schedule",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "PARTIAL",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "D1_FIRMWARE_RELIABILITY_OWNER",
+      "implementation_paths": [
+        "USER/src/app_mcan0_owner.c",
+        "USER/src/app_usb_owner.c"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md",
+        "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+        "docs/evidence/phase3/P3B-bus-off-deferral-2026-08-17.json"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md",
+          "blob": "59f189bd722a96d08e9f619a922d09d703786068"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-bus-off-deferral-2026-08-17.json",
+          "blob": "1ab9d53597701a3e8e9bd93de253f66b6277e04d"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-MCAN0-software-baseline-2026-08-12.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "59f189bd722a96d08e9f619a922d09d703786068"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-bus-off-deferral-2026-08-17.json",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "1ab9d53597701a3e8e9bd93de253f66b6277e04d"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "D1_FIRMWARE_RELIABILITY_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP2_AUTHORIZED_TX_IMPLEMENTED"
+      ],
+      "blockers": [
+        "Current disarmed slice has no operational TX path, so cleanup after armed operation is not yet proven"
+      ],
+      "next_action": "D1 extends cleanup proof after authorized TX exists; active bus-off remains outside this work",
+      "notes": "Non-bus-off work only."
+    },
+    {
+      "test_id": "T-HOST-001",
+      "gate": "I",
+      "work_package": "WP4",
+      "requirement_ids": [
+        "HOST-01"
+      ],
+      "scope": "Windows unit/integration/package",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "PARTIAL",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "D2_LINUX_WINDOWS_PRODUCTIZATION_OWNER",
+      "implementation_paths": [
+        "host/crates/protocol/**",
+        "host/crates/core/**",
+        "host/crates/cli/**"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/development/phase1-status.md",
+        "docs/evidence/phase1/T-HOST-WINDOWS-CI-report.md",
+        "docs/evidence/phase1/T-HOST-USB-WINDOWS-report.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/phase1-status.md",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase1/T-HOST-WINDOWS-CI-report.md",
+          "blob": "350652e6aae155336be4f64d46ea7aa265968d2a"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase1/T-HOST-USB-WINDOWS-report.md",
+          "blob": "0b1e0b33881827066449ce7cb2a55e192f580511"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/development/phase1-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase1/T-HOST-WINDOWS-CI-report.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "350652e6aae155336be4f64d46ea7aa265968d2a"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase1/T-HOST-USB-WINDOWS-report.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0b1e0b33881827066449ce7cb2a55e192f580511"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "D2_LINUX_WINDOWS_PRODUCTIZATION_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP2_CLI_API_STABLE",
+        "C2_VERTICAL_SLICE_MERGED"
+      ],
+      "blockers": [
+        "Shared crates passed Windows CI/HIL, but product CLI/package lifecycle is incomplete"
+      ],
+      "next_action": "D2 productizes the C2 CLI on Windows and archives package/install diagnostics without creating another core",
+      "notes": "Linux/Windows must share B1 protocol and Host Core."
+    },
+    {
+      "test_id": "T-HOST-002",
+      "gate": "I",
+      "work_package": "WP4",
+      "requirement_ids": [
+        "HOST-01"
+      ],
+      "scope": "Linux unit/integration/package",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "PARTIAL",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "D2_LINUX_WINDOWS_PRODUCTIZATION_OWNER",
+      "implementation_paths": [
+        "host/crates/protocol/**",
+        "host/crates/core/**",
+        "host/crates/cli/**"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/development/phase1-status.md",
+        "docs/evidence/phase1/T-HOST-USB-LINUX-report.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/phase1-status.md",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase1/T-HOST-USB-LINUX-report.md",
+          "blob": "9eb63d80d2d88adb488fd17b06190ecb4dfb025f"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/development/phase1-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase1/T-HOST-USB-LINUX-report.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "9eb63d80d2d88adb488fd17b06190ecb4dfb025f"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "D2_LINUX_WINDOWS_PRODUCTIZATION_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP2_CLI_API_STABLE",
+        "C2_VERTICAL_SLICE_MERGED"
+      ],
+      "blockers": [
+        "Shared Linux host core is proven, but product CLI/package lifecycle is incomplete"
+      ],
+      "next_action": "D2 productizes the C2 CLI on Linux and records deterministic packaging/provenance",
+      "notes": "Linux/Windows must share B1 protocol and Host Core."
+    },
+    {
+      "test_id": "T-HOST-003",
+      "gate": "I",
+      "work_package": "WP4",
+      "requirement_ids": [
+        "HOST-01"
+      ],
+      "scope": "macOS unit/integration/package",
+      "release_scope": "DEFERRED",
+      "beta_only": false,
+      "implementation_status": "DEFERRED",
+      "software_verification_status": "DEFERRED",
+      "hardware_evidence_status": "DEFERRED",
+      "qualification_status": "DEFERRED",
+      "conservative_status": "NOT_TESTED",
+      "owner_role": "D2_LINUX_WINDOWS_PRODUCTIZATION_OWNER",
+      "implementation_paths": [
+        "host/**"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/evidence/phase1/phase1b-closure.json"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase1/phase1b-closure.json",
+          "blob": "759d19b355c4e3e0423a2a5f4bbbd2e60a113ce6"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase1/phase1b-closure.json",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "759d19b355c4e3e0423a2a5f4bbbd2e60a113ce6"
+        },
+        {
+          "status": "NOT_EXECUTED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "The required closure execution has not run at the ledger baseline; follow next_action before producing a qualification artifact.",
+          "expected_owner": "D2_LINUX_WINDOWS_PRODUCTIZATION_OWNER"
+        }
+      ],
+      "dependencies": [
+        "OUT_OF_CURRENT_SCOPE"
+      ],
+      "blockers": [
+        "macOS is deferred by the Linux/Windows CLI-first scope"
+      ],
+      "next_action": "Product owner revisits macOS only through a separately approved scope change",
+      "notes": "macOS remains deferred; Qt/GUI is excluded."
+    },
+    {
+      "test_id": "T-HOST-004",
+      "gate": "I",
+      "work_package": "WP4",
+      "requirement_ids": [
+        "HOST-01"
+      ],
+      "scope": "Hotplug/session recovery",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "PARTIAL",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "D2_LINUX_WINDOWS_PRODUCTIZATION_OWNER",
+      "implementation_paths": [
+        "host/crates/core/src/usb.rs",
+        "host/crates/core/src/fake.rs",
+        "host/crates/cli/**"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/evidence/phase3/P3A-USB-HIL-status-2026-08-10.md",
+        "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3A-USB-HIL-status-2026-08-10.md",
+          "blob": "747fdb19c70eecd5b98550f5e2679f732089c3f3"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3A-USB-HIL-status-2026-08-10.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "747fdb19c70eecd5b98550f5e2679f732089c3f3"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase3/P3B-HIL-load-status-2026-08-15.json",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "ff3d1db6a47a8fc768fa116655566b8f98e385ef"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "D2_LINUX_WINDOWS_PRODUCTIZATION_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP2_CLI_API_STABLE",
+        "C2_VERTICAL_SLICE_MERGED"
+      ],
+      "blockers": [
+        "Fake reset and partial HIL exist; product CLI session recovery and provenance remain open"
+      ],
+      "next_action": "D2 proves stale session/arm/config identities are never reused after hotplug",
+      "notes": "Linux/Windows must share B1 protocol and Host Core."
+    },
+    {
+      "test_id": "T-HOST-005",
+      "gate": "I",
+      "work_package": "WP4",
+      "requirement_ids": [
+        "HOST-02"
+      ],
+      "scope": "72 h capture memory plateau",
+      "release_scope": "Beta+",
+      "beta_only": true,
+      "implementation_status": "NOT_IMPLEMENTED",
+      "software_verification_status": "NOT_TESTED",
+      "hardware_evidence_status": "NOT_TESTED",
+      "qualification_status": "BLOCKED",
+      "conservative_status": "NOT_TESTED",
+      "owner_role": "D2_LINUX_WINDOWS_PRODUCTIZATION_OWNER",
+      "implementation_paths": [
+        "host/crates/core/**",
+        "host/crates/cli/**"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/implementation-status.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/implementation-status.md",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/implementation-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "status": "NOT_EXECUTED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "The required closure execution has not run at the ledger baseline; follow next_action before producing a qualification artifact.",
+          "expected_owner": "D2_LINUX_WINDOWS_PRODUCTIZATION_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP4_PRODUCTIZED",
+        "WP5_BETA_PROFILE_FROZEN"
+      ],
+      "blockers": [
+        "Product CLI and frozen Beta workload do not exist",
+        "72 h evidence has not run"
+      ],
+      "next_action": "D2 records RSS slope, queues and output growth over the frozen 72 h Beta profile",
+      "notes": "Linux/Windows must share B1 protocol and Host Core."
+    },
+    {
+      "test_id": "T-LED-004",
+      "gate": "D",
+      "work_package": "WP5",
+      "requirement_ids": [
+        "LED-02"
+      ],
+      "scope": "CAN2 pin routing, polarity and default-off",
+      "release_scope": "Beta+",
+      "beta_only": true,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "PARTIAL",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "E1_DUAL_CHANNEL_OWNER",
+      "implementation_paths": [
+        "boards/hpm5321_custom/**",
+        "USER/src/app_health.c"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/evidence/phase0/T-LED-polarity-2026-08-09.json"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase0/T-LED-polarity-2026-08-09.json",
+          "blob": "46626ef47646f43073f0ea334e75a48bb6be0c1d"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase0/T-LED-polarity-2026-08-09.json",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "46626ef47646f43073f0ea334e75a48bb6be0c1d"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "E1_DUAL_CHANNEL_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP2_ACCEPTED"
+      ],
+      "blockers": [
+        "Phase 0 electrical/probe evidence is not current product MCAN2 semantic evidence"
+      ],
+      "next_action": "E1 reuses the approved mapping and later binds product default-off behavior without changing shared LED ownership",
+      "notes": "Beta-only dual-channel preparation; single-channel remains first."
+    },
+    {
+      "test_id": "T-LED-005",
+      "gate": "D",
+      "work_package": "WP5",
+      "requirement_ids": [
+        "LED-02"
+      ],
+      "scope": "CAN2 TX/RX semantics without MCAN1 mapping ambiguity",
+      "release_scope": "Beta+",
+      "beta_only": true,
+      "implementation_status": "NOT_IMPLEMENTED",
+      "software_verification_status": "NOT_TESTED",
+      "hardware_evidence_status": "NOT_TESTED",
+      "qualification_status": "BLOCKED",
+      "conservative_status": "BLOCKED",
+      "owner_role": "E1_DUAL_CHANNEL_OWNER",
+      "implementation_paths": [
+        "USER/src/app_mcan2_owner.c",
+        "USER/src/app_health.c"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/implementation-status.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/implementation-status.md",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/implementation-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "8893d5a1521fa5461a0dd8fea175cf8a7adaea6b"
+        },
+        {
+          "status": "NOT_EXECUTED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "The required closure execution has not run at the ledger baseline; follow next_action before producing a qualification artifact.",
+          "expected_owner": "E1_DUAL_CHANNEL_OWNER"
+        }
+      ],
+      "dependencies": [
+        "WP5_MCAN2_IMPLEMENTED",
+        "WP3_DUAL_CHANNEL_SAFETY_CONTROLS"
+      ],
+      "blockers": [
+        "Product MCAN2 event path is absent"
+      ],
+      "next_action": "E1 adds attributed activity events while preserving health_task as sole GPIO writer",
+      "notes": "Beta-only dual-channel preparation; single-channel remains first."
+    },
+    {
+      "test_id": "T-PROTO-001",
+      "gate": "E",
+      "work_package": "WP1",
+      "requirement_ids": [
+        "PROTO-01"
+      ],
+      "scope": "C ↔ selected-host golden-vector parity",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "IMPLEMENTED",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "NOT_APPLICABLE",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "B1_PROTOCOL_HOST_CORE_OWNER",
+      "implementation_paths": [
+        "protocol/v1/**",
+        "host/crates/protocol/**"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/development/phase1-status.md",
+        "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/phase1-status.md",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/development/phase1-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "B1_PROTOCOL_HOST_CORE_OWNER"
+        }
+      ],
+      "dependencies": [
+        "A2_APPROVE_WP0"
+      ],
+      "blockers": [
+        "Gate E has not been independently accepted at the WP0 baseline"
+      ],
+      "next_action": "B1 reproduces the approved protocol software suite and archives a source-bound Gate E report; B2 reviews before interface freeze",
+      "notes": "Software status is retained separately from Gate E acceptance."
+    },
+    {
+      "test_id": "T-PROTO-002",
+      "gate": "E",
+      "work_package": "WP1",
+      "requirement_ids": [
+        "PROTO-03"
+      ],
+      "scope": "Reject incompatible protocol major",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "IMPLEMENTED",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "NOT_APPLICABLE",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "B1_PROTOCOL_HOST_CORE_OWNER",
+      "implementation_paths": [
+        "protocol/v1/**",
+        "host/crates/protocol/**"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/development/phase1-status.md",
+        "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/phase1-status.md",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/development/phase1-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "B1_PROTOCOL_HOST_CORE_OWNER"
+        }
+      ],
+      "dependencies": [
+        "A2_APPROVE_WP0"
+      ],
+      "blockers": [
+        "Gate E has not been independently accepted at the WP0 baseline"
+      ],
+      "next_action": "B1 reproduces the approved protocol software suite and archives a source-bound Gate E report; B2 reviews before interface freeze",
+      "notes": "Software status is retained separately from Gate E acceptance."
+    },
+    {
+      "test_id": "T-PROTO-003",
+      "gate": "E",
+      "work_package": "WP1",
+      "requirement_ids": [
+        "PROTO-02"
+      ],
+      "scope": "Stable handling of unknown minor/type/flag",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "IMPLEMENTED",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "NOT_APPLICABLE",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "B1_PROTOCOL_HOST_CORE_OWNER",
+      "implementation_paths": [
+        "protocol/v1/**",
+        "host/crates/protocol/**"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/development/phase1-status.md",
+        "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/phase1-status.md",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/development/phase1-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "B1_PROTOCOL_HOST_CORE_OWNER"
+        }
+      ],
+      "dependencies": [
+        "A2_APPROVE_WP0"
+      ],
+      "blockers": [
+        "Gate E has not been independently accepted at the WP0 baseline"
+      ],
+      "next_action": "B1 reproduces the approved protocol software suite and archives a source-bound Gate E report; B2 reviews before interface freeze",
+      "notes": "Software status is retained separately from Gate E acceptance."
+    },
+    {
+      "test_id": "T-PROTO-004",
+      "gate": "E",
+      "work_package": "WP1",
+      "requirement_ids": [
+        "PROTO-02"
+      ],
+      "scope": "Length/count integer boundary safety",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "IMPLEMENTED",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "NOT_APPLICABLE",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "B1_PROTOCOL_HOST_CORE_OWNER",
+      "implementation_paths": [
+        "protocol/v1/**",
+        "host/crates/protocol/**"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/development/phase1-status.md",
+        "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/phase1-status.md",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/development/phase1-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "B1_PROTOCOL_HOST_CORE_OWNER"
+        }
+      ],
+      "dependencies": [
+        "A2_APPROVE_WP0"
+      ],
+      "blockers": [
+        "Gate E has not been independently accepted at the WP0 baseline"
+      ],
+      "next_action": "B1 reproduces the approved protocol software suite and archives a source-bound Gate E report; B2 reviews before interface freeze",
+      "notes": "Software status is retained separately from Gate E acceptance."
+    },
+    {
+      "test_id": "T-PROTO-005",
+      "gate": "E",
+      "work_package": "WP1",
+      "requirement_ids": [
+        "PROTO-02"
+      ],
+      "scope": "CRC failure and stream resynchronization",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "IMPLEMENTED",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "NOT_APPLICABLE",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "B1_PROTOCOL_HOST_CORE_OWNER",
+      "implementation_paths": [
+        "protocol/v1/**",
+        "host/crates/protocol/**"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/development/phase1-status.md",
+        "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/phase1-status.md",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/development/phase1-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "B1_PROTOCOL_HOST_CORE_OWNER"
+        }
+      ],
+      "dependencies": [
+        "A2_APPROVE_WP0"
+      ],
+      "blockers": [
+        "Gate E has not been independently accepted at the WP0 baseline"
+      ],
+      "next_action": "B1 reproduces the approved protocol software suite and archives a source-bound Gate E report; B2 reviews before interface freeze",
+      "notes": "Software status is retained separately from Gate E acceptance."
+    },
+    {
+      "test_id": "T-PROTO-006",
+      "gate": "E",
+      "work_package": "WP1",
+      "requirement_ids": [
+        "PROTO-03"
+      ],
+      "scope": "Request sequence, timeout/cancel, session state and arm epoch/CAS",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "IMPLEMENTED",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "NOT_APPLICABLE",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "B1_PROTOCOL_HOST_CORE_OWNER",
+      "implementation_paths": [
+        "protocol/v1/**",
+        "host/crates/protocol/**",
+        "host/crates/core/src/fake.rs",
+        "host/crates/core/src/transport.rs"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/development/phase1-status.md",
+        "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/phase1-status.md",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/development/phase1-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "B1_PROTOCOL_HOST_CORE_OWNER"
+        }
+      ],
+      "dependencies": [
+        "A2_APPROVE_WP0"
+      ],
+      "blockers": [
+        "Gate E has not been independently accepted at the WP0 baseline"
+      ],
+      "next_action": "B1 reproduces the approved protocol software suite and archives a source-bound Gate E report; B2 reviews before interface freeze",
+      "notes": "Software status is retained separately from Gate E acceptance."
+    },
+    {
+      "test_id": "T-PROTO-007",
+      "gate": "E",
+      "work_package": "WP1",
+      "requirement_ids": [
+        "PROTO-03"
+      ],
+      "scope": "Event/batch/channel sequence gaps and DATA_LOSS reconciliation",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "IMPLEMENTED",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "NOT_APPLICABLE",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "B1_PROTOCOL_HOST_CORE_OWNER",
+      "implementation_paths": [
+        "protocol/v1/**",
+        "host/crates/protocol/**",
+        "host/crates/core/src/fake.rs",
+        "host/crates/core/src/transport.rs"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/development/phase1-status.md",
+        "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/phase1-status.md",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/development/phase1-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "B1_PROTOCOL_HOST_CORE_OWNER"
+        }
+      ],
+      "dependencies": [
+        "A2_APPROVE_WP0"
+      ],
+      "blockers": [
+        "Gate E has not been independently accepted at the WP0 baseline"
+      ],
+      "next_action": "B1 reproduces the approved protocol software suite and archives a source-bound Gate E report; B2 reviews before interface freeze",
+      "notes": "Software status is retained separately from Gate E acceptance."
+    },
+    {
+      "test_id": "T-PROTO-008",
+      "gate": "E",
+      "work_package": "WP1",
+      "requirement_ids": [
+        "PROTO-03"
+      ],
+      "scope": "Capability-driven feature gating",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "IMPLEMENTED",
+      "software_verification_status": "PASS",
+      "hardware_evidence_status": "NOT_APPLICABLE",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "B1_PROTOCOL_HOST_CORE_OWNER",
+      "implementation_paths": [
+        "protocol/v1/**",
+        "host/crates/protocol/**",
+        "host/crates/core/src/fake.rs",
+        "host/crates/core/src/transport.rs"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/development/phase1-status.md",
+        "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/phase1-status.md",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/development/phase1-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "B1_PROTOCOL_HOST_CORE_OWNER"
+        }
+      ],
+      "dependencies": [
+        "A2_APPROVE_WP0"
+      ],
+      "blockers": [
+        "Gate E has not been independently accepted at the WP0 baseline"
+      ],
+      "next_action": "B1 reproduces the approved protocol software suite and archives a source-bound Gate E report; B2 reviews before interface freeze",
+      "notes": "Software status is retained separately from Gate E acceptance."
+    },
+    {
+      "test_id": "T-PROTO-009",
+      "gate": "E",
+      "work_package": "WP1",
+      "requirement_ids": [
+        "PROTO-02"
+      ],
+      "scope": "Fuzz/property corpus for malformed input",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PARTIAL",
+      "hardware_evidence_status": "NOT_APPLICABLE",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "B1_PROTOCOL_HOST_CORE_OWNER",
+      "implementation_paths": [
+        "protocol/v1/**",
+        "host/crates/protocol/**",
+        "host/crates/core/src/fake.rs",
+        "host/crates/core/src/transport.rs"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/development/phase1-status.md",
+        "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/phase1-status.md",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/development/phase1-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "B1_PROTOCOL_HOST_CORE_OWNER"
+        }
+      ],
+      "dependencies": [
+        "A2_APPROVE_WP0"
+      ],
+      "blockers": [
+        "No approved source-bound fuzz/property corpus report closes the full malformed-input scope"
+      ],
+      "next_action": "B1 reproduces the approved protocol software suite and archives a source-bound Gate E report; B2 reviews before interface freeze",
+      "notes": "Software status is retained separately from Gate E acceptance."
+    },
+    {
+      "test_id": "T-PROTO-010",
+      "gate": "E",
+      "work_package": "WP1",
+      "requirement_ids": [
+        "PROTO-03"
+      ],
+      "scope": "Prior-minor compatibility",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "NOT_TESTED",
+      "hardware_evidence_status": "NOT_APPLICABLE",
+      "qualification_status": "OPEN",
+      "conservative_status": "NOT_TESTED",
+      "owner_role": "B1_PROTOCOL_HOST_CORE_OWNER",
+      "implementation_paths": [
+        "protocol/v1/**",
+        "host/crates/protocol/**",
+        "host/crates/core/src/fake.rs",
+        "host/crates/core/src/transport.rs"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/development/phase1-status.md",
+        "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/phase1-status.md",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/development/phase1-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        },
+        {
+          "status": "NOT_EXECUTED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "The required closure execution has not run at the ledger baseline; follow next_action before producing a qualification artifact.",
+          "expected_owner": "B1_PROTOCOL_HOST_CORE_OWNER"
+        }
+      ],
+      "dependencies": [
+        "A2_APPROVE_WP0"
+      ],
+      "blockers": [
+        "Compatibility pairing matrix is not represented by an approved source-bound report"
+      ],
+      "next_action": "B1 reproduces the approved protocol software suite and archives a source-bound Gate E report; B2 reviews before interface freeze",
+      "notes": "Software status is retained separately from Gate E acceptance."
+    },
+    {
+      "test_id": "T-PROTO-011",
+      "gate": "E",
+      "work_package": "WP1",
+      "requirement_ids": [
+        "PROTO-03"
+      ],
+      "scope": "Old-host/new-firmware and new-host/old-firmware pairing",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "NOT_TESTED",
+      "hardware_evidence_status": "NOT_APPLICABLE",
+      "qualification_status": "OPEN",
+      "conservative_status": "NOT_TESTED",
+      "owner_role": "B1_PROTOCOL_HOST_CORE_OWNER",
+      "implementation_paths": [
+        "protocol/v1/**",
+        "host/crates/protocol/**",
+        "host/crates/core/src/fake.rs",
+        "host/crates/core/src/transport.rs"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/development/phase1-status.md",
+        "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/phase1-status.md",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/development/phase1-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        },
+        {
+          "status": "NOT_EXECUTED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "The required closure execution has not run at the ledger baseline; follow next_action before producing a qualification artifact.",
+          "expected_owner": "B1_PROTOCOL_HOST_CORE_OWNER"
+        }
+      ],
+      "dependencies": [
+        "A2_APPROVE_WP0"
+      ],
+      "blockers": [
+        "Compatibility pairing matrix is not represented by an approved source-bound report"
+      ],
+      "next_action": "B1 reproduces the approved protocol software suite and archives a source-bound Gate E report; B2 reviews before interface freeze",
+      "notes": "Software status is retained separately from Gate E acceptance."
+    },
+    {
+      "test_id": "T-PROTO-012",
+      "gate": "E",
+      "work_package": "WP1",
+      "requirement_ids": [
+        "PROTO-03"
+      ],
+      "scope": "Bulk IN response reserve, priority scheduling and anti-starvation",
+      "release_scope": "MVP+",
+      "beta_only": false,
+      "implementation_status": "PARTIAL",
+      "software_verification_status": "PARTIAL",
+      "hardware_evidence_status": "NOT_APPLICABLE",
+      "qualification_status": "OPEN",
+      "conservative_status": "PARTIAL",
+      "owner_role": "B1_PROTOCOL_HOST_CORE_OWNER",
+      "implementation_paths": [
+        "protocol/v1/**",
+        "host/crates/protocol/**",
+        "host/crates/core/src/fake.rs",
+        "host/crates/core/src/transport.rs"
+      ],
+      "evidence_paths": [
+        "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+        "docs/development/p3b-next-step-work-plan.md",
+        "docs/development/phase1-status.md",
+        "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md"
+      ],
+      "evidence_source_identity": [
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+          "blob": "c83176367d8fbc20c3ba133a571e6767df9e37bc"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/p3b-next-step-work-plan.md",
+          "blob": "b9e66c390b2d14ac9958189ef7dbdf56f38ce0c2"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/development/phase1-status.md",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "type": "git_blob",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        }
+      ],
+      "artifact_identity": [
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "STATUS_RECORD",
+          "path": "docs/development/phase1-status.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "0a695610235857fd57b56086c6e06082df5be438"
+        },
+        {
+          "status": "BOUND",
+          "kind": "REPOSITORY_GIT_BLOB",
+          "role": "EVIDENCE_ARTIFACT",
+          "path": "docs/evidence/phase1/T-HOST-LOCAL-TOOLCHAIN-report.md",
+          "commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+          "blob": "28667a75e50d66e48b1d624f542b5256085114c8"
+        },
+        {
+          "status": "NOT_PRODUCED",
+          "kind": "QUALIFICATION_CLOSURE_ARTIFACT",
+          "reason": "Existing evidence is partial or pre-closure; no new source-bound qualification closure artifact has been produced at the ledger baseline.",
+          "expected_owner": "B1_PROTOCOL_HOST_CORE_OWNER"
+        }
+      ],
+      "dependencies": [
+        "A2_APPROVE_WP0"
+      ],
+      "blockers": [
+        "Queue primitives exist but response-reserve and anti-starvation acceptance is not independently closed"
+      ],
+      "next_action": "B1 reproduces the approved protocol software suite and archives a source-bound Gate E report; B2 reviews before interface freeze",
+      "notes": "Software status is retained separately from Gate E acceptance."
+    }
+  ]
+}
