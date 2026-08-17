@@ -1,0 +1,251 @@
+{
+  "schema_version": 1,
+  "manifest_id": "P3B-POST-DEFERRAL-FILE-OWNERSHIP-2026-08-17",
+  "generated_from_commit": "03670f16e1c8178525ac9c43a59c1e2f555f6945",
+  "work_order": [
+    "WP0",
+    "WP1",
+    "WP2",
+    "WP3||WP4",
+    "WP5"
+  ],
+  "waves": [
+    {
+      "wave": 0,
+      "work_packages": [
+        "WP0"
+      ],
+      "roles": [
+        "A1_WP0_GOVERNANCE_COORDINATOR",
+        "A2_WP0_INDEPENDENT_REVIEWER"
+      ],
+      "start_gate": "AUTHORIZED_DISPATCH",
+      "completion_gate": "A2_APPROVE_WP0",
+      "writers": {
+        "A1_WP0_GOVERNANCE_COORDINATOR": [
+          "docs/development/p3b-post-deferral-gap-ledger.json",
+          "docs/development/p3b-post-deferral-file-ownership.json",
+          "scripts/phase3/validate_p3b_post_deferral_gap_ledger.py",
+          "tests/phase3/test_p3b_post_deferral_gap_ledger.py"
+        ]
+      },
+      "read_only_roles": [
+        "A2_WP0_INDEPENDENT_REVIEWER"
+      ]
+    },
+    {
+      "wave": 1,
+      "work_packages": [
+        "WP1"
+      ],
+      "roles": [
+        "B1_PROTOCOL_HOST_CORE_OWNER",
+        "B2_PROTOCOL_INDEPENDENT_REVIEWER"
+      ],
+      "start_gate": "A2_APPROVE_WP0",
+      "completion_gate": "B2_INTERFACE_FREEZE_ACCEPTED",
+      "writers": {
+        "B1_PROTOCOL_HOST_CORE_OWNER": [
+          "protocol/v1/**",
+          "host/crates/protocol/**",
+          "host/crates/core/src/transport.rs",
+          "host/crates/core/src/fake.rs",
+          "host/crates/core/src/lib.rs",
+          "tests/protocol/**",
+          "host/crates/core/tests/**"
+        ]
+      },
+      "read_only_roles": [
+        "B2_PROTOCOL_INDEPENDENT_REVIEWER"
+      ]
+    },
+    {
+      "wave": 2,
+      "work_packages": [
+        "WP2"
+      ],
+      "roles": [
+        "C1_SINGLE_CHANNEL_FIRMWARE_INTEGRATOR",
+        "C2_HOST_CLI_VERTICAL_SLICE",
+        "C3_E2E_INTEGRATION_REVIEWER"
+      ],
+      "start_gate": "B2_INTERFACE_FREEZE_ACCEPTED",
+      "completion_gate": "C3_APPROVE_WP2_SOFTWARE_INTEGRATION",
+      "writers": {
+        "C1_SINGLE_CHANNEL_FIRMWARE_INTEGRATOR": [
+          "USER/src/app_mcan0_owner.c",
+          "USER/inc/app_mcan0_owner.h",
+          "USER/src/app_usb_owner.c",
+          "USER/inc/app_usb_owner.h",
+          "tests/phase3/test_mcan0_owner_contract.py",
+          "tests/phase3/test_usb_owner_contract.py"
+        ],
+        "C2_HOST_CLI_VERTICAL_SLICE": [
+          "host/crates/cli/**",
+          "host/crates/application/**"
+        ]
+      },
+      "read_only_roles": [
+        "C3_E2E_INTEGRATION_REVIEWER"
+      ],
+      "conditional_new_files": {
+        "C3_E2E_INTEGRATION_REVIEWER": [
+          "tests/e2e/offline/**",
+          "tests/fixtures/e2e/**"
+        ]
+      }
+    },
+    {
+      "wave": 3,
+      "work_packages": [
+        "WP3",
+        "WP4"
+      ],
+      "roles": [
+        "D1_FIRMWARE_RELIABILITY_OWNER",
+        "D2_LINUX_WINDOWS_PRODUCTIZATION_OWNER"
+      ],
+      "start_gate": "C3_APPROVE_WP2_SOFTWARE_INTEGRATION",
+      "completion_gate": "WP3_AND_WP4_RELEVANT_CONTROLS_ACCEPTED",
+      "parallel": true,
+      "writers": {
+        "D1_FIRMWARE_RELIABILITY_OWNER": [
+          "WP2_POST_MERGE_REISSUE_REQUIRED"
+        ],
+        "D2_LINUX_WINDOWS_PRODUCTIZATION_OWNER": [
+          "host/crates/cli/**",
+          "packaging/linux/**",
+          "packaging/windows/**"
+        ]
+      },
+      "constraints": [
+        "D1 cannot modify C1 hotspots without a new exclusive authorization",
+        "D2 starts after the C2 vertical slice is merged",
+        "D2 cannot create a second protocol or USB core"
+      ]
+    },
+    {
+      "wave": 4,
+      "work_packages": [
+        "WP5"
+      ],
+      "roles": [
+        "E1_DUAL_CHANNEL_OWNER"
+      ],
+      "start_gate": "WP2_ACCEPTED_AND_RELEVANT_WP3_SAFETY_CONTROLS_ACCEPTED",
+      "completion_gate": "NON_HARDWARE_DUAL_CHANNEL_REVIEWED",
+      "writers": {
+        "E1_DUAL_CHANNEL_OWNER": [
+          "CHANNEL_NEUTRAL_SCOPE_REQUIRES_EXACT_REISSUE",
+          "MCAN2_SCOPE_REQUIRES_EXACT_REISSUE",
+          "NON_HARDWARE_EVIDENCE_SCOPE_REQUIRES_EXACT_REISSUE"
+        ]
+      },
+      "constraints": [
+        "single-channel must precede dual-channel",
+        "channel-neutral refactor and MCAN2 implementation are separate review units",
+        "active TX waits for relevant WP3 controls",
+        "no active bus-off execution"
+      ]
+    }
+  ],
+  "exclusive_hotspots": [
+    {
+      "hotspot_id": "B1_PROTOCOL_AND_HOST_CORE",
+      "owner_role": "B1_PROTOCOL_HOST_CORE_OWNER",
+      "patterns": [
+        "protocol/v1/**",
+        "host/crates/protocol/**",
+        "host/crates/core/src/transport.rs",
+        "host/crates/core/src/fake.rs",
+        "host/crates/core/src/lib.rs",
+        "tests/protocol/**",
+        "host/crates/core/tests/**"
+      ],
+      "other_writers_forbidden": true
+    },
+    {
+      "hotspot_id": "C1_SINGLE_CHANNEL_FIRMWARE",
+      "owner_role": "C1_SINGLE_CHANNEL_FIRMWARE_INTEGRATOR",
+      "patterns": [
+        "USER/src/app_mcan0_owner.c",
+        "USER/inc/app_mcan0_owner.h",
+        "USER/src/app_usb_owner.c",
+        "USER/inc/app_usb_owner.h"
+      ],
+      "other_writers_forbidden": true
+    },
+    {
+      "hotspot_id": "C2_APPLICATION_LAYER_ONLY",
+      "owner_role": "C2_HOST_CLI_VERTICAL_SLICE",
+      "patterns": [
+        "host/crates/cli/**",
+        "host/crates/application/**"
+      ],
+      "forbidden_patterns": [
+        "protocol/v1/**",
+        "host/crates/protocol/**",
+        "host/crates/core/**",
+        "USER/**"
+      ],
+      "other_writers_forbidden": false
+    }
+  ],
+  "read_only_governance_files": [
+    "docs/development/p3b-next-step-work-plan.md",
+    "docs/development/p3b-next-step-agent-prompts.md",
+    "docs/approved-plan/prd-hpm5321-usb-can-analyzer.md",
+    "docs/approved-plan/test-spec-hpm5321-usb-can-analyzer.md",
+    "docs/development/system-functional-completion-plan.md",
+    "docs/implementation-status.md",
+    "docs/evidence/phase3/P3B-current-status.json"
+  ],
+  "shared_read_only": [
+    "docs/evidence/**",
+    "docs/approved-plan/**",
+    "docs/development/p3b-next-step-work-plan.md",
+    "docs/development/p3b-next-step-agent-prompts.md",
+    ".github/workflows/**"
+  ],
+  "deferred_lane": {
+    "lane_id": "ACTIVE_BUS_OFF_HIL",
+    "owner_role": "M1_BUS_OFF_CAPABILITY_MONITOR",
+    "read_only": true,
+    "hardware_execution_authorized": false,
+    "hardware_commands": [],
+    "status": "DEFERRED_EXTERNAL_FAULT_INJECTION_CAPABILITY",
+    "required_test_ids": [
+      "T-E2E-009",
+      "T-FW-003"
+    ],
+    "resume_requires": [
+      "qualified active CAN fault injector",
+      "new explicit hardware execution authorization",
+      "frozen source and artifact identity",
+      "three independent run identities and reset boundaries"
+    ]
+  },
+  "preserved_authorities": [
+    {
+      "path": "docs/evidence/phase3/P3B-bus-off-fault-injection-blocker-2026-08-15.json",
+      "sha256": "7abce66e01869eca723058b502a70110ac859b62b42ea1cb908d648157c82ca4",
+      "authority": "HISTORICAL_ONLY",
+      "preserve_original": true
+    }
+  ],
+  "excluded_dependency_graph": [
+    "macOS",
+    "Qt",
+    "GUI",
+    "STORAGE",
+    "UPDATE"
+  ],
+  "conflict_policy": {
+    "duplicate_exact_writer_pattern": "REJECT",
+    "overlapping_exclusive_hotspot": "REJECT",
+    "shared_governance_files": "READ_ONLY",
+    "d1_c1_hotspot_change": "REISSUE_EXCLUSIVE_OWNERSHIP_AFTER_WP2",
+    "wire_abi_change": "STOP_AND_ESCALATE",
+    "unexpected_scope": "STOP_AND_ESCALATE"
+  }
+}
