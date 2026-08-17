@@ -1,0 +1,42 @@
+name: P3B Next-Step Planning Contract
+
+on:
+  push:
+    paths:
+      - "docs/development/p3b-next-step-work-plan.md"
+      - "docs/development/p3b-next-step-agent-prompts.md"
+      - "docs/evidence/phase3/P3B-current-status.json"
+      - "scripts/phase3/validate_p3b_next_step_work_plan.py"
+      - "scripts/phase3/validate_p3b_next_step_agent_prompts.py"
+      - "tests/phase3/test_p3b_next_step_work_plan.py"
+      - "tests/phase3/test_p3b_next_step_agent_prompts.py"
+      - ".github/workflows/p3b-next-step-planning-contract.yml"
+  pull_request:
+    paths:
+      - "docs/development/p3b-next-step-work-plan.md"
+      - "docs/development/p3b-next-step-agent-prompts.md"
+      - "docs/evidence/phase3/P3B-current-status.json"
+      - "scripts/phase3/validate_p3b_next_step_work_plan.py"
+      - "scripts/phase3/validate_p3b_next_step_agent_prompts.py"
+      - "tests/phase3/test_p3b_next_step_work_plan.py"
+      - "tests/phase3/test_p3b_next_step_agent_prompts.py"
+      - ".github/workflows/p3b-next-step-planning-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Validate P3B next-step work plan
+        run: python3 scripts/phase3/validate_p3b_next_step_work_plan.py
+      - name: Validate P3B next-step agent prompts
+        run: python3 scripts/phase3/validate_p3b_next_step_agent_prompts.py
+      - name: Run P3B next-step planning contract tests
+        run: >-
+          python3 -m unittest
+          tests.phase3.test_p3b_next_step_work_plan
+          tests.phase3.test_p3b_next_step_agent_prompts
