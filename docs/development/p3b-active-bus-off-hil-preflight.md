@@ -5,9 +5,11 @@
 本文只冻结主动 bus-off HIL 的输入、台架安全条件和三次独立运行边界，
 不授权刷写、复位、调试器连接、CAN 发送、错误注入或任何真实硬件执行。
 
-- 预检记录：
+- 空白模板：
   `docs/evidence/phase3/P3B-active-bus-off-hil-preflight.template.json`
-- 当前决策必须保持 `BLOCKED_FOR_HIL_PREFLIGHT`，直到模板中的所有真实现场值、
+- 2026-08-17 当前现场记录：
+  `docs/evidence/phase3/P3B-active-bus-off-hil-preflight-2026-08-17.json`
+- 当前决策必须保持 `BLOCKED_FOR_HIL_PREFLIGHT`，直到当前记录中的所有真实现场值、
   设备限制和双人批准均已补齐并通过 validator。
 - 即使预检随后变为 `READY_FOR_HIL_PREFLIGHT_APPROVAL`，真实 HIL 仍需另一次
   明确授权。
@@ -67,6 +69,23 @@
 - 固件路径具备 warning → error-passive → bus-off、锁存、无自动恢复、INIT、
   TXBRP=0、pads 隔离、timeout cleanup、listen-only fallback 和第二次触发拒绝
   的检查点；这些是待验证路径，不是已完成的硬件结论。
+
+## GDB 与 ACK-only 替代方案边界
+
+- GDB 写 mailbox 只负责启动现有 once-per-boot 测试钩子；它不是 CAN 错误
+  注入器，仍需真实总线错误使 MCAN 的 ECR/PSR 发生硬件状态变化。
+- 禁止通过 GDB 改写 `g_app_mcan0_bus_off_test_result`、owner state、内部 latch、
+  `PSR` 或 `ECR` 来满足硬件 PASS。此类写入会绕过真实错误计数和协议状态，
+  不能证明 warning → error-passive → bus-off。
+- 若后续需要验证 latch、INIT、pad 隔离或无恢复的软件 containment 路径，可以
+  另立明确标记的 synthetic/software-only 测试；它必须使用独立证据和判据，
+  不得复用真实 HIL PASS、不得升级 P3B hardware bus-off 状态。
+- JCAN 的 silent/no-ACK 或仅移除 ACK 不能视为主动 bit/form/stuff/CRC 错误注入。
+  ACK-only 场景不能可靠证明 TEC 持续增长到 bus-off，因此本 preflight 明确拒绝
+  将其作为硬件 PASS 替代方案。
+- 若没有合格的外部注入器，可接受的规划方向仅包括借用/采购专用设备，或另行
+  设计并资格确认一个能在物理总线上精确定时制造错误的独立节点。任何新方案都
+  必须先补齐设备身份、电气限制、停止条件和独立审核，再获得硬件执行授权。
 
 ## 三次独立运行
 

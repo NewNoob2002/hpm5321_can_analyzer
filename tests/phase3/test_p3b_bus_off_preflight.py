@@ -12,6 +12,9 @@ ROOT = Path(__file__).resolve().parents[2]
 PREFLIGHT = Path(
     "docs/evidence/phase3/P3B-active-bus-off-hil-preflight.template.json"
 )
+CURRENT_PREFLIGHT = Path(
+    "docs/evidence/phase3/P3B-active-bus-off-hil-preflight-2026-08-17.json"
+)
 
 
 def load_validator():
@@ -29,6 +32,7 @@ validator = load_validator()
 class P3bBusOffPreflightTests(unittest.TestCase):
     def setUp(self):
         self.template = json.loads((ROOT / PREFLIGHT).read_text())
+        self.current = json.loads((ROOT / CURRENT_PREFLIGHT).read_text())
 
     def validate_value(self, value):
         with tempfile.TemporaryDirectory(dir=ROOT) as directory:
@@ -98,6 +102,11 @@ class P3bBusOffPreflightTests(unittest.TestCase):
             "approval": True,
             "distinct_from_operator": True,
         }
+        value["project_safety_approver"] = {
+            "identity": "recorded-safety-approver",
+            "approval": True,
+            "scope": "recorded-approved-scope",
+        }
         value["decision"] = "READY_FOR_HIL_PREFLIGHT_APPROVAL"
         value["approved"] = True
         value["blockers"] = []
@@ -110,6 +119,15 @@ class P3bBusOffPreflightTests(unittest.TestCase):
         )
         self.assertEqual(len(self.template["blockers"]), 11)
         self.assertFalse(self.template["hardware_execution_authorized"])
+
+    def test_current_record_is_valid_and_blocked_only_on_unresolved_inputs(self):
+        self.assertEqual(validator.validate(ROOT, CURRENT_PREFLIGHT), [])
+        self.assertEqual(
+            self.current["blockers"], validator.readiness_blockers(self.current)
+        )
+        self.assertEqual(len(self.current["blockers"]), 4)
+        self.assertFalse(self.current["approved"])
+        self.assertFalse(self.current["hardware_execution_authorized"])
 
     def test_missing_inputs_cannot_claim_ready_or_approval(self):
         value = copy.deepcopy(self.template)
@@ -145,6 +163,14 @@ class P3bBusOffPreflightTests(unittest.TestCase):
         self.assertIn(
             "preflight header mismatch: hardware_execution_authorized", errors
         )
+
+    def test_gdb_memory_writes_cannot_be_reclassified_as_hardware_pass(self):
+        value = copy.deepcopy(self.current)
+        value["gdb_fault_injection_policy"][
+            "write_result_state_or_latch_for_hardware_pass_allowed"
+        ] = True
+        errors = self.validate_value(value)
+        self.assertIn("preflight GDB fault-injection policy mismatch", errors)
 
 
 if __name__ == "__main__":
